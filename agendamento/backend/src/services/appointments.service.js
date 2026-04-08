@@ -107,7 +107,9 @@ class AppointmentsService {
       throw err;
     }
 
-    const targetDate = new Date(date);
+    // Parse date as local time to avoid UTC offset shifting the day
+    const [yr, mo, dy] = date.split('-').map(Number);
+    const targetDate = new Date(yr, mo - 1, dy);
     const weekday = WEEKDAYS[targetDate.getDay()];
 
     const businessHours = await businessHoursRepo.findByEstablishment(establishmentId);
@@ -160,6 +162,7 @@ class AppointmentsService {
   }
 
   async _validateBusinessHours(establishmentId, start, end) {
+    // Use local date parts to determine weekday and compare times correctly
     const weekday = WEEKDAYS[start.getDay()];
     const businessHours = await businessHoursRepo.findByEstablishment(establishmentId);
     const dayHours = businessHours.find((bh) => bh.weekday === weekday);
@@ -173,10 +176,8 @@ class AppointmentsService {
     const [startH, startM] = dayHours.start_time.split(':').map(Number);
     const [endH, endM] = dayHours.end_time.split(':').map(Number);
 
-    const openTime = new Date(start);
-    openTime.setHours(startH, startM, 0, 0);
-    const closeTime = new Date(start);
-    closeTime.setHours(endH, endM, 0, 0);
+    const openTime = new Date(start.getFullYear(), start.getMonth(), start.getDate(), startH, startM, 0, 0);
+    const closeTime = new Date(start.getFullYear(), start.getMonth(), start.getDate(), endH, endM, 0, 0);
 
     if (start < openTime || end > closeTime) {
       const err = new Error('O horário escolhido está fora do horário de funcionamento.');

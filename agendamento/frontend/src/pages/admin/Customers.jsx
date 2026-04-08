@@ -18,22 +18,13 @@ export default function AdminCustomers() {
   }, [user]);
 
   const columns = [
-    {
-      key: 'name',
-      label: 'Nome',
-      render: (row) => row.users?.name || '—',
-    },
-    {
-      key: 'email',
-      label: 'Email',
-      render: (row) => row.users?.email || '—',
-    },
+    { key: 'name',  label: 'Nome',     render: (row) => row.users?.name || '—' },
+    { key: 'email', label: 'Email',    render: (row) => row.users?.email || '—' },
     { key: 'phone', label: 'Telefone', render: (row) => row.phone || '—' },
     {
-      key: 'status',
-      label: 'Conta',
+      key: 'status', label: 'Conta',
       render: (row) => (
-        <span className={`text-xs font-medium ${row.users?.is_active ? 'text-green-400' : 'text-red-400'}`}>
+        <span className={`text-xs font-medium ${row.users?.is_active ? 'text-green-600' : 'text-red-500'}`}>
           {row.users?.is_active ? 'Ativa' : 'Inativa'}
         </span>
       ),
@@ -45,14 +36,8 @@ export default function AdminCustomers() {
       <div className="page-header">
         <h1 className="page-title">Clientes</h1>
       </div>
-
       <Card padding={false}>
-        <Table
-          columns={columns}
-          data={customers}
-          loading={loading}
-          emptyMessage="Nenhum cliente encontrado."
-        />
+        <Table columns={columns} data={customers} loading={loading} emptyMessage="Nenhum cliente encontrado." />
       </Card>
     </div>
   );

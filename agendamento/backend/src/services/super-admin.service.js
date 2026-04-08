@@ -88,7 +88,64 @@ class SuperAdminService {
   }
 
   async getAllUsers(filters) {
-    return usersRepo.findAllPaginated(filters);
+    const result = await usersRepo.findAllPaginated(filters);
+    const users = result.data || [];
+
+    if (users.length === 0) {
+      return result;
+    }
+
+    const userIds = users.map((user) => user.id);
+
+    const [{ data: adminLinks, error: adminError }, { data: customerLinks, error: customerError }] = await Promise.all([
+      supabase
+        .from('establishment_admins')
+        .select('user_id, establishments(id, name, slug)')
+        .in('user_id', userIds),
+      supabase
+        .from('appointments')
+        .select('establishment_id, customer_id, establishments(id, name, slug), customers!inner(user_id)')
+        .in('customers.user_id', userIds),
+    ]);
+
+    if (adminError) throw adminError;
+    if (customerError) throw customerError;
+
+    const establishmentsByUser = new Map();
+
+    const appendEstablishment = (userId, establishment, relationship) => {
+      if (!userId || !establishment?.id) return;
+
+      const current = establishmentsByUser.get(userId) || [];
+      const exists = current.some(
+        (item) => item.id === establishment.id && item.relationship === relationship
+      );
+
+      if (!exists) {
+        current.push({
+          id: establishment.id,
+          name: establishment.name,
+          slug: establishment.slug,
+          relationship,
+        });
+        establishmentsByUser.set(userId, current);
+      }
+    };
+
+    (adminLinks || []).forEach((link) => {
+      appendEstablishment(link.user_id, link.establishments, 'admin');
+    });
+
+    (customerLinks || []).forEach((link) => {
+      appendEstablishment(link.customers?.user_id, link.establishments, 'customer');
+    });
+
+    result.data = users.map((user) => ({
+      ...user,
+      establishments: establishmentsByUser.get(user.id) || [],
+    }));
+
+    return result;
   }
 
   async toggleUserStatus(userId) {

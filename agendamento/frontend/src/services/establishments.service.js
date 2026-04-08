@@ -21,11 +21,6 @@ export const establishmentsService = {
     return res.data;
   },
 
-  update: async (id, data) => {
-    const res = await api.put(`/super-admin/establishments/${id}`, data);
-    return res.data;
-  },
-
   setStatus: async (id, status) => {
     const res = await api.patch(`/super-admin/establishments/${id}/status`, { status });
     return res.data;

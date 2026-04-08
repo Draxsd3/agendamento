@@ -68,10 +68,9 @@ class AppointmentsRepository extends BaseRepository {
   }
 
   async findByProfessionalAndDate(professionalId, date) {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+    const [yr, mo, dy] = date.split('-').map(Number);
+    const start = new Date(yr, mo - 1, dy, 0, 0, 0, 0);
+    const end = new Date(yr, mo - 1, dy, 23, 59, 59, 999);
 
     const { data, error } = await this.db
       .from('appointments')

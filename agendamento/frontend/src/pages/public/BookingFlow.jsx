@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ChevronRight, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { publicEstablishmentsService } from '@/services/establishments.service';
 import { appointmentsService } from '@/services/appointments.service';
@@ -50,11 +50,14 @@ export default function BookingFlow() {
     load();
   }, [slug, navigate]);
 
-  const filteredProfessionals = selectedService
-    ? professionals.filter((p) =>
-        p.professional_services?.some((ps) => ps.service_id === selectedService.id)
-      )
-    : professionals;
+  const filteredProfessionals = (() => {
+    if (!selectedService) return professionals;
+    const linked = professionals.filter((p) =>
+      p.professional_services?.some((ps) => ps.service_id === selectedService.id)
+    );
+    // fallback: if none are linked to this service, show all active professionals
+    return linked.length > 0 ? linked : professionals;
+  })();
 
   const handleServiceSelect = (service) => {
     setSelectedService(service);
@@ -70,12 +73,6 @@ export default function BookingFlow() {
   };
 
   const handleDateTimeSelect = ({ date, slot }) => {
-    if (!isAuthenticated) {
-      // Redirect to login, saving booking intent
-      navigate('/login', { state: { from: `/agendamento/${slug}/agendar` } });
-      toast('Faça login para confirmar o agendamento.', { icon: '🔐' });
-      return;
-    }
     setSelectedDateTime({ date, slot });
     setStep(3);
   };
@@ -99,6 +96,40 @@ export default function BookingFlow() {
   };
 
   if (loading) return <LoadingSpinner fullScreen />;
+
+  // Auth gate: must be logged in as customer to book
+  if (!isAuthenticated || user?.role !== 'customer') {
+    return (
+      <div className="max-w-md mx-auto text-center py-16">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-blue-600/20 border border-blue-600/30 mb-6">
+          <LogIn size={28} className="text-blue-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-100 mb-2">Faça login para agendar</h2>
+        <p className="text-gray-400 text-sm mb-8">
+          Você precisa de uma conta de cliente para realizar agendamentos em{' '}
+          <span className="text-gray-200 font-medium">{establishment?.name}</span>.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/cadastro"
+            state={{ from: `/agendamento/${slug}/agendar` }}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+          >
+            <UserPlus size={16} />
+            Criar conta
+          </Link>
+          <Link
+            to="/login"
+            state={{ from: `/agendamento/${slug}/agendar` }}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 text-sm font-medium transition-colors"
+          >
+            <LogIn size={16} />
+            Entrar
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto">

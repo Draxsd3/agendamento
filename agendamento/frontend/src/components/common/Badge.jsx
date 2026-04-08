@@ -1,26 +1,23 @@
 const variants = {
-  // appointment status
-  pending:    'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
-  confirmed:  'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-  completed:  'bg-green-500/10 text-green-400 border border-green-500/20',
-  cancelled:  'bg-red-500/10 text-red-400 border border-red-500/20',
-  no_show:    'bg-gray-500/10 text-gray-400 border border-gray-500/20',
-  // establishment status
-  active:     'bg-green-500/10 text-green-400 border border-green-500/20',
-  inactive:   'bg-gray-500/10 text-gray-400 border border-gray-500/20',
-  suspended:  'bg-red-500/10 text-red-400 border border-red-500/20',
-  // generic
-  default:    'bg-gray-500/10 text-gray-400 border border-gray-500/20',
+  pending:   'bg-amber-50 text-amber-700 border border-amber-200',
+  confirmed: 'bg-blue-50 text-blue-700 border border-blue-200',
+  completed: 'bg-green-50 text-green-700 border border-green-200',
+  cancelled: 'bg-red-50 text-red-600 border border-red-200',
+  no_show:   'bg-gray-100 text-gray-500 border border-gray-200',
+  active:    'bg-green-50 text-green-700 border border-green-200',
+  inactive:  'bg-gray-100 text-gray-500 border border-gray-200',
+  suspended: 'bg-red-50 text-red-600 border border-red-200',
+  default:   'bg-gray-100 text-gray-500 border border-gray-200',
 };
 
 const labels = {
-  pending: 'Pendente',
+  pending:   'Pendente',
   confirmed: 'Confirmado',
   completed: 'Concluído',
   cancelled: 'Cancelado',
-  no_show: 'Não compareceu',
-  active: 'Ativo',
-  inactive: 'Inativo',
+  no_show:   'Não compareceu',
+  active:    'Ativo',
+  inactive:  'Inativo',
   suspended: 'Suspenso',
 };
 
