@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Building2, Filter, Plus, Search, Shield, UserCog, Users } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Table from '@/components/common/Table';
 import Button from '@/components/common/Button';
@@ -11,19 +11,88 @@ import { establishmentsService } from '@/services/establishments.service';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
+const roleLabel = {
+  super_admin: 'Super Admin',
+  establishment_admin: 'Usuario de estabelecimento',
+  customer: 'Cliente de estabelecimento',
+};
+
+const roleSummary = {
+  super_admin: {
+    title: 'Super Admins',
+    description: 'Acessam e administram todo o sistema.',
+    icon: Shield,
+    tone: 'border-slate-200 bg-slate-50 text-slate-700',
+  },
+  establishment_admin: {
+    title: 'Usuarios de estabelecimento',
+    description: 'Administram agenda, servicos e operacao do estabelecimento.',
+    icon: UserCog,
+    tone: 'border-blue-200 bg-blue-50 text-blue-700',
+  },
+  customer: {
+    title: 'Clientes de estabelecimento',
+    description: 'Clientes vinculados por agendamentos nos estabelecimentos.',
+    icon: Users,
+    tone: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  },
+};
+
+const filterOptions = [
+  { value: 'all', label: 'Todos os usuarios' },
+  { value: 'establishment_admin', label: 'Usuarios de estabelecimento' },
+  { value: 'customer', label: 'Clientes de estabelecimento' },
+  { value: 'super_admin', label: 'Super Admins' },
+];
+
+const statusOptions = [
+  { value: 'all', label: 'Todos os status' },
+  { value: 'active', label: 'Ativos' },
+  { value: 'inactive', label: 'Inativos' },
+];
+
+function UsersSummaryCard({ title, description, value, icon: Icon, tone, active, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full rounded-2xl border p-5 text-left transition-all ${
+        active ? `${tone} shadow-sm` : 'border-gray-200 bg-white hover:border-gray-300'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="mt-2 text-3xl font-semibold text-gray-900">{value}</p>
+          <p className="mt-2 text-sm text-gray-500">{description}</p>
+        </div>
+        <div className={`rounded-xl border p-3 ${active ? 'border-current/20 bg-white/60' : 'border-gray-200 bg-gray-50'}`}>
+          <Icon size={20} />
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export default function SuperAdminUsers() {
   const [users, setUsers] = useState([]);
   const [establishments, setEstablishments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [filters, setFilters] = useState({
+    search: '',
+    role: 'all',
+    status: 'all',
+    establishmentId: 'all',
+  });
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
 
   const load = () => {
     setLoading(true);
     Promise.all([
-      superAdminService.getAllUsers(),
-      establishmentsService.getAll(),
+      superAdminService.getAllUsers({ limit: 500 }),
+      establishmentsService.getAll({ limit: 500 }),
     ])
       .then(([usersRes, estabRes]) => {
         setUsers(usersRes.data || []);
@@ -52,27 +121,102 @@ export default function SuperAdminUsers() {
       reset();
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao criar usuário.');
+      toast.error(err.response?.data?.error || 'Erro ao criar usuario.');
     }
   };
 
-  const roleLabel = {
-    super_admin: 'Super Admin',
-    establishment_admin: 'Admin',
-    customer: 'Cliente',
+  const handleFilterChange = (field, value) => {
+    setFilters((current) => ({ ...current, [field]: value }));
   };
 
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      role: 'all',
+      status: 'all',
+      establishmentId: 'all',
+    });
+  };
+
+  const counts = {
+    total: users.length,
+    super_admin: users.filter((user) => user.role === 'super_admin').length,
+    establishment_admin: users.filter((user) => user.role === 'establishment_admin').length,
+    customer: users.filter((user) => user.role === 'customer').length,
+  };
+
+  const normalizedSearch = filters.search.trim().toLowerCase();
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      normalizedSearch.length === 0 ||
+      user.name?.toLowerCase().includes(normalizedSearch) ||
+      user.email?.toLowerCase().includes(normalizedSearch) ||
+      user.establishments?.some((item) => item.name?.toLowerCase().includes(normalizedSearch));
+
+    const matchesRole = filters.role === 'all' || user.role === filters.role;
+    const matchesStatus =
+      filters.status === 'all' ||
+      (filters.status === 'active' && user.is_active) ||
+      (filters.status === 'inactive' && !user.is_active);
+    const matchesEstablishment =
+      filters.establishmentId === 'all' ||
+      user.establishments?.some((item) => item.id === filters.establishmentId);
+
+    return matchesSearch && matchesRole && matchesStatus && matchesEstablishment;
+  });
+
   const columns = [
-    { key: 'name', label: 'Nome' },
-    { key: 'email', label: 'Email' },
+    {
+      key: 'name',
+      label: 'Usuario',
+      render: (row) => (
+        <div>
+          <p className="font-medium text-gray-900">{row.name}</p>
+          <p className="text-xs text-gray-500">{row.email}</p>
+        </div>
+      ),
+    },
     {
       key: 'role',
-      label: 'Perfil',
-      render: (row) => (
-        <span className="text-xs font-medium text-gray-300">
-          {roleLabel[row.role] || row.role}
-        </span>
-      ),
+      label: 'Tipo',
+      render: (row) => {
+        const summary = roleSummary[row.role];
+        return (
+          <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${summary?.tone || 'border-gray-200 bg-gray-50 text-gray-700'}`}>
+            {roleLabel[row.role] || row.role}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'establishments',
+      label: 'Vinculo',
+      render: (row) => {
+        if (row.role === 'super_admin') {
+          return <span className="text-sm text-gray-500">Acesso global ao sistema</span>;
+        }
+
+        if (!row.establishments?.length) {
+          return <span className="text-sm text-gray-400">Sem vinculo identificado</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-2">
+            {row.establishments.map((item) => (
+              <span
+                key={`${row.id}-${item.id}-${item.relationship}`}
+                className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-700"
+              >
+                <Building2 size={12} />
+                {item.name}
+                <span className="text-gray-400">
+                  {item.relationship === 'admin' ? 'admin' : 'cliente'}
+                </span>
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: 'is_active',
@@ -90,40 +234,169 @@ export default function SuperAdminUsers() {
     },
     {
       key: 'actions',
-      label: 'Ações',
+      label: 'Acoes',
       render: (row) =>
         row.role !== 'super_admin' ? (
           <button
             onClick={() => handleToggle(row.id)}
             className={`text-xs font-medium ${
               row.is_active
-                ? 'text-red-400 hover:text-red-300'
-                : 'text-green-400 hover:text-green-300'
+                ? 'text-red-500 hover:text-red-600'
+                : 'text-green-600 hover:text-green-700'
             }`}
           >
             {row.is_active ? 'Desativar' : 'Ativar'}
           </button>
         ) : (
-          <span className="text-xs text-gray-600">—</span>
+          <span className="text-xs text-gray-400">-</span>
         ),
     },
   ];
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="page-header">
-        <h1 className="page-title">Usuários</h1>
+        <div>
+          <h1 className="page-title">Usuarios</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Separe rapidamente quem opera estabelecimentos e quem agenda como cliente.
+          </p>
+        </div>
         <Button icon={Plus} onClick={() => { reset(); setShowModal(true); }}>
           Novo Admin
         </Button>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-3">
+        <UsersSummaryCard
+          title={roleSummary.establishment_admin.title}
+          description={roleSummary.establishment_admin.description}
+          value={counts.establishment_admin}
+          icon={roleSummary.establishment_admin.icon}
+          tone={roleSummary.establishment_admin.tone}
+          active={filters.role === 'establishment_admin'}
+          onClick={() => handleFilterChange('role', filters.role === 'establishment_admin' ? 'all' : 'establishment_admin')}
+        />
+        <UsersSummaryCard
+          title={roleSummary.customer.title}
+          description={roleSummary.customer.description}
+          value={counts.customer}
+          icon={roleSummary.customer.icon}
+          tone={roleSummary.customer.tone}
+          active={filters.role === 'customer'}
+          onClick={() => handleFilterChange('role', filters.role === 'customer' ? 'all' : 'customer')}
+        />
+        <UsersSummaryCard
+          title={roleSummary.super_admin.title}
+          description={roleSummary.super_admin.description}
+          value={counts.super_admin}
+          icon={roleSummary.super_admin.icon}
+          tone={roleSummary.super_admin.tone}
+          active={filters.role === 'super_admin'}
+          onClick={() => handleFilterChange('role', filters.role === 'super_admin' ? 'all' : 'super_admin')}
+        />
+      </div>
+
+      <Card className="space-y-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Filter size={16} />
+              Filtragem organizada
+            </div>
+            <p className="mt-1 text-sm text-gray-500">
+              Filtre por tipo de usuario, status e estabelecimento para localizar mais rapido.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={clearFilters}>
+            Limpar filtros
+          </Button>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-4 md:grid-cols-2">
+          <Input
+            label="Buscar"
+            placeholder="Nome, email ou estabelecimento"
+            value={filters.search}
+            onChange={(event) => handleFilterChange('search', event.target.value)}
+            icon={Search}
+          />
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Tipo de usuario</label>
+            <select
+              className="input-base"
+              value={filters.role}
+              onChange={(event) => handleFilterChange('role', event.target.value)}
+            >
+              {filterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Status</label>
+            <select
+              className="input-base"
+              value={filters.status}
+              onChange={(event) => handleFilterChange('status', event.target.value)}
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Estabelecimento</label>
+            <select
+              className="input-base"
+              value={filters.establishmentId}
+              onChange={(event) => handleFilterChange('establishmentId', event.target.value)}
+            >
+              <option value="all">Todos os estabelecimentos</option>
+              {establishments.map((establishment) => (
+                <option key={establishment.id} value={establishment.id}>
+                  {establishment.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+          <span className="rounded-full bg-gray-100 px-3 py-1">
+            {filteredUsers.length} de {counts.total} usuarios exibidos
+          </span>
+          {filters.role !== 'all' && (
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
+              Tipo: {filterOptions.find((option) => option.value === filters.role)?.label}
+            </span>
+          )}
+          {filters.status !== 'all' && (
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+              Status: {statusOptions.find((option) => option.value === filters.status)?.label}
+            </span>
+          )}
+          {filters.establishmentId !== 'all' && (
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+              Estabelecimento: {establishments.find((item) => item.id === filters.establishmentId)?.name}
+            </span>
+          )}
+        </div>
+      </Card>
+
       <Card padding={false}>
         <Table
           columns={columns}
-          data={users}
+          data={filteredUsers}
           loading={loading}
-          emptyMessage="Nenhum usuário encontrado."
+          emptyMessage="Nenhum usuario encontrado com os filtros aplicados."
         />
       </Card>
 
@@ -135,10 +408,10 @@ export default function SuperAdminUsers() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Nome"
-            placeholder="João Silva"
+            placeholder="Joao Silva"
             required
             error={errors.name?.message}
-            {...register('name', { required: 'Nome é obrigatório.' })}
+            {...register('name', { required: 'Nome e obrigatorio.' })}
           />
           <Input
             label="Email"
@@ -147,38 +420,38 @@ export default function SuperAdminUsers() {
             required
             error={errors.email?.message}
             {...register('email', {
-              required: 'Email é obrigatório.',
-              pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido.' },
+              required: 'Email e obrigatorio.',
+              pattern: { value: /\S+@\S+\.\S+/, message: 'Email invalido.' },
             })}
           />
           <Input
             label="Senha"
             type="password"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Minimo 6 caracteres"
             required
             error={errors.password?.message}
             {...register('password', {
-              required: 'Senha é obrigatória.',
-              minLength: { value: 6, message: 'Mínimo 6 caracteres.' },
+              required: 'Senha e obrigatoria.',
+              minLength: { value: 6, message: 'Minimo 6 caracteres.' },
             })}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">
-              Estabelecimento <span className="text-red-400">*</span>
+            <label className="text-sm font-medium text-gray-700">
+              Estabelecimento <span className="text-red-500">*</span>
             </label>
             <select
               className="input-base"
               {...register('establishmentId', { required: 'Selecione um estabelecimento.' })}
             >
               <option value="">Selecione...</option>
-              {establishments.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
+              {establishments.map((establishment) => (
+                <option key={establishment.id} value={establishment.id}>
+                  {establishment.name}
                 </option>
               ))}
             </select>
             {errors.establishmentId && (
-              <p className="text-xs text-red-400">{errors.establishmentId.message}</p>
+              <p className="text-xs text-red-500">{errors.establishmentId.message}</p>
             )}
           </div>
           <div className="flex gap-3 pt-2">

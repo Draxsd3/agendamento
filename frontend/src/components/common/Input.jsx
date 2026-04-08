@@ -7,25 +7,25 @@ const Input = forwardRef(function Input(
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-sm font-medium text-gray-300">
+        <label className="text-sm font-medium text-gray-700">
           {label}
-          {props.required && <span className="text-red-400 ml-1">*</span>}
+          {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <div className="relative">
         {Icon && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-            <Icon size={16} />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Icon size={15} />
           </span>
         )}
         <input
           ref={ref}
-          className={`input-base ${Icon ? 'pl-9' : ''} ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
+          className={`input-base ${Icon ? 'pl-9' : ''} ${error ? 'border-red-400 focus:ring-red-500' : ''} ${className}`}
           {...props}
         />
       </div>
-      {error && <p className="text-xs text-red-400">{error}</p>}
-      {hint && !error && <p className="text-xs text-gray-500">{hint}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
     </div>
   );
 });

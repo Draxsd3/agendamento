@@ -48,8 +48,14 @@ export function AuthProvider({ children }) {
     const { user: userData, token: newToken, establishment } = await authService.login(credentials);
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    setUser({ ...userData, establishmentSlug: establishment?.slug || null });
-    return { ...userData, establishmentSlug: establishment?.slug || null };
+    const payload = decodeToken(newToken);
+    const enriched = {
+      ...userData,
+      establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
+      establishmentId:   payload.establishmentId   || null,
+    };
+    setUser(enriched);
+    return enriched;
   };
 
   const register = async (data) => {

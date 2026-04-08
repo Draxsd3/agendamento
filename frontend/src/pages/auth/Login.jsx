@@ -11,43 +11,30 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
   const getRedirect = (loggedUser) => {
     const from = location.state?.from;
-    if (from) return from;
-    if (loggedUser.role === 'establishment_admin') {
-      return `/admin/${loggedUser.establishmentSlug}`;
-    }
+    if (from && loggedUser.role === 'customer') return from;
+    if (loggedUser.role === 'establishment_admin') return `/admin/${loggedUser.establishmentSlug}`;
     return '/minha-conta';
   };
 
-  // Já autenticado — redireciona para a área correta
   if (isAuthenticated) {
-    if (user?.role === 'super_admin') {
-      navigate('/super-admin', { replace: true });
-    } else {
-      navigate(getRedirect(user), { replace: true });
-    }
+    if (user?.role === 'super_admin') navigate('/super-admin', { replace: true });
+    else navigate(getRedirect(user), { replace: true });
     return null;
   }
 
   const onSubmit = async (data) => {
     try {
       const loggedUser = await login(data);
-
-      // Super admin não deve usar este login
       if (loggedUser.role === 'super_admin') {
         toast.error('Use o painel de acesso restrito para Super Admin.');
         localStorage.removeItem('token');
         window.location.href = '/super-admin/login';
         return;
       }
-
       navigate(getRedirect(loggedUser), { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erro ao fazer login.');
@@ -55,19 +42,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-blue-600/20 border border-blue-600/30 mb-4">
-            <CalendarCheck size={28} className="text-blue-400" />
+          <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-blue-50 border border-blue-100 mb-4">
+            <CalendarCheck size={24} className="text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100">Bem-vindo de volta</h1>
-          <p className="text-gray-400 mt-1">Admin do estabelecimento ou cliente</p>
+          <h1 className="text-2xl font-bold text-gray-900">Bem-vindo de volta</h1>
+          <p className="text-gray-500 mt-1 text-sm">Entre na sua conta para continuar</p>
         </div>
 
-        {/* Form */}
-        <div className="card p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <Input
               label="Email"
@@ -81,7 +66,6 @@ export default function Login() {
                 pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido.' },
               })}
             />
-
             <div>
               <Input
                 label="Senha"
@@ -93,23 +77,19 @@ export default function Login() {
                 {...register('password', { required: 'Senha é obrigatória.' })}
               />
               <div className="flex justify-end mt-1.5">
-                <Link
-                  to="/recuperar-senha"
-                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                >
+                <Link to="/recuperar-senha" className="text-xs text-blue-600 hover:text-blue-700 transition-colors">
                   Esqueceu a senha?
                 </Link>
               </div>
             </div>
-
             <Button type="submit" loading={isSubmitting} className="w-full mt-2">
               Entrar
             </Button>
           </form>
 
-          <p className="text-center text-sm text-gray-400 mt-6">
+          <p className="text-center text-sm text-gray-500 mt-6">
             Não tem conta?{' '}
-            <Link to="/cadastro" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+            <Link to="/cadastro" className="text-blue-600 hover:text-blue-700 font-medium transition-colors">
               Criar conta
             </Link>
           </p>

@@ -219,14 +219,6 @@ export default function EstablishmentDetail() {
                   Envie ao dono junto com as credenciais criadas abaixo.
                 </p>
               </div>
-              <div className="pt-1 border-t border-gray-800">
-                <p className="text-xs text-gray-600 mb-2 font-medium uppercase tracking-wider">Para referência interna</p>
-                <CopyField
-                  label="Login Super Admin (restrito)"
-                  value={superAdminLoginUrl}
-                  href={superAdminLoginUrl}
-                />
-              </div>
             </div>
           </Card>
         </div>

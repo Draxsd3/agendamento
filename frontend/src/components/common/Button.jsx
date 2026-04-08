@@ -1,14 +1,14 @@
 import LoadingSpinner from './LoadingSpinner';
 
 const variants = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-  secondary: 'bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'hover:bg-gray-800 text-gray-400 hover:text-gray-100',
+  primary:   'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
+  secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm',
+  danger:    'bg-red-600 hover:bg-red-700 text-white shadow-sm',
+  ghost:     'hover:bg-gray-100 text-gray-600 hover:text-gray-900',
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm',
+  sm: 'px-3 py-1.5 text-xs',
   md: 'px-4 py-2.5 text-sm',
   lg: 'px-6 py-3 text-base',
 };
@@ -33,7 +33,7 @@ export default function Button({
       {loading ? (
         <LoadingSpinner size="sm" />
       ) : (
-        Icon && <Icon size={16} />
+        Icon && <Icon size={15} />
       )}
       {children}
     </button>

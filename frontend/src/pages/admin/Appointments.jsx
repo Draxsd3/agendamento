@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'completed', 'no_show', 'cancelled'];
+const STATUS_LABELS = { pending: 'Pendente', confirmed: 'Confirmado', completed: 'Concluído', no_show: 'Não compareceu', cancelled: 'Cancelado' };
 
 export default function AdminAppointments() {
   const { user } = useAuth();
@@ -20,10 +21,7 @@ export default function AdminAppointments() {
     if (!user?.establishmentId) return;
     setLoading(true);
     appointmentsService
-      .getByEstablishment(user.establishmentId, {
-        status: filterStatus || undefined,
-        date: filterDate || undefined,
-      })
+      .getByEstablishment(user.establishmentId, { status: filterStatus || undefined, date: filterDate || undefined })
       .then((res) => setAppointments(res.data || []))
       .finally(() => setLoading(false));
   };
@@ -41,44 +39,23 @@ export default function AdminAppointments() {
   };
 
   const columns = [
+    { key: 'customer', label: 'Cliente', render: (row) => row.customers?.users?.name || '—' },
+    { key: 'service', label: 'Serviço', render: (row) => row.services?.name || '—' },
+    { key: 'professional', label: 'Profissional', render: (row) => row.professionals?.name || '—' },
+    { key: 'start_time', label: 'Início', render: (row) => format(new Date(row.start_time), 'dd/MM/yyyy HH:mm') },
+    { key: 'status', label: 'Status', render: (row) => <Badge value={row.status} /> },
     {
-      key: 'customer',
-      label: 'Cliente',
-      render: (row) => row.customers?.users?.name || '—',
-    },
-    {
-      key: 'service',
-      label: 'Serviço',
-      render: (row) => row.services?.name || '—',
-    },
-    {
-      key: 'professional',
-      label: 'Profissional',
-      render: (row) => row.professionals?.name || '—',
-    },
-    {
-      key: 'start_time',
-      label: 'Início',
-      render: (row) => format(new Date(row.start_time), 'dd/MM/yyyy HH:mm'),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (row) => <Badge value={row.status} />,
-    },
-    {
-      key: 'actions',
-      label: 'Ação',
+      key: 'actions', label: '',
       render: (row) =>
         !['cancelled', 'completed'].includes(row.status) ? (
           <select
             value=""
             onChange={(e) => e.target.value && handleStatusUpdate(row.id, e.target.value)}
-            className="text-xs bg-gray-800 border border-gray-700 text-gray-300 rounded px-2 py-1"
+            className="text-xs bg-white border border-gray-300 text-gray-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Alterar...</option>
             {STATUS_OPTIONS.filter((s) => s !== row.status).map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
         ) : null,
@@ -91,14 +68,14 @@ export default function AdminAppointments() {
         <h1 className="page-title">Agendamentos</h1>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-3 mb-5">
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           className="input-base max-w-xs"
         >
           <option value="">Todos os status</option>
-          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
         </select>
         <input
           type="date"
@@ -109,12 +86,7 @@ export default function AdminAppointments() {
       </div>
 
       <Card padding={false}>
-        <Table
-          columns={columns}
-          data={appointments}
-          loading={loading}
-          emptyMessage="Nenhum agendamento encontrado."
-        />
+        <Table columns={columns} data={appointments} loading={loading} emptyMessage="Nenhum agendamento encontrado." />
       </Card>
     </div>
   );
