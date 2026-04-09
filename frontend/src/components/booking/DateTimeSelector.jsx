@@ -4,20 +4,20 @@ import { ptBR } from 'date-fns/locale';
 import { publicEstablishmentsService } from '@/services/establishments.service';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-export default function DateTimeSelector({ establishmentId, professionalId, serviceId, onSelect }) {
+export default function DateTimeSelector({ establishmentId, professionalId, serviceId, onSelect, theme }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const next14Days = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i + 1));
+  const next14Days = Array.from({ length: 14 }, (_, index) => addDays(new Date(), index + 1));
 
   useEffect(() => {
-    if (!selectedDate || !professionalId || !serviceId) return;
+    if (!selectedDate || !serviceId) return;
 
     setLoadingSlots(true);
     publicEstablishmentsService
       .getSlots(establishmentId, {
-        professionalId,
+        professionalId: professionalId || undefined,
         serviceId,
         date: format(selectedDate, 'yyyy-MM-dd'),
       })
@@ -27,46 +27,82 @@ export default function DateTimeSelector({ establishmentId, professionalId, serv
   }, [selectedDate, establishmentId, professionalId, serviceId]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h3 className="text-lg font-semibold text-gray-100 mb-3">Escolha a Data</h3>
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {next14Days.map((day) => (
-            <button
-              key={day.toISOString()}
-              onClick={() => setSelectedDate(day)}
-              className={`shrink-0 flex flex-col items-center p-3 rounded-xl border w-16 transition-all ${
-                selectedDate && isSameDay(selectedDate, day)
-                  ? 'border-blue-500 bg-blue-500/10'
-                  : 'border-gray-800 bg-gray-900 hover:border-gray-700'
-              }`}
-            >
-              <span className="text-xs text-gray-400 capitalize">
-                {format(day, 'EEE', { locale: ptBR })}
-              </span>
-              <span className="text-lg font-bold text-gray-100">{format(day, 'd')}</span>
-              <span className="text-xs text-gray-500">{format(day, 'MMM', { locale: ptBR })}</span>
-            </button>
-          ))}
+        <p className="mb-3 text-xs uppercase tracking-wide font-medium" style={{ color: '#9CA3AF' }}>
+          Escolha a data
+        </p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {next14Days.map((day) => {
+            const isSelected = selectedDate && isSameDay(selectedDate, day);
+
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => setSelectedDate(day)}
+                className="flex w-14 shrink-0 flex-col items-center rounded-lg border p-2.5 transition-all"
+                style={isSelected
+                  ? {
+                      borderColor: theme?.primaryColor || '#111827',
+                      backgroundColor: theme?.accentColor || '#111827',
+                      color: theme?.accentTextColor || '#FFFFFF',
+                    }
+                  : {
+                      borderColor: theme?.subtleBorder || '#E5E7EB',
+                      backgroundColor: '#FFFFFF',
+                      color: '#374151',
+                    }}
+              >
+                <span className="text-xs capitalize" style={{ color: isSelected ? 'rgba(255,255,255,0.72)' : '#9CA3AF' }}>
+                  {format(day, 'EEE', { locale: ptBR })}
+                </span>
+                <span className="mt-0.5 text-base font-bold" style={{ color: isSelected ? (theme?.accentTextColor || '#FFFFFF') : '#111827' }}>
+                  {format(day, 'd')}
+                </span>
+                <span className="text-xs capitalize" style={{ color: isSelected ? 'rgba(255,255,255,0.72)' : '#9CA3AF' }}>
+                  {format(day, 'MMM', { locale: ptBR })}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {selectedDate && (
+      {selectedDate ? (
         <div>
-          <h3 className="text-lg font-semibold text-gray-100 mb-3">Escolha o Horário</h3>
+          <p className="mb-3 text-xs uppercase tracking-wide font-medium" style={{ color: '#9CA3AF' }}>
+            Horarios disponiveis
+          </p>
           {loadingSlots ? (
             <LoadingSpinner />
-          ) : slots.filter((s) => s.available).length === 0 ? (
-            <p className="text-gray-500 text-sm py-4">Nenhum horário disponível para este dia.</p>
+          ) : slots.filter((slot) => slot.available).length === 0 ? (
+            <p className="py-4 text-sm" style={{ color: '#9CA3AF' }}>
+              Nenhum horario disponivel para este dia.
+            </p>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {slots
-                .filter((s) => s.available)
+                .filter((slot) => slot.available)
                 .map((slot) => (
                   <button
                     key={slot.start}
                     onClick={() => onSelect({ date: selectedDate, slot })}
-                    className="p-2.5 rounded-lg border border-gray-800 bg-gray-900 hover:border-blue-500 hover:bg-blue-500/10 text-sm font-medium text-gray-200 transition-all"
+                    className="rounded-lg border p-2.5 text-sm font-medium transition-all"
+                    style={{
+                      borderColor: theme?.subtleBorder || '#E5E7EB',
+                      backgroundColor: '#FFFFFF',
+                      color: theme?.accentColor || '#374151',
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.borderColor = theme?.primaryColor || '#111827';
+                      event.currentTarget.style.backgroundColor = theme?.accentColor || '#111827';
+                      event.currentTarget.style.color = theme?.accentTextColor || '#FFFFFF';
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.borderColor = theme?.subtleBorder || '#E5E7EB';
+                      event.currentTarget.style.backgroundColor = '#FFFFFF';
+                      event.currentTarget.style.color = theme?.accentColor || '#374151';
+                    }}
                   >
                     {format(new Date(slot.start), 'HH:mm')}
                   </button>
@@ -74,7 +110,7 @@ export default function DateTimeSelector({ establishmentId, professionalId, serv
             </div>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

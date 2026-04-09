@@ -35,6 +35,20 @@ router.post(
   appointmentsController.book
 );
 
+// Reschedule (customer only)
+router.patch(
+  '/:id/reschedule',
+  authMiddleware,
+  roleMiddleware('customer'),
+  [
+    body('professionalId').isUUID().withMessage('professionalId inválido.'),
+    body('serviceId').isUUID().withMessage('serviceId inválido.'),
+    body('startTime').isISO8601().withMessage('startTime deve ser uma data ISO válida.'),
+  ],
+  validate,
+  appointmentsController.reschedule
+);
+
 // Cancel (customer or admin)
 router.patch(
   '/:id/cancel',

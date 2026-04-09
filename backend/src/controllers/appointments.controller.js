@@ -31,6 +31,19 @@ class AppointmentsController {
     }
   }
 
+  async reschedule(req, res, next) {
+    try {
+      const result = await appointmentsService.reschedule(
+        req.params.id,
+        req.user.userId,
+        req.body
+      );
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async cancel(req, res, next) {
     try {
       const result = await appointmentsService.cancel(

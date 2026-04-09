@@ -1,68 +1,125 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { customersService } from '@/services/customers.service';
 
-// Layouts
 import SuperAdminLayout from '@/layouts/SuperAdminLayout';
 import AdminLayout from '@/layouts/AdminLayout';
 import CustomerLayout from '@/layouts/CustomerLayout';
-import PublicLayout from '@/layouts/PublicLayout';
+import TenantLayout from '@/layouts/TenantLayout';
 
-// Auth pages
 import Login from '@/pages/auth/Login';
 import SuperAdminLogin from '@/pages/auth/SuperAdminLogin';
 import Register from '@/pages/auth/Register';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
 
-// Super Admin pages
 import SuperAdminDashboard from '@/pages/super-admin/Dashboard';
 import SuperAdminEstablishments from '@/pages/super-admin/Establishments';
 import EstablishmentForm from '@/pages/super-admin/EstablishmentForm';
 import EstablishmentDetail from '@/pages/super-admin/EstablishmentDetail';
 import SuperAdminUsers from '@/pages/super-admin/Users';
 
-// Admin pages
 import AdminDashboard from '@/pages/admin/Dashboard';
 import AdminProfessionals from '@/pages/admin/Professionals';
 import AdminServices from '@/pages/admin/Services';
 import AdminAppointments from '@/pages/admin/Appointments';
 import AdminCustomers from '@/pages/admin/Customers';
 import AdminSettings from '@/pages/admin/Settings';
+import AdminPlans from '@/pages/admin/Plans';
+import AdminBranches from '@/pages/admin/Branches';
+import AdminFinancial from '@/pages/admin/Financial';
 
-// Customer pages
 import CustomerDashboard from '@/pages/customer/Dashboard';
+import CustomerAppointments from '@/pages/customer/Appointments';
+import CustomerProfile from '@/pages/customer/Profile';
+import CustomerClub from '@/pages/customer/Club';
+import CustomerPlan from '@/pages/customer/Plan';
 
-// Public pages
 import EstablishmentPage from '@/pages/public/EstablishmentPage';
 import BookingFlow from '@/pages/public/BookingFlow';
+import TenantLogin from '@/pages/public/TenantLogin';
+import TenantRegister from '@/pages/public/TenantRegister';
+import TenantPlans from '@/pages/public/TenantPlans';
 
-// Misc
 import NotFound from '@/pages/NotFound';
 
-// Redireciona /admin → /admin/:slug do usuário logado
 function AdminRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
+
   if (loading) return <LoadingSpinner fullScreen />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== 'establishment_admin') return <Navigate to="/" replace />;
   if (!user?.establishmentSlug) return <Navigate to="/login" replace />;
-  return <Navigate to={`/admin/${user.establishmentSlug}`} replace />;
+
+  return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
 }
 
 function PrivateRoute({ children, roles }) {
   const { isAuthenticated, user, loading } = useAuth();
   const params = useParams();
+  const location = useLocation();
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/acesso-negado" replace />;
 
-  // Garante que admin só acessa o próprio slug
+  if (!isAuthenticated) {
+    const tenantLogin = params.slug ? `/${params.slug}/login` : '/login';
+    return <Navigate to={tenantLogin} state={{ from: location.pathname }} replace />;
+  }
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/acesso-negado" replace />;
+  }
+
   if (user.role === 'establishment_admin' && params.slug && params.slug !== user.establishmentSlug) {
-    return <Navigate to={`/admin/${user.establishmentSlug}`} replace />;
+    return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
   }
 
   return children;
+}
+
+function LegacyTenantRedirect() {
+  const { slug, '*': rest } = useParams();
+  const suffix = rest ? `/${rest}` : '';
+  return <Navigate to={`/${slug}${suffix}`} replace />;
+}
+
+function LegacyAdminRedirect() {
+  const { slug, '*': rest } = useParams();
+  const suffix = rest ? `/${rest}` : '';
+  return <Navigate to={`/${slug}/admin${suffix}`} replace />;
+}
+
+function CustomerTenantRedirect() {
+  const { user } = useAuth();
+  const [targetSlug, setTargetSlug] = useState(() => localStorage.getItem('activeEstablishmentSlug'));
+  const [loading, setLoading] = useState(!targetSlug);
+
+  useEffect(() => {
+    if (targetSlug || user?.role !== 'customer') {
+      setLoading(false);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        const establishments = await customersService.getMyEstablishments();
+        const firstSlug = establishments?.[0]?.slug || null;
+        if (firstSlug) {
+          localStorage.setItem('activeEstablishmentSlug', firstSlug);
+          setTargetSlug(firstSlug);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [targetSlug, user]);
+
+  if (loading) return <LoadingSpinner fullScreen />;
+  if (targetSlug) return <Navigate to={`/${targetSlug}/cliente`} replace />;
+  return <Navigate to="/login" replace />;
 }
 
 export default function AppRoutes() {
@@ -73,25 +130,30 @@ export default function AppRoutes() {
   const getDefaultRedirect = () => {
     if (!user) return '/login';
     if (user.role === 'super_admin') return '/super-admin';
-    if (user.role === 'establishment_admin') return '/admin';
-    return '/minha-conta';
+    if (user.role === 'establishment_admin') return `/${user.establishmentSlug}/admin`;
+
+    const activeSlug = localStorage.getItem('activeEstablishmentSlug');
+    return activeSlug ? `/${activeSlug}/cliente` : '/minha-conta';
   };
 
   return (
     <Routes>
-      {/* Public routes */}
-      <Route element={<PublicLayout />}>
-        <Route path="/agendamento/:slug" element={<EstablishmentPage />} />
-        <Route path="/agendamento/:slug/agendar" element={<BookingFlow />} />
+      <Route path="/agendamento/:slug/*" element={<LegacyTenantRedirect />} />
+      <Route path="/admin/:slug/*" element={<LegacyAdminRedirect />} />
+
+      <Route path="/:slug" element={<TenantLayout />}>
+        <Route index element={<EstablishmentPage />} />
+        <Route path="agendar" element={<BookingFlow />} />
+        <Route path="planos" element={<TenantPlans />} />
+        <Route path="login" element={<TenantLogin />} />
+        <Route path="cadastro" element={<TenantRegister />} />
       </Route>
 
-      {/* Auth routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/super-admin/login" element={<SuperAdminLogin />} />
       <Route path="/cadastro" element={<Register />} />
       <Route path="/recuperar-senha" element={<ForgotPassword />} />
 
-      {/* Super Admin routes */}
       <Route
         path="/super-admin"
         element={
@@ -108,9 +170,8 @@ export default function AppRoutes() {
         <Route path="usuarios" element={<SuperAdminUsers />} />
       </Route>
 
-      {/* Admin routes — /admin/:slug/* */}
       <Route
-        path="/admin/:slug"
+        path="/:slug/admin"
         element={
           <PrivateRoute roles={['establishment_admin']}>
             <AdminLayout />
@@ -122,15 +183,25 @@ export default function AppRoutes() {
         <Route path="servicos" element={<AdminServices />} />
         <Route path="agendamentos" element={<AdminAppointments />} />
         <Route path="clientes" element={<AdminCustomers />} />
+        <Route path="clube" element={<AdminPlans />} />
+        <Route path="filiais" element={<AdminBranches />} />
+        <Route path="financeiro" element={<AdminFinancial />} />
         <Route path="configuracoes" element={<AdminSettings />} />
       </Route>
 
-      {/* Redirect /admin sem slug para o slug do usuário */}
       <Route path="/admin" element={<AdminRedirect />} />
 
-      {/* Customer routes */}
       <Route
-        path="/minha-conta"
+        path="/minha-conta/*"
+        element={
+          <PrivateRoute roles={['customer']}>
+            <CustomerTenantRedirect />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/:slug/cliente"
         element={
           <PrivateRoute roles={['customer']}>
             <CustomerLayout />
@@ -138,12 +209,13 @@ export default function AppRoutes() {
         }
       >
         <Route index element={<CustomerDashboard />} />
+        <Route path="agendamentos" element={<CustomerAppointments />} />
+        <Route path="perfil" element={<CustomerProfile />} />
+        <Route path="clube" element={<CustomerClub />} />
+        <Route path="plano" element={<CustomerPlan />} />
       </Route>
 
-      {/* Root redirect */}
       <Route path="/" element={<Navigate to={getDefaultRedirect()} replace />} />
-
-      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

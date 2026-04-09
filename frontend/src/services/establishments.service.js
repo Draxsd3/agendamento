@@ -25,6 +25,26 @@ export const establishmentsService = {
     const res = await api.patch(`/super-admin/establishments/${id}/status`, { status });
     return res.data;
   },
+
+  getMine: async () => {
+    const res = await api.get('/establishments/me');
+    return res.data;
+  },
+
+  updateMine: async (data) => {
+    const res = await api.put('/establishments/me', data);
+    return res.data;
+  },
+
+  uploadLogo: async ({ fileName, contentType, base64 }) => {
+    const res = await api.post('/establishments/me/logo', { fileName, contentType, base64 });
+    return res.data;
+  },
+
+  uploadCover: async ({ fileName, contentType, base64 }) => {
+    const res = await api.post('/establishments/me/cover', { fileName, contentType, base64 });
+    return res.data;
+  },
 };
 
 export const publicEstablishmentsService = {
@@ -50,6 +70,11 @@ export const publicEstablishmentsService = {
 
   getSlots: async (id, params) => {
     const res = await api.get(`/public/establishments/${id}/slots`, { params });
+    return res.data;
+  },
+
+  getBranches: async (id) => {
+    const res = await api.get(`/public/establishments/${id}/branches`);
     return res.data;
   },
 };

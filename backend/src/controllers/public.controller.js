@@ -3,6 +3,7 @@ const professionalsService = require('../services/professionals.service');
 const servicesService = require('../services/services.service');
 const businessHoursService = require('../services/business-hours.service');
 const appointmentsService = require('../services/appointments.service');
+const branchesRepo = require('../repositories/branches.repository');
 
 class PublicController {
   async getEstablishmentBySlug(req, res, next) {
@@ -42,6 +43,13 @@ class PublicController {
     } catch (err) {
       next(err);
     }
+  }
+
+  async getPublicBranches(req, res, next) {
+    try {
+      const branches = await branchesRepo.findByEstablishment(req.params.establishmentId);
+      res.json(branches.filter((b) => b.is_active));
+    } catch (err) { next(err); }
   }
 
   async getAvailableSlots(req, res, next) {

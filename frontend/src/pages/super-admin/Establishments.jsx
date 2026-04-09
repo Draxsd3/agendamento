@@ -79,7 +79,7 @@ export default function SuperAdminEstablishments() {
             </button>
           )}
           <a
-            href={`/agendamento/${row.slug}`}
+            href={`/${row.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-600 hover:text-gray-300 transition-colors"

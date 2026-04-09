@@ -10,6 +10,9 @@ const router = Router({ mergeParams: true });
 router.get('/profile', authMiddleware, roleMiddleware('customer'), customersController.getProfile);
 router.put('/profile', authMiddleware, roleMiddleware('customer'), customersController.updateProfile);
 
+// My establishments + plans (via appointment history)
+router.get('/my-establishments', authMiddleware, roleMiddleware('customer'), customersController.getMyEstablishments);
+
 // Admin: list establishment customers
 router.get(
   '/establishment/:establishmentId',

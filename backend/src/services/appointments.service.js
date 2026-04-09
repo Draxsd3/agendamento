@@ -2,10 +2,35 @@ const appointmentsRepo = require('../repositories/appointments.repository');
 const servicesRepo = require('../repositories/services.repository');
 const businessHoursRepo = require('../repositories/business-hours.repository');
 const customersRepo = require('../repositories/customers.repository');
+const supabase = require('../config/supabase');
 
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 class AppointmentsService {
+  async _resolvePlanAdjustedPrice({ customerId, establishmentId, serviceId, basePrice }) {
+    let totalPrice = Number(basePrice);
+
+    const { data: activeSubs } = await supabase
+      .from('subscriptions')
+      .select('plan_id, plans(discount_percent, plan_services(service_id, price_override))')
+      .eq('customer_id', customerId)
+      .eq('establishment_id', establishmentId)
+      .eq('status', 'active')
+      .limit(1);
+
+    if (activeSubs && activeSubs.length > 0) {
+      const plan = activeSubs[0].plans;
+      const planSvc = (plan?.plan_services || []).find((ps) => ps.service_id === serviceId);
+      if (planSvc) {
+        totalPrice = planSvc.price_override !== null ? Number(planSvc.price_override) : 0;
+      } else if (plan?.discount_percent > 0) {
+        totalPrice = totalPrice * (1 - plan.discount_percent / 100);
+      }
+    }
+
+    return totalPrice;
+  }
+
   async getByEstablishment(establishmentId, filters) {
     return appointmentsRepo.findByEstablishment(establishmentId, filters);
   }
@@ -20,7 +45,7 @@ class AppointmentsService {
     return appointmentsRepo.findByCustomer(customer.id);
   }
 
-  async book({ establishmentId, userId, professionalId, serviceId, startTime }) {
+  async book({ establishmentId, userId, professionalId, serviceId, startTime, branchId }) {
     // Resolve customer
     const customer = await customersRepo.findByUserId(userId);
     if (!customer) {
@@ -51,14 +76,23 @@ class AppointmentsService {
       throw err;
     }
 
+    const totalPrice = await this._resolvePlanAdjustedPrice({
+      customerId: customer.id,
+      establishmentId,
+      serviceId,
+      basePrice: service.price,
+    });
+
     return appointmentsRepo.create({
       establishment_id: establishmentId,
       customer_id: customer.id,
       professional_id: professionalId,
       service_id: serviceId,
+      branch_id: branchId || null,
       start_time: start.toISOString(),
       end_time: end.toISOString(),
       status: 'pending',
+      total_price: totalPrice,
     });
   }
 
@@ -86,6 +120,67 @@ class AppointmentsService {
     }
 
     return appointmentsRepo.update(appointmentId, { status: 'cancelled' });
+  }
+
+  async reschedule(appointmentId, userId, { professionalId, serviceId, startTime }) {
+    const appointment = await appointmentsRepo.findById(appointmentId);
+    if (!appointment) {
+      const err = new Error('Agendamento não encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const customer = await customersRepo.findByUserId(userId);
+    if (appointment.customer_id !== customer?.id) {
+      const err = new Error('Acesso negado.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    if (['completed', 'cancelled'].includes(appointment.status)) {
+      const err = new Error(`Não é possível editar um agendamento com status "${appointment.status}".`);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const service = await servicesRepo.findByIdAndEstablishment(serviceId, appointment.establishment_id);
+    if (!service || !service.is_active) {
+      const err = new Error('Serviço não encontrado ou inativo.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const start = new Date(startTime);
+    const end = new Date(start.getTime() + service.duration_minutes * 60 * 1000);
+
+    await this._validateBusinessHours(appointment.establishment_id, start, end);
+
+    const hasConflict = await appointmentsRepo.checkConflict(
+      professionalId,
+      start.toISOString(),
+      end.toISOString(),
+      appointmentId
+    );
+    if (hasConflict) {
+      const err = new Error('Horário indisponível. O profissional já possui um agendamento nesse período.');
+      err.statusCode = 409;
+      throw err;
+    }
+
+    const totalPrice = await this._resolvePlanAdjustedPrice({
+      customerId: customer.id,
+      establishmentId: appointment.establishment_id,
+      serviceId,
+      basePrice: service.price,
+    });
+
+    return appointmentsRepo.update(appointmentId, {
+      professional_id: professionalId,
+      service_id: serviceId,
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      total_price: totalPrice,
+    });
   }
 
   async updateStatus(appointmentId, status, establishmentId) {

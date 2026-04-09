@@ -31,5 +31,6 @@ router.post(
 );
 
 router.delete('/:id/services/:serviceId', professionalsController.removeService);
+router.post('/:id/avatar', professionalsController.uploadAvatar);
 
 module.exports = router;

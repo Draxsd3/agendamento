@@ -16,6 +16,11 @@ export const appointmentsService = {
     return res.data;
   },
 
+  reschedule: async (id, data) => {
+    const res = await api.patch(`/appointments/${id}/reschedule`, data);
+    return res.data;
+  },
+
   cancel: async (id) => {
     const res = await api.patch(`/appointments/${id}/cancel`);
     return res.data;

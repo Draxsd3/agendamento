@@ -17,8 +17,9 @@ export default function Register() {
     try {
       await registerUser(data);
       toast.success('Conta criada com sucesso!');
+      const activeSlug = localStorage.getItem('activeEstablishmentSlug');
       const from = location.state?.from;
-      navigate(from || '/minha-conta', { replace: true });
+      navigate(from || (activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'), { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.error || 'Erro ao criar conta.');
     }

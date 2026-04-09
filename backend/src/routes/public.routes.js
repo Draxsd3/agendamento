@@ -9,5 +9,6 @@ router.get('/establishments/:establishmentId/services', publicController.getPubl
 router.get('/establishments/:establishmentId/professionals', publicController.getPublicProfessionals);
 router.get('/establishments/:establishmentId/business-hours', publicController.getPublicBusinessHours);
 router.get('/establishments/:establishmentId/slots', publicController.getAvailableSlots);
+router.get('/establishments/:establishmentId/branches', publicController.getPublicBranches);
 
 module.exports = router;

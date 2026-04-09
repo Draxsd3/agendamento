@@ -1,6 +1,6 @@
-export default function Card({ children, className = '', padding = true }) {
+export default function Card({ children, className = '', padding = true, ...props }) {
   return (
-    <div className={`card ${padding ? 'p-6' : ''} ${className}`}>
+    <div className={`card ${padding ? 'p-6' : ''} ${className}`} {...props}>
       {children}
     </div>
   );

@@ -15,8 +15,10 @@ export default function Login() {
 
   const getRedirect = (loggedUser) => {
     const from = location.state?.from;
+    const activeSlug = localStorage.getItem('activeEstablishmentSlug');
     if (from && loggedUser.role === 'customer') return from;
-    if (loggedUser.role === 'establishment_admin') return `/admin/${loggedUser.establishmentSlug}`;
+    if (loggedUser.role === 'establishment_admin') return `/${loggedUser.establishmentSlug}/admin`;
+    if (activeSlug) return `/${activeSlug}/cliente`;
     return '/minha-conta';
   };
 

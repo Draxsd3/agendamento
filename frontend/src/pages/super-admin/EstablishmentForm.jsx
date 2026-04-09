@@ -87,7 +87,7 @@ export default function EstablishmentForm() {
             label="Slug (URL)"
             placeholder="barbearia-alpha"
             required
-            hint="Usado na URL pública: /agendamento/{slug}"
+            hint="Usado na URL pública: /{slug}"
             error={errors.slug?.message}
             {...register('slug', {
               required: 'Slug é obrigatório.',

@@ -62,6 +62,15 @@ class ProfessionalsController {
     }
   }
 
+  async uploadAvatar(req, res, next) {
+    try {
+      const result = await professionalsService.uploadAvatar(
+        req.params.id, req.establishmentId, req.body
+      );
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   async removeService(req, res, next) {
     try {
       await professionalsService.removeService(req.params.id, req.params.serviceId, req.establishmentId);

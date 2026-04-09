@@ -19,6 +19,15 @@ class EstablishmentsController {
     }
   }
 
+  async getMine(req, res, next) {
+    try {
+      const result = await establishmentsService.getAdminEstablishment(req.user.establishmentId);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async create(req, res, next) {
     try {
       const result = await establishmentsService.create(req.body);
@@ -31,6 +40,33 @@ class EstablishmentsController {
   async update(req, res, next) {
     try {
       const result = await establishmentsService.update(req.params.id, req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateMine(req, res, next) {
+    try {
+      const result = await establishmentsService.updateBranding(req.user.establishmentId, req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async uploadLogo(req, res, next) {
+    try {
+      const result = await establishmentsService.uploadLogo(req.user.establishmentId, req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async uploadCover(req, res, next) {
+    try {
+      const result = await establishmentsService.uploadCover(req.user.establishmentId, req.body);
       res.json(result);
     } catch (err) {
       next(err);

@@ -127,8 +127,8 @@ export default function EstablishmentDetail() {
     );
   }
 
-  const bookingUrl = `${origin}/agendamento/${establishment.slug}`;
-  const loginUrl = `${origin}/login`;           // admin do estabelecimento e clientes
+  const bookingUrl = `${origin}/${establishment.slug}`;
+  const loginUrl = `${origin}/${establishment.slug}/login`;           // admin do estabelecimento e clientes
   const superAdminLoginUrl = `${origin}/super-admin/login`; // exclusivo super admin
 
   return (

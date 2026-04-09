@@ -28,4 +28,9 @@ export const professionalsService = {
   removeService: async (id, serviceId) => {
     await api.delete(`/professionals/${id}/services/${serviceId}`);
   },
+
+  uploadAvatar: async (id, { fileName, contentType, base64 }) => {
+    const res = await api.post(`/professionals/${id}/avatar`, { fileName, contentType, base64 });
+    return res.data;
+  },
 };
