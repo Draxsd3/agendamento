@@ -46,6 +46,15 @@ class SuperAdminController {
     }
   }
 
+  async updateEstablishment(req, res, next) {
+    try {
+      const result = await superAdminService.updateEstablishment(req.params.id, req.body);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async createAdminUser(req, res, next) {
     try {
       const result = await superAdminService.createAdminUser(req.body);

@@ -18,20 +18,35 @@ router.get('/establishments/:id/admins', superAdminController.getEstablishmentAd
 router.post(
   '/establishments',
   [
-    body('name').trim().notEmpty().withMessage('Nome é obrigatório.'),
+    body('name').trim().notEmpty().withMessage('Nome \u00e9 obrigat\u00f3rio.'),
     body('slug')
       .trim()
       .notEmpty()
       .matches(/^[a-z0-9]+(-[a-z0-9]+)*$/)
-      .withMessage('Slug deve conter apenas letras minúsculas, números e hífens.'),
+      .withMessage('Slug deve conter apenas letras min\u00fasculas, n\u00fameros e h\u00edfens.'),
   ],
   validate,
   superAdminController.createEstablishment
 );
 
+router.put(
+  '/establishments/:id',
+  [
+    body('name').optional().trim().notEmpty().withMessage('Nome \u00e9 obrigat\u00f3rio.'),
+    body('slug')
+      .optional()
+      .trim()
+      .notEmpty()
+      .matches(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+      .withMessage('Slug deve conter apenas letras min\u00fasculas, n\u00fameros e h\u00edfens.'),
+  ],
+  validate,
+  superAdminController.updateEstablishment
+);
+
 router.patch(
   '/establishments/:id/status',
-  [body('status').isIn(['active', 'inactive', 'suspended']).withMessage('Status inválido.')],
+  [body('status').isIn(['active', 'inactive', 'suspended']).withMessage('Status inv\u00e1lido.')],
   validate,
   superAdminController.setEstablishmentStatus
 );
@@ -41,10 +56,10 @@ router.get('/users', superAdminController.getAllUsers);
 router.post(
   '/users/admin',
   [
-    body('name').trim().notEmpty().withMessage('Nome é obrigatório.'),
-    body('email').isEmail().normalizeEmail().withMessage('Email inválido.'),
+    body('name').trim().notEmpty().withMessage('Nome \u00e9 obrigat\u00f3rio.'),
+    body('email').isEmail().normalizeEmail().withMessage('Email inv\u00e1lido.'),
     body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres.'),
-    body('establishmentId').isUUID().withMessage('establishmentId inválido.'),
+    body('establishmentId').isUUID().withMessage('establishmentId inv\u00e1lido.'),
   ],
   validate,
   superAdminController.createAdminUser
