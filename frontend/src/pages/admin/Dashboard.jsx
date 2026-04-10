@@ -37,7 +37,7 @@ function initials(name = '') {
 function MiniBarChart({ data, loading }) {
   if (loading) {
     return (
-      <div className="flex items-end gap-1.5 h-20">
+      <div className="flex items-end gap-2 h-40">
         {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="flex-1 bg-gray-100 rounded-t animate-pulse"
             style={{ height: `${30 + Math.random() * 70}%` }} />
@@ -50,14 +50,17 @@ function MiniBarChart({ data, loading }) {
   const max = Math.max(...data.map((d) => d.count), 1);
 
   return (
-    <div className="flex items-end gap-1.5 h-20">
+    <div className="flex items-end gap-2 h-40">
       {data.map((d) => (
-        <div key={d.date} className="flex-1 flex flex-col items-center gap-1 group relative" style={{ height: '100%' }}>
-          <div className="absolute bottom-0 w-full flex flex-col items-center">
+        <div
+          key={d.date}
+          className="group relative flex flex-1 items-end h-full"
+        >
+          <div className="flex items-end w-full h-full">
             <div
               className="w-full rounded-t transition-all cursor-default"
               style={{
-                height: `${Math.max((d.count / max) * 100, 6)}%`,
+                height: d.count === 0 ? '0%' : `${Math.max((d.count / max) * 100, 8)}%`,
                 backgroundColor: 'rgb(17 24 39)', // gray-900
                 opacity: d.isToday ? 1 : 0.25,
               }}

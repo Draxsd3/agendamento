@@ -189,7 +189,7 @@ export default function AdminSettings() {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-none">
       {/* page header */}
       <div>
         <h1 className="page-title">Configurações</h1>
@@ -197,10 +197,10 @@ export default function AdminSettings() {
       </div>
 
       {/* ── BRANDING CARD ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_400px] gap-6 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
 
         {/* left: settings */}
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
 
           {/* ── Section 1: fotos ── */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -416,20 +416,30 @@ export default function AdminSettings() {
         </div>
 
         {/* right: sticky preview */}
-        <div className="hidden xl:block sticky top-8">
-          <div className="mb-3 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-            <p className="text-xs font-medium text-gray-500">Preview ao vivo</p>
+        <div className="hidden xl:block min-w-0 sticky top-8">
+          <div className="rounded-[30px] border border-gray-200 bg-gradient-to-b from-white to-gray-50 p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+                <p className="text-xs font-medium text-gray-500">Preview ao vivo</p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-gray-400 shadow-sm">
+                Layout 50/50
+              </span>
+            </div>
+
+            <div className="rounded-[28px] bg-white/70 p-3">
+              {loading ? (
+                <div className="h-80 bg-white rounded-[24px] border border-gray-200 animate-pulse" />
+              ) : (
+                <CustomerAreaPreview
+                  establishment={branding}
+                  branding={brandingTheme}
+                  slug={branding.slug}
+                />
+              )}
+            </div>
           </div>
-          {loading ? (
-            <div className="h-80 bg-white rounded-xl border border-gray-200 animate-pulse" />
-          ) : (
-            <CustomerAreaPreview
-              establishment={branding}
-              branding={brandingTheme}
-              slug={branding.slug}
-            />
-          )}
         </div>
       </div>
 
