@@ -5,11 +5,11 @@ import { publicEstablishmentsService } from '@/services/establishments.service';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function DateTimeSelector({ establishmentId, professionalId, serviceId, onSelect, theme }) {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [slots, setSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const next14Days = Array.from({ length: 14 }, (_, index) => addDays(new Date(), index + 1));
+  const next14Days = Array.from({ length: 14 }, (_, index) => addDays(new Date(), index));
 
   useEffect(() => {
     if (!selectedDate || !serviceId) return;
