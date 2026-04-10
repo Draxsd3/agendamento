@@ -28,6 +28,8 @@ DECLARE
   v_service_retoque_id UUID;
 
   v_plan_bronze_id UUID;
+  v_plan_silver_id UUID;
+  v_plan_gold_id UUID;
 
   v_user_beatriz_id UUID;
   v_user_lucas_id UUID;
@@ -37,6 +39,7 @@ DECLARE
   v_customer_lucas_id UUID;
   v_customer_amanda_id UUID;
 
+  v_day_offset INTEGER;
   v_today_sp DATE := timezone('America/Sao_Paulo', now())::date;
   v_month_start DATE := date_trunc('month', timezone('America/Sao_Paulo', now()))::date;
 BEGIN
@@ -266,10 +269,89 @@ BEGIN
   WHERE establishment_id = v_establishment_id AND name = 'Plano Bronze'
   LIMIT 1;
 
+  INSERT INTO plans (
+    establishment_id,
+    name,
+    description,
+    price,
+    billing_interval,
+    max_appointments,
+    discount_percent,
+    benefits,
+    is_active
+  )
+  SELECT
+    v_establishment_id,
+    'Plano Silver',
+    'Plano intermediario para clientes que tatuam com frequencia e buscam prioridade.',
+    119.90,
+    'monthly',
+    4,
+    15.00,
+    ARRAY[
+      '15% de desconto em tatuagens avulsas',
+      '1 retoque com valor especial por mes',
+      'Prioridade em encaixes durante a semana'
+    ]::TEXT[],
+    true
+  WHERE NOT EXISTS (
+    SELECT 1 FROM plans WHERE establishment_id = v_establishment_id AND name = 'Plano Silver'
+  );
+
+  INSERT INTO plans (
+    establishment_id,
+    name,
+    description,
+    price,
+    billing_interval,
+    max_appointments,
+    discount_percent,
+    benefits,
+    is_active
+  )
+  SELECT
+    v_establishment_id,
+    'Plano Gold',
+    'Plano premium com vantagens em sessoes longas, piercings e atendimento prioritario.',
+    189.90,
+    'monthly',
+    6,
+    20.00,
+    ARRAY[
+      '20% de desconto em tatuagens selecionadas',
+      'Piercing com preco promocional',
+      'Janela exclusiva para atendimento em horario nobre'
+    ]::TEXT[],
+    true
+  WHERE NOT EXISTS (
+    SELECT 1 FROM plans WHERE establishment_id = v_establishment_id AND name = 'Plano Gold'
+  );
+
+  SELECT id
+  INTO v_plan_silver_id
+  FROM plans
+  WHERE establishment_id = v_establishment_id AND name = 'Plano Silver'
+  LIMIT 1;
+
+  SELECT id
+  INTO v_plan_gold_id
+  FROM plans
+  WHERE establishment_id = v_establishment_id AND name = 'Plano Gold'
+  LIMIT 1;
+
   INSERT INTO plan_services (plan_id, service_id, price_override)
   VALUES
     (v_plan_bronze_id, v_service_piercing_id, 90.00),
     (v_plan_bronze_id, v_service_retoque_id, 70.00)
+  ON CONFLICT (plan_id, service_id) DO UPDATE
+  SET price_override = EXCLUDED.price_override;
+
+  INSERT INTO plan_services (plan_id, service_id, price_override)
+  VALUES
+    (v_plan_silver_id, v_service_fine_line_id, 150.00),
+    (v_plan_silver_id, v_service_retoque_id, 60.00),
+    (v_plan_gold_id, v_service_sessao_id, 199.00),
+    (v_plan_gold_id, v_service_piercing_id, 80.00)
   ON CONFLICT (plan_id, service_id) DO UPDATE
   SET price_override = EXCLUDED.price_override;
 
@@ -325,6 +407,52 @@ BEGIN
     FROM subscriptions
     WHERE customer_id = v_customer_beatriz_id
       AND plan_id = v_plan_bronze_id
+      AND status = 'active'
+  );
+
+  INSERT INTO subscriptions (
+    customer_id,
+    plan_id,
+    establishment_id,
+    status,
+    started_at,
+    expires_at
+  )
+  SELECT
+    v_customer_lucas_id,
+    v_plan_gold_id,
+    v_establishment_id,
+    'active',
+    (((v_month_start + 3) + time '11:00') AT TIME ZONE 'America/Sao_Paulo'),
+    (((((v_month_start + 3) + interval '1 month')::date) + time '11:00') AT TIME ZONE 'America/Sao_Paulo')
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM subscriptions
+    WHERE customer_id = v_customer_lucas_id
+      AND plan_id = v_plan_gold_id
+      AND status = 'active'
+  );
+
+  INSERT INTO subscriptions (
+    customer_id,
+    plan_id,
+    establishment_id,
+    status,
+    started_at,
+    expires_at
+  )
+  SELECT
+    v_customer_amanda_id,
+    v_plan_silver_id,
+    v_establishment_id,
+    'active',
+    (((v_month_start + 5) + time '12:00') AT TIME ZONE 'America/Sao_Paulo'),
+    (((((v_month_start + 5) + interval '1 month')::date) + time '12:00') AT TIME ZONE 'America/Sao_Paulo')
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM subscriptions
+    WHERE customer_id = v_customer_amanda_id
+      AND plan_id = v_plan_silver_id
       AND status = 'active'
   );
 
@@ -451,4 +579,102 @@ BEGIN
       180.00
     );
   END IF;
+
+  -- Historico retroativo para popular dashboards e graficos
+  FOR v_day_offset IN 2..21 LOOP
+    IF EXTRACT(ISODOW FROM (v_today_sp - v_day_offset)) < 7 THEN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM appointments
+        WHERE establishment_id = v_establishment_id
+          AND start_time = (((v_today_sp - v_day_offset) + time '11:00') AT TIME ZONE 'America/Sao_Paulo')
+      ) THEN
+        INSERT INTO appointments (
+          establishment_id, customer_id, professional_id, service_id, branch_id,
+          start_time, end_time, status, notes, total_price, payment_method
+        )
+        VALUES (
+          v_establishment_id,
+          CASE
+            WHEN MOD(v_day_offset, 3) = 0 THEN v_customer_beatriz_id
+            WHEN MOD(v_day_offset, 3) = 1 THEN v_customer_lucas_id
+            ELSE v_customer_amanda_id
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 3) = 0 THEN v_prof_camila_id
+            WHEN MOD(v_day_offset, 3) = 1 THEN v_prof_rafael_id
+            ELSE v_prof_danilo_id
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 3) = 0 THEN v_service_fine_line_id
+            WHEN MOD(v_day_offset, 3) = 1 THEN v_service_sessao_id
+            ELSE v_service_piercing_id
+          END,
+          v_branch_id,
+          (((v_today_sp - v_day_offset) + time '11:00') AT TIME ZONE 'America/Sao_Paulo'),
+          (((v_today_sp - v_day_offset) + time '12:30') AT TIME ZONE 'America/Sao_Paulo'),
+          'completed',
+          'Atendimento retroativo gerado para popular dashboards.',
+          CASE
+            WHEN MOD(v_day_offset, 3) = 0 THEN 150.00
+            WHEN MOD(v_day_offset, 3) = 1 THEN 250.00
+            ELSE 90.00
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 4) = 0 THEN 'pix'
+            WHEN MOD(v_day_offset, 4) = 1 THEN 'cartao_credito'
+            WHEN MOD(v_day_offset, 4) = 2 THEN 'cartao_debito'
+            ELSE 'plano'
+          END
+        );
+      END IF;
+
+      IF MOD(v_day_offset, 2) = 0 AND NOT EXISTS (
+        SELECT 1
+        FROM appointments
+        WHERE establishment_id = v_establishment_id
+          AND start_time = (((v_today_sp - v_day_offset) + time '14:30') AT TIME ZONE 'America/Sao_Paulo')
+      ) THEN
+        INSERT INTO appointments (
+          establishment_id, customer_id, professional_id, service_id, branch_id,
+          start_time, end_time, status, notes, total_price, payment_method
+        )
+        VALUES (
+          v_establishment_id,
+          CASE
+            WHEN MOD(v_day_offset, 4) IN (0, 1) THEN v_customer_beatriz_id
+            ELSE v_customer_lucas_id
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 4) = 0 THEN v_prof_rafael_id
+            WHEN MOD(v_day_offset, 4) = 1 THEN v_prof_camila_id
+            WHEN MOD(v_day_offset, 4) = 2 THEN v_prof_danilo_id
+            ELSE v_prof_rafael_id
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 4) = 0 THEN v_service_sessao_id
+            WHEN MOD(v_day_offset, 4) = 1 THEN v_service_fine_line_id
+            WHEN MOD(v_day_offset, 4) = 2 THEN v_service_piercing_id
+            ELSE v_service_retoque_id
+          END,
+          v_branch_id,
+          (((v_today_sp - v_day_offset) + time '14:30') AT TIME ZONE 'America/Sao_Paulo'),
+          (((v_today_sp - v_day_offset) + time '15:30') AT TIME ZONE 'America/Sao_Paulo'),
+          'completed',
+          'Atendimento adicional retroativo para compor receita e recorrencia.',
+          CASE
+            WHEN MOD(v_day_offset, 4) = 0 THEN 199.00
+            WHEN MOD(v_day_offset, 4) = 1 THEN 180.00
+            WHEN MOD(v_day_offset, 4) = 2 THEN 80.00
+            ELSE 90.00
+          END,
+          CASE
+            WHEN MOD(v_day_offset, 3) = 0 THEN 'dinheiro'
+            WHEN MOD(v_day_offset, 3) = 1 THEN 'pix'
+            ELSE 'cartao_credito'
+          END
+        );
+      END IF;
+    END IF;
+  END LOOP;
 END $$;
