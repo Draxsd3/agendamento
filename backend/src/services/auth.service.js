@@ -46,7 +46,7 @@ class AuthService {
     return { user: sanitizeUser(user), customer, token };
   }
 
-  async login({ email, password }) {
+  async login({ email, password, slug }) {
     const user = await usersRepo.findByEmail(email);
     if (!user) {
       const err = new Error('Credenciais inválidas.');
@@ -82,6 +82,13 @@ class AuthService {
           id:   data.establishments.id,
           slug: data.establishments.slug,
         };
+      }
+
+      // If a tenant slug was provided (login via tenant page), enforce establishment ownership
+      if (slug && establishment.slug !== slug) {
+        const err = new Error('Esta conta de administrador não pertence a este estabelecimento.');
+        err.statusCode = 403;
+        throw err;
       }
     }
 

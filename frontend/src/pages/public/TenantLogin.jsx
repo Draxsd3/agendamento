@@ -35,7 +35,7 @@ export default function TenantLogin() {
 
   const onSubmit = async (data) => {
     try {
-      const loggedUser = await login(data);
+      const loggedUser = await login({ ...data, slug });
       if (loggedUser.role === 'super_admin') {
         toast.error('Use o acesso exclusivo do Super Admin.');
         localStorage.removeItem('token');

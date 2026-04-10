@@ -71,8 +71,13 @@ function PrivateRoute({ children, roles }) {
     return <Navigate to="/acesso-negado" replace />;
   }
 
-  if (user.role === 'establishment_admin' && params.slug && params.slug !== user.establishmentSlug) {
-    return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
+  if (user.role === 'establishment_admin') {
+    if (!user.establishmentSlug) {
+      return <Navigate to="/login" replace />;
+    }
+    if (params.slug && params.slug !== user.establishmentSlug) {
+      return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
+    }
   }
 
   return children;
