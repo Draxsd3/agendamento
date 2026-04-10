@@ -5,6 +5,7 @@ import { CalendarCheck, Mail, Lock, User, Phone } from 'lucide-react';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function Register() {
   const { register: registerUser } = useAuth();
@@ -21,7 +22,7 @@ export default function Register() {
       const from = location.state?.from;
       navigate(from || (activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'), { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao criar conta.');
+      toast.error(getErrorMessage(err));
     }
   };
 

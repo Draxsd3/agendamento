@@ -5,6 +5,7 @@ import { customersService } from '@/services/customers.service';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOutletContext } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 function FieldRow({ label, children, branding }) {
   return (
@@ -80,7 +81,7 @@ export default function CustomerProfile() {
           notes: data.notes || '',
         });
       })
-      .catch(() => toast.error('Erro ao carregar perfil.'))
+      .catch((err) => toast.error(getErrorMessage(err, 'Erro ao carregar perfil.')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -99,7 +100,7 @@ export default function CustomerProfile() {
       await customersService.updateProfile({ ...form, address: addressJson });
       toast.success('Perfil atualizado!');
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao salvar.');
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }

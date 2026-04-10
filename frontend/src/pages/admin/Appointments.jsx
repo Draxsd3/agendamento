@@ -9,6 +9,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -212,7 +213,7 @@ export default function AdminAppointments() {
       toast.success(`Marcado como: ${label}`);
       load();
     } catch {
-      toast.error('Erro ao atualizar status.');
+      toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };
 

@@ -6,6 +6,7 @@ import {
 import { financialService } from '@/services/financial.service';
 import { branchesService } from '@/services/branches.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const fmt = (v) =>
@@ -244,7 +245,7 @@ export default function AdminFinancial() {
       setByProfessional(p);
       setByService(sv);
     } catch {
-      toast.error('Erro ao carregar dados financeiros.');
+      toast.error(getErrorMessage(err, 'Erro ao carregar dados financeiros.'));
     } finally {
       setLoadingMain(false);
     }
@@ -260,7 +261,7 @@ export default function AdminFinancial() {
       const res = await financialService.getTransactions(params);
       setTransactions(res);
     } catch {
-      toast.error('Erro ao carregar transações.');
+      toast.error(getErrorMessage(err, 'Erro ao carregar transações.'));
     } finally {
       setLoadingTx(false);
     }

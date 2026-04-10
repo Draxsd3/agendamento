@@ -9,6 +9,7 @@ import { professionalsService } from '@/services/professionals.service';
 import { servicesService } from '@/services/services.service';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 function initials(name = '') {
   return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
@@ -99,18 +100,18 @@ export default function AdminProfessionals() {
       toast.success(editTarget ? 'Profissional atualizado.' : 'Profissional criado.');
       setShowModal(false);
       load();
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setSavingServices(false); }
   };
 
   const handleToggle = async (prof) => {
     try { await professionalsService.update(prof.id, { is_active: !prof.is_active }); load(); }
-    catch { toast.error('Erro ao atualizar.'); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   };
   const handleDelete = async (id) => {
     if (!confirm('Deseja excluir este profissional?')) return;
     try { await professionalsService.delete(id); toast.success('Profissional removido.'); load(); }
-    catch { toast.error('Erro ao excluir.'); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   return (

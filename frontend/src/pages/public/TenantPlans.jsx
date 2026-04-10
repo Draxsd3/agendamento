@@ -8,6 +8,7 @@ import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const INTERVAL_LABEL = {
   monthly: 'mes',
@@ -59,7 +60,7 @@ export default function TenantPlans() {
       toast.success(`Plano "${confirmPlan.name}" assinado!`);
       setConfirmPlan(null);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao assinar plano.');
+      toast.error(getErrorMessage(err));
     } finally {
       setSubscribing(false);
     }

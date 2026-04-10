@@ -7,6 +7,7 @@ import Input from '@/components/common/Input';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { branchesService } from '@/services/branches.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const EMPTY_FORM = {
   name: '',
@@ -30,7 +31,7 @@ export default function AdminBranches() {
     setLoading(true);
     branchesService.getAll()
       .then(setBranches)
-      .catch(() => toast.error('Erro ao carregar filiais.'))
+      .catch((err) => toast.error(getErrorMessage(err, 'Erro ao carregar filiais.')))
       .finally(() => setLoading(false));
   };
 
@@ -73,7 +74,7 @@ export default function AdminBranches() {
       setModal(null);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao salvar.');
+      toast.error(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -87,7 +88,7 @@ export default function AdminBranches() {
       setDeleteTarget(null);
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao remover.');
+      toast.error(getErrorMessage(err));
     }
   };
 

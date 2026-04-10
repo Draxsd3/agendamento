@@ -7,6 +7,7 @@ import Badge from '@/components/common/Badge';
 import Button from '@/components/common/Button';
 import { establishmentsService } from '@/services/establishments.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function SuperAdminEstablishments() {
   const [data, setData] = useState([]);
@@ -27,8 +28,8 @@ export default function SuperAdminEstablishments() {
       await establishmentsService.setStatus(id, status);
       toast.success('Status atualizado.');
       load();
-    } catch {
-      toast.error('Erro ao atualizar status.');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };
 

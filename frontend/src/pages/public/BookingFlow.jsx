@@ -12,6 +12,7 @@ import BookingConfirmation from '@/components/booking/BookingConfirmation';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { getBrandingTheme } from '@/utils/branding';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const STEPS = ['Filial', 'Servico', 'Profissional', 'Horario', 'Confirmar'];
 
@@ -124,7 +125,7 @@ export default function BookingFlow() {
       toast.success('Agendamento realizado!');
       navigate(`/${slug}/cliente`);
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao agendar. Tente outro horario.');
+      toast.error(getErrorMessage(error, 'Erro ao agendar. Tente outro horário.'));
     } finally {
       setConfirming(false);
     }

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function TenantLogin() {
   const { slug } = useParams();
@@ -44,7 +45,7 @@ export default function TenantLogin() {
       }
       navigate(getRedirect(loggedUser), { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao fazer login.');
+      toast.error(getErrorMessage(err));
     }
   };
 

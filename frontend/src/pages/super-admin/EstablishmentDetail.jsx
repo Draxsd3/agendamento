@@ -24,6 +24,7 @@ import { establishmentsService } from '@/services/establishments.service';
 import { superAdminService } from '@/services/super-admin.service';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 function CopyField({ label, value, href }) {
   const [copied, setCopied] = useState(false);
@@ -87,7 +88,7 @@ export default function EstablishmentDetail() {
       setEstablishment(estab);
       setAdmins(adminsData);
     } catch (err) {
-      toast.error('Estabelecimento não encontrado.');
+      toast.error(getErrorMessage(err, 'Estabelecimento não encontrado.'));
       navigate('/super-admin/estabelecimentos');
     } finally {
       setLoading(false);
@@ -103,7 +104,7 @@ export default function EstablishmentDetail() {
       setEstablishment(updated);
       toast.success(`Estabelecimento ${next === 'active' ? 'ativado' : 'inativado'}.`);
     } catch {
-      toast.error('Erro ao atualizar status.');
+      toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };
 
@@ -115,7 +116,7 @@ export default function EstablishmentDetail() {
       reset();
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao criar usuário.');
+      toast.error(getErrorMessage(err));
     }
   };
 

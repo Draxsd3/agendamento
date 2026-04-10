@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { plansService } from '@/services/plans.service';
 import { servicesService } from '@/services/services.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const EMPTY_FORM = {
   name: '', description: '', price: '', billing_interval: 'monthly',
@@ -53,7 +54,7 @@ export default function AdminPlans() {
         servicesService.getAll(),
       ]);
       setPlans(p); setSubscribers(s); setAllServices(svc);
-    } catch { toast.error('Erro ao carregar planos.'); }
+    } catch (err) { toast.error(getErrorMessage(err, 'Erro ao carregar planos.')); }
     finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
@@ -69,13 +70,13 @@ export default function AdminPlans() {
       await plansService.addPlanService(modal.id, addServiceId, addServicePrice !== '' ? Number(addServicePrice) : null);
       setAddServiceId(''); setAddServicePrice('');
       loadPlanServices(modal.id);
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao adicionar serviço.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   const handleRemovePlanService = async (serviceId) => {
     if (typeof modal !== 'object') return;
     try { await plansService.removePlanService(modal.id, serviceId); loadPlanServices(modal.id); }
-    catch (err) { toast.error(err.response?.data?.error || 'Erro ao remover.'); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   const openCreate = () => { setPlanServices([]); setForm(EMPTY_FORM); setModal('create'); };
@@ -111,14 +112,14 @@ export default function AdminPlans() {
       if (modal === 'create') { await plansService.create(payload); toast.success('Plano criado!'); }
       else                    { await plansService.update(modal.id, payload); toast.success('Plano atualizado!'); }
       setModal(null); load();
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try { await plansService.delete(deleteTarget.id); toast.success('Plano removido.'); setDeleteTarget(null); load(); }
-    catch (err) { toast.error(err.response?.data?.error || 'Erro ao remover.'); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   if (loading) return <LoadingSpinner />;

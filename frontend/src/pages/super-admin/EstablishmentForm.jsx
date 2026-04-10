@@ -7,6 +7,7 @@ import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import { establishmentsService } from '@/services/establishments.service';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function EstablishmentForm() {
   const { id } = useParams();
@@ -55,7 +56,7 @@ export default function EstablishmentForm() {
       }
       navigate('/super-admin/estabelecimentos');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao salvar.');
+      toast.error(getErrorMessage(err));
     }
   };
 

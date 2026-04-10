@@ -10,6 +10,7 @@ import { superAdminService } from '@/services/super-admin.service';
 import { establishmentsService } from '@/services/establishments.service';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const roleLabel = {
   super_admin: 'Super Admin',
@@ -109,7 +110,7 @@ export default function SuperAdminUsers() {
       toast.success('Status atualizado.');
       load();
     } catch {
-      toast.error('Erro ao atualizar status.');
+      toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };
 
@@ -121,7 +122,7 @@ export default function SuperAdminUsers() {
       reset();
       load();
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao criar usuario.');
+      toast.error(getErrorMessage(err));
     }
   };
 

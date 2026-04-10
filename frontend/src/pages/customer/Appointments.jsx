@@ -11,6 +11,7 @@ import DateTimeSelector from '@/components/booking/DateTimeSelector';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const TABS = [
   { key: 'upcoming', label: 'Agendados' },
@@ -56,7 +57,7 @@ function AppointmentEdit({ appt, branding, onBack, onSaved }) {
         setPlanServices(activeSubscription?.plans?.plan_services || []);
         setPlanDiscountPercent(Number(activeSubscription?.plans?.discount_percent || 0));
       } catch {
-        toast.error('Erro ao carregar dados do estabelecimento.');
+        toast.error(getErrorMessage(err, 'Erro ao carregar dados do estabelecimento.'));
       } finally {
         setLoadingData(false);
       }
@@ -84,7 +85,7 @@ function AppointmentEdit({ appt, branding, onBack, onSaved }) {
       toast.success('Agendamento atualizado!');
       onSaved();
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao reagendar.');
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -333,7 +334,7 @@ export default function CustomerAppointments() {
     appointmentsService
       .getMyAppointments()
       .then(setAppointments)
-      .catch(() => toast.error('Erro ao carregar agendamentos.'))
+      .catch((err) => toast.error(getErrorMessage(err, 'Erro ao carregar agendamentos.')))
       .finally(() => setLoading(false));
   };
 
@@ -348,7 +349,7 @@ export default function CustomerAppointments() {
       setSelected(null);
       load();
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao cancelar.');
+      toast.error(getErrorMessage(error));
     }
   };
 

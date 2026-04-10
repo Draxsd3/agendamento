@@ -5,6 +5,7 @@ import { ShieldCheck, Mail, Lock } from 'lucide-react';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function SuperAdminLogin() {
   const { login, isAuthenticated, user } = useAuth();
@@ -32,7 +33,7 @@ export default function SuperAdminLogin() {
       }
       navigate('/super-admin', { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Credenciais inválidas.');
+      toast.error(getErrorMessage(err));
     }
   };
 

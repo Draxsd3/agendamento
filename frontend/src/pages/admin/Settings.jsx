@@ -2,16 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   Camera, Palette, Sparkles, Building2, Clock,
-  Image, Type, Check, ChevronRight,
+  Image, Type, Check,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CustomerAreaPreview from '@/components/branding/CustomerAreaPreview';
-import CustomerBrandPanel from '@/components/branding/CustomerBrandPanel';
-import Input from '@/components/common/Input';
 import api from '@/services/api';
 import { establishmentsService } from '@/services/establishments.service';
 import { extractPaletteFromImageSource, getBrandingTheme } from '@/utils/branding';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const WEEKDAYS = [
@@ -46,24 +45,6 @@ function fileToBase64(file) {
   });
 }
 
-// ─── Section header ───────────────────────────────────────────────────────────
-function SectionHeader({ number, title, description, primary }) {
-  return (
-    <div className="flex items-start gap-4">
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold text-white mt-0.5"
-        style={{ backgroundColor: primary }}
-      >
-        {number}
-      </div>
-      <div>
-        <p className="font-semibold text-gray-900">{title}</p>
-        <p className="text-sm text-gray-400 mt-0.5">{description}</p>
-      </div>
-    </div>
-  );
-}
-
 // ─── Save button ──────────────────────────────────────────────────────────────
 function SaveButton({ loading, onClick, children, primary }) {
   return (
@@ -85,7 +66,7 @@ function SaveButton({ loading, onClick, children, primary }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminSettings() {
   const { user } = useAuth();
-  const ctx      = useOutletContext() || {};
+  useOutletContext();
 
   const [hours,    setHours]    = useState(defaultHours);
   const [branding, setBranding] = useState(defaultBranding);
@@ -129,7 +110,7 @@ export default function AdminSettings() {
           booking_heading:    establishment.booking_heading   || '',
           booking_subheading: establishment.booking_subheading || '',
         });
-      } catch { toast.error('Erro ao carregar configurações.'); }
+      } catch (err) { toast.error(getErrorMessage(err, 'Erro ao carregar configurações.')); }
       finally  { setLoading(false); }
     };
     load();
@@ -158,7 +139,7 @@ export default function AdminSettings() {
         setBranding((prev) => ({ ...prev, primary_color: palette.primary, accent_color: palette.accent }));
       } catch {}
       toast.success('Logo atualizada!');
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao enviar logo.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
     finally { URL.revokeObjectURL(previewUrl); setUploadingLogo(false); }
   };
 
@@ -174,14 +155,14 @@ export default function AdminSettings() {
       const uploaded = await establishmentsService.uploadCover({ fileName: file.name, contentType: file.type, base64 });
       setBranding((prev) => ({ ...prev, cover_url: uploaded.cover_url }));
       toast.success('Capa atualizada!');
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao enviar capa.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setUploadingCover(false); }
   };
 
   const handleSaveHours = async () => {
     setSavingHours(true);
     try { await api.put('/business-hours', { hours }); toast.success('Horários salvos.'); }
-    catch { toast.error('Erro ao salvar horários.'); }
+    catch (err) { toast.error(getErrorMessage(err, 'Erro ao salvar horários.')); }
     finally { setSavingHours(false); }
   };
 
@@ -202,7 +183,7 @@ export default function AdminSettings() {
         booking_subheading: updated.booking_subheading || '',
       }));
       toast.success('Identidade visual salva.');
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setSavingBranding(false); }
   };
 

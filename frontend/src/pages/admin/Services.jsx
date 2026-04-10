@@ -7,6 +7,7 @@ import Input from '@/components/common/Input';
 import { servicesService } from '@/services/services.service';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const fmt = (v) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v ?? 0);
@@ -48,13 +49,13 @@ export default function AdminServices() {
       else            { await servicesService.create(payload); toast.success('Serviço criado.'); }
       setShowModal(false);
       load();
-    } catch (err) { toast.error(err.response?.data?.error || 'Erro ao salvar.'); }
+    } catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Deseja excluir este serviço?')) return;
     try { await servicesService.delete(id); toast.success('Serviço removido.'); load(); }
-    catch { toast.error('Erro ao excluir.'); }
+    catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   return (

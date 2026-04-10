@@ -14,6 +14,7 @@ import { customersService } from '@/services/customers.service';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const INTERVAL_LABEL = { monthly: 'mes', quarterly: 'trimestre', annual: 'ano' };
 
@@ -164,7 +165,7 @@ export default function CustomerClub() {
       setSubscriptions(subscriptionData);
       setMyEstablishments(establishmentData);
     } catch {
-      toast.error('Erro ao carregar dados.');
+      toast.error(getErrorMessage(err, 'Erro ao carregar dados.'));
     } finally {
       setLoading(false);
     }
@@ -191,7 +192,7 @@ export default function CustomerClub() {
         }]);
       }
     } catch {
-      toast.error('Estabelecimento nao encontrado.');
+      toast.error(getErrorMessage(err, 'Estabelecimento não encontrado.'));
       setSearchEstabs([]);
     } finally {
       setSearchLoading(false);
@@ -209,7 +210,7 @@ export default function CustomerClub() {
       setSearchSlug('');
       await loadAll();
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao assinar.');
+      toast.error(getErrorMessage(error));
     } finally {
       setSubscribing(false);
     }
@@ -224,7 +225,7 @@ export default function CustomerClub() {
       setCancelTarget(null);
       await loadAll();
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Erro ao cancelar.');
+      toast.error(getErrorMessage(error));
     } finally {
       setCancelling(false);
     }

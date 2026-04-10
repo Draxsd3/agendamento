@@ -11,6 +11,7 @@ import Card from '@/components/common/Card';
 import Modal from '@/components/common/Modal';
 import { getBrandingTheme } from '@/utils/branding';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils/errors';
 
 const WEEKDAY_LABELS = {
   sunday: 'Dom', monday: 'Seg', tuesday: 'Ter', wednesday: 'Qua',
@@ -86,7 +87,7 @@ export default function EstablishmentPage() {
       const subs = await subscriptionsService.getMine().catch(() => []);
       setMySubscriptions(subs);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Erro ao assinar plano.');
+      toast.error(getErrorMessage(err));
     } finally {
       setSubscribing(false);
     }
