@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { appointmentsService } from '@/services/appointments.service';
 import { financialService } from '@/services/financial.service';
@@ -103,13 +103,18 @@ function KpiCard({ icon: Icon, label, value, sub, accent, loading }) {
 }
 
 // ─── today appointment row ────────────────────────────────────────────────────
-function AgendaRow({ appt, onStatusChange }) {
+function AgendaRow({ appt, onStatusChange, onOpenAppointments }) {
   const cfg  = STATUS_CONFIG[appt.status] || STATUS_CONFIG.pending;
   const name = appt.customers?.users?.name || '—';
-  const time = format(new Date(appt.start_time), 'HH:mm');
-  const isDone = ['completed', 'cancelled'].includes(appt.status);
+  const startTime = new Date(appt.start_time);
+  const time = format(startTime, 'HH:mm');
+  const hasStarted = startTime.getTime() <= Date.now();
+  const isDone = ['completed', 'cancelled', 'no_show'].includes(appt.status);
+  const shouldAskAttendance = hasStarted && ['pending', 'confirmed'].includes(appt.status);
 
-  const STATUS_OPTIONS = ['confirmed', 'completed', 'no_show', 'cancelled'];
+  const STATUS_OPTIONS = hasStarted
+    ? ['confirmed', 'completed', 'no_show', 'cancelled']
+    : ['confirmed', 'cancelled'];
   const STATUS_LABELS  = { pending: 'Pendente', confirmed: 'Confirmado', completed: 'Concluído', no_show: 'Não compareceu', cancelled: 'Cancelado' };
 
   return (
@@ -131,7 +136,7 @@ function AgendaRow({ appt, onStatusChange }) {
       </div>
 
       {/* status + action */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex flex-col items-end gap-2 shrink-0">
         <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg ${
           appt.status === 'pending'   ? 'bg-amber-50  text-amber-700'  :
           appt.status === 'confirmed' ? 'bg-blue-50   text-blue-700'   :
@@ -142,7 +147,37 @@ function AgendaRow({ appt, onStatusChange }) {
           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
           {cfg.label}
         </span>
-        {!isDone && (
+
+        {shouldAskAttendance ? (
+          <div className="flex flex-col items-end gap-2">
+            <span className="text-[11px] font-medium text-gray-500">
+              Cliente compareceu?
+            </span>
+            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => onStatusChange(appt.id, 'completed')}
+                className="rounded-lg bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700 transition-colors hover:bg-green-100"
+              >
+                Sim
+              </button>
+              <button
+                type="button"
+                onClick={() => onStatusChange(appt.id, 'no_show')}
+                className="rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100"
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenAppointments(appt.id)}
+                className="rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                Reagendar
+              </button>
+            </div>
+          </div>
+        ) : !isDone && (
           <select
             defaultValue=""
             onChange={(e) => e.target.value && onStatusChange(appt.id, e.target.value)}
@@ -162,6 +197,7 @@ function AgendaRow({ appt, onStatusChange }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { establishment, branding } = useOutletContext() || {};
 
   const [allAppts,    setAllAppts]    = useState([]);
@@ -208,7 +244,7 @@ export default function AdminDashboard() {
   })();
 
   // ── KPI counts ────────────────────────────────────────────────────────────
-  const todayActive  = todayAppts.filter((a) => !['cancelled'].includes(a.status)).length;
+  const todayActive  = todayAppts.filter((a) => ['pending', 'confirmed'].includes(a.status)).length;
   const pendingCount = allAppts.filter((a) => a.status === 'pending').length;
   const confirmedCount = allAppts.filter((a) => a.status === 'confirmed').length;
 
@@ -227,6 +263,10 @@ export default function AdminDashboard() {
 
   const primary = branding?.primaryColor || '#2563EB';
   const accent  = branding?.accentColor  || '#0F172A';
+
+  const handleOpenAppointments = () => {
+    navigate(`/${user?.establishmentSlug}/admin/agendamentos`);
+  };
 
   return (
     <div className="space-y-6">
@@ -344,7 +384,12 @@ export default function AdminDashboard() {
           ) : (
             <div className="p-2 space-y-0.5 max-h-80 overflow-y-auto">
               {todayAppts.map((appt) => (
-                <AgendaRow key={appt.id} appt={appt} onStatusChange={handleStatusChange} />
+                <AgendaRow
+                  key={appt.id}
+                  appt={appt}
+                  onStatusChange={handleStatusChange}
+                  onOpenAppointments={handleOpenAppointments}
+                />
               ))}
             </div>
           )}

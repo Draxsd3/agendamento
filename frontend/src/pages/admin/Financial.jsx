@@ -93,13 +93,13 @@ function BarChart({ data, loading }) {
       {data.map((d) => (
         <div
           key={d.date}
-          className="flex-1 group relative flex flex-col items-center"
+          className="group relative flex flex-1 items-end h-full"
           style={{ height: '100%' }}
         >
-          <div className="absolute bottom-0 w-full flex flex-col items-center">
+          <div className="flex items-end w-full h-full">
             <div
               className="w-full bg-gray-900 rounded-t transition-all hover:opacity-80 cursor-default"
-              style={{ height: `${Math.max((d.total / max) * 100, 2)}%` }}
+              style={{ height: d.total === 0 ? '0%' : `${Math.max((d.total / max) * 100, 6)}%` }}
             />
           </div>
           {/* tooltip */}
