@@ -16,8 +16,12 @@ class SubscriptionsController {
   // Customer: subscribe to a plan
   async subscribe(req, res, next) {
     try {
-      const { plan_id } = req.body;
-      const data = await subscriptionsService.subscribe(req.user.userId, plan_id);
+      const { plan_id, success_url, cancel_url, expired_url } = req.body;
+      const data = await subscriptionsService.subscribe(req.user.userId, plan_id, {
+        success_url,
+        cancel_url,
+        expired_url,
+      });
       res.status(201).json(data);
     } catch (err) {
       next(err);
@@ -55,6 +59,20 @@ class SubscriptionsController {
       }
       const data = await plansService.getAll(establishment.id, true);
       res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async asaasWebhook(req, res, next) {
+    try {
+      const authToken =
+        req.headers['asaas-access-token'] ||
+        req.headers['x-asaas-webhook-token'] ||
+        req.query.token;
+
+      const data = await subscriptionsService.handleAsaasWebhook(req.body, authToken);
+      res.json({ received: true, ...data });
     } catch (err) {
       next(err);
     }

@@ -42,6 +42,8 @@ export default function CustomerProfile() {
     phone: '',
     cpf: '',
     date_of_birth: '',
+    city: '',
+    province: '',
     cep: '',
     street: '',
     number: '',
@@ -74,6 +76,8 @@ export default function CustomerProfile() {
           phone: data.phone || '',
           cpf: data.cpf || '',
           date_of_birth: data.date_of_birth ? data.date_of_birth.split('T')[0] : '',
+          city: data.city || '',
+          province: data.province || '',
           cep,
           street,
           number,
@@ -126,10 +130,12 @@ export default function CustomerProfile() {
       <FieldInput label="Email *" branding={branding} type="email" value={form.email} onChange={setField('email')} placeholder={user?.email} />
       <FieldInput label="Telefone *" branding={branding} value={form.phone} onChange={setField('phone')} placeholder="(11) 99999-9999" />
       <FieldInput label="Data nascimento *" branding={branding} type="date" value={form.date_of_birth} onChange={setField('date_of_birth')} />
-      <FieldInput label="CPF" branding={branding} value={form.cpf} onChange={setField('cpf')} placeholder="000.000.000-00" />
-      <FieldInput label="CEP" branding={branding} value={form.cep} onChange={setField('cep')} placeholder="00000-000" />
-      <FieldInput label="Rua" branding={branding} value={form.street} onChange={setField('street')} placeholder="Nome da rua" />
-      <FieldInput label="Numero" branding={branding} value={form.number} onChange={setField('number')} placeholder="123" />
+      <FieldInput label="CPF *" branding={branding} value={form.cpf} onChange={setField('cpf')} placeholder="000.000.000-00" />
+      <FieldInput label="CEP *" branding={branding} value={form.cep} onChange={setField('cep')} placeholder="00000-000" />
+      <FieldInput label="Rua *" branding={branding} value={form.street} onChange={setField('street')} placeholder="Nome da rua" />
+      <FieldInput label="Numero *" branding={branding} value={form.number} onChange={setField('number')} placeholder="123" />
+      <FieldInput label="Bairro *" branding={branding} value={form.province} onChange={setField('province')} placeholder="Centro" />
+      <FieldInput label="Cidade *" branding={branding} value={form.city} onChange={setField('city')} placeholder="Sao Paulo" />
       <FieldInput label="Complemento" branding={branding} value={form.complement} onChange={setField('complement')} placeholder="Apto, bloco..." />
 
       <FieldRow label="Observacoes" branding={branding}>
@@ -141,6 +147,10 @@ export default function CustomerProfile() {
           className="w-full resize-none bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-300"
         />
       </FieldRow>
+
+      <p className="text-xs text-gray-400">
+        CPF, telefone e endereco completo sao obrigatorios para assinar planos via Asaas.
+      </p>
 
       <button
         type="submit"

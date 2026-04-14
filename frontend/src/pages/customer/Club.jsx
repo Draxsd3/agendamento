@@ -164,7 +164,7 @@ export default function CustomerClub() {
       ]);
       setSubscriptions(subscriptionData);
       setMyEstablishments(establishmentData);
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Erro ao carregar dados.'));
     } finally {
       setLoading(false);
@@ -191,7 +191,7 @@ export default function CustomerClub() {
           plans,
         }]);
       }
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Estabelecimento não encontrado.'));
       setSearchEstabs([]);
     } finally {
@@ -203,7 +203,11 @@ export default function CustomerClub() {
     if (!confirmPlan) return;
     setSubscribing(true);
     try {
-      await subscriptionsService.subscribe(confirmPlan.id);
+      const result = await subscriptionsService.subscribe(confirmPlan.id);
+      if (result?.checkout?.url) {
+        window.location.href = result.checkout.url;
+        return;
+      }
       toast.success(`Plano "${confirmPlan.name}" assinado!`);
       setConfirmPlan(null);
       setSearchEstabs([]);
@@ -427,6 +431,9 @@ export default function CustomerClub() {
             Confirmar
           </Button>
         </div>
+        <p className="mt-4 text-xs text-gray-400">
+          Se o checkout nao abrir, complete CPF, telefone e endereco no seu perfil.
+        </p>
       </Modal>
 
       <Modal isOpen={!!cancelTarget} onClose={() => setCancelTarget(null)} title="Cancelar assinatura">

@@ -21,6 +21,21 @@ module.exports = {
   },
 
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origins: (process.env.CORS_ORIGIN || 'http://localhost:5173')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+  },
+
+  asaas: {
+    apiKey: process.env.ASAAS_API_KEY || '',
+    environment: process.env.ASAAS_ENVIRONMENT || 'sandbox',
+    webhookToken: process.env.ASAAS_WEBHOOK_TOKEN || '',
+    checkout: {
+      successUrl: process.env.ASAAS_CHECKOUT_SUCCESS_URL || '',
+      cancelUrl: process.env.ASAAS_CHECKOUT_CANCEL_URL || '',
+      expiredUrl: process.env.ASAAS_CHECKOUT_EXPIRED_URL || '',
+      minutesToExpire: Number(process.env.ASAAS_CHECKOUT_MINUTES_TO_EXPIRE || 30),
+    },
   },
 };

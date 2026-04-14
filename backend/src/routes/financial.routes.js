@@ -14,5 +14,7 @@ router.get('/revenue-by-professional', financialController.getRevenueByProfessio
 router.get('/revenue-by-service',   financialController.getRevenueByService);
 router.get('/transactions',         financialController.getTransactions);
 router.patch('/transactions/:id/payment-method', financialController.updatePaymentMethod);
+router.get('/asaas-subaccount', financialController.getAsaasSubaccount);
+router.post('/asaas-subaccount/sync', financialController.syncAsaasSubaccount);
 
 module.exports = router;

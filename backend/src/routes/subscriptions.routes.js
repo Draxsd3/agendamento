@@ -6,6 +6,7 @@ const ctrl = require('../controllers/subscriptions.controller');
 const router = Router();
 
 // Public: get plans by establishment ID or slug (no auth required)
+router.post('/webhooks/asaas', ctrl.asaasWebhook.bind(ctrl));
 router.get('/public/:establishmentId', ctrl.getPublicPlans.bind(ctrl));
 router.get('/public/slug/:slug', ctrl.getPublicPlansBySlug.bind(ctrl));
 

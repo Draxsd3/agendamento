@@ -54,7 +54,11 @@ export default function TenantPlans() {
 
     setSubscribing(true);
     try {
-      await subscriptionsService.subscribe(confirmPlan.id);
+      const result = await subscriptionsService.subscribe(confirmPlan.id);
+      if (result?.checkout?.url) {
+        window.location.href = result.checkout.url;
+        return;
+      }
       const subs = await subscriptionsService.getMine().catch(() => []);
       setSubscriptions(subs);
       toast.success(`Plano "${confirmPlan.name}" assinado!`);
@@ -222,6 +226,9 @@ export default function TenantPlans() {
             Confirmar assinatura
           </Button>
         </div>
+        <p className="mt-4 text-xs text-gray-400">
+          Se o checkout nao abrir, complete CPF, telefone e endereco no seu perfil.
+        </p>
       </Modal>
     </div>
   );

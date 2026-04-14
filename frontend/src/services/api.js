@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const normalizeBaseUrl = (value) => {
+  if (!value) return '/api/v1';
+  return value.endsWith('/api/v1') ? value : `${value.replace(/\/$/, '')}/api/v1`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: normalizeBaseUrl(import.meta.env.VITE_API_URL),
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 });

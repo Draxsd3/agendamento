@@ -16,6 +16,17 @@ class CustomersRepository extends BaseRepository {
     return data;
   }
 
+  async findByAsaasCustomerId(asaasCustomerId) {
+    const { data, error } = await this.db
+      .from('customers')
+      .select('*, users(id, name, email, is_active)')
+      .eq('asaas_customer_id', asaasCustomerId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
   // Returns unique establishments this customer has appointments with, each with active plans
   async findMyEstablishmentsWithPlans(customerId) {
     // Step 1: get distinct establishment IDs from appointments

@@ -1,6 +1,22 @@
 const customersRepo = require('../repositories/customers.repository');
 const supabase = require('../config/supabase');
 
+const normalizeOptionalValue = (field, value) => {
+  if (value === undefined) return undefined;
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    return trimmed;
+  }
+
+  if (field === 'date_of_birth' && value === '') {
+    return null;
+  }
+
+  return value;
+};
+
 class CustomersController {
   async getMyEstablishments(req, res, next) {
     try {
@@ -39,14 +55,17 @@ class CustomersController {
 
       // Fields that go to the users table
       const userFields = {};
-      if (req.body.name)  userFields.name  = req.body.name;
-      if (req.body.email) userFields.email = req.body.email;
+      const normalizedName = normalizeOptionalValue('name', req.body.name);
+      const normalizedEmail = normalizeOptionalValue('email', req.body.email);
+      if (normalizedName) userFields.name = normalizedName;
+      if (normalizedEmail) userFields.email = normalizedEmail;
 
       // Fields that go to the customers table
       const customerFields = {};
-      const customerAllowed = ['phone', 'date_of_birth', 'cpf', 'gender', 'notes', 'address', 'avatar_url'];
+      const customerAllowed = ['phone', 'date_of_birth', 'cpf', 'gender', 'notes', 'address', 'avatar_url', 'city', 'province'];
       customerAllowed.forEach((f) => {
-        if (req.body[f] !== undefined) customerFields[f] = req.body[f];
+        const normalized = normalizeOptionalValue(f, req.body[f]);
+        if (normalized !== undefined) customerFields[f] = normalized;
       });
 
       // Update users table if needed

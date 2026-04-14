@@ -37,4 +37,14 @@ export const financialService = {
     });
     return res.data;
   },
+
+  getAsaasSubaccount: async (params) => {
+    const res = await api.get('/financial/asaas-subaccount', { params });
+    return res.data;
+  },
+
+  syncAsaasSubaccount: async () => {
+    const res = await api.post('/financial/asaas-subaccount/sync');
+    return res.data;
+  },
 };
