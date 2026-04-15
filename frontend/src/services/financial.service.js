@@ -37,4 +37,21 @@ export const financialService = {
     });
     return res.data;
   },
+
+  getAsaasSubaccount: async (params) => {
+    const res = await api.get('/financial/asaas-subaccount', { params });
+    return res.data;
+  },
+
+  syncAsaasSubaccount: async () => {
+    const res = await api.post('/financial/asaas-subaccount/sync');
+    return res.data;
+  },
+
+  updateAsaasBillingSettings: async (billingMode) => {
+    const res = await api.patch('/financial/asaas-subaccount/billing-settings', {
+      billing_mode: billingMode,
+    });
+    return res.data;
+  },
 };

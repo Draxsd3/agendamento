@@ -17,6 +17,7 @@ const BACKEND_MESSAGES = {
   'Horário não disponível.':                                       'Este horário não está mais disponível. Escolha outro.',
   'Assinatura não encontrada.':                                    'Assinatura não encontrada.',
   'Você já possui uma assinatura ativa.':                          'Você já tem um plano ativo.',
+  'Voce ja possui uma assinatura ativa para este estabelecimento.': 'Voce ja tem um plano ativo neste estabelecimento.',
 };
 
 const STATUS_MESSAGES = {
@@ -42,6 +43,10 @@ export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novament
   }
 
   const backendMessage = err.response?.data?.error;
+
+  if (backendMessage?.startsWith('Complete seu perfil antes de assinar:')) {
+    return backendMessage;
+  }
 
   // Tenta mapear mensagem exata do backend
   if (backendMessage && BACKEND_MESSAGES[backendMessage]) {

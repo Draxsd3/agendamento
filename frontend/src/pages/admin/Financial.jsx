@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   DollarSign, TrendingUp, TrendingDown, CalendarCheck,
-  Users, Scissors, Building2, ChevronDown, RefreshCw,
+  Users, Scissors, Building2, ChevronDown, RefreshCw, CreditCard, ExternalLink,
 } from 'lucide-react';
 import { financialService } from '@/services/financial.service';
 import { branchesService } from '@/services/branches.service';
@@ -212,6 +212,7 @@ export default function AdminFinancial() {
   const [branches,  setBranches]  = useState([]);
 
   const [summary,         setSummary]         = useState(null);
+  const [asaasSubaccount, setAsaasSubaccount] = useState({ configured: false });
   const [byDay,           setByDay]           = useState([]);
   const [byBranch,        setByBranch]        = useState([]);
   const [byProfessional,  setByProfessional]  = useState([]);
@@ -221,10 +222,20 @@ export default function AdminFinancial() {
 
   const [loadingMain, setLoadingMain] = useState(true);
   const [loadingTx,   setLoadingTx]   = useState(true);
+  const [loadingAsaas, setLoadingAsaas] = useState(true);
+  const [savingBillingMode, setSavingBillingMode] = useState(false);
 
   // ── load branches once ────────────────────────────────────────────────────
   useEffect(() => {
     branchesService.getAll().then((res) => setBranches(res.data || res || [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setLoadingAsaas(true);
+    financialService.getAsaasSubaccount()
+      .then(setAsaasSubaccount)
+      .catch(() => setAsaasSubaccount({ configured: false }))
+      .finally(() => setLoadingAsaas(false));
   }, []);
 
   // ── load main data on filter change ──────────────────────────────────────
@@ -273,6 +284,33 @@ export default function AdminFinancial() {
     await financialService.updatePaymentMethod(appointmentId, paymentMethod);
     toast.success('Forma de pagamento registrada.');
     loadTx();
+  };
+
+  const handleSyncAsaas = async () => {
+    setLoadingAsaas(true);
+    try {
+      const result = await financialService.syncAsaasSubaccount();
+      setAsaasSubaccount(result);
+      toast.success('Dados da subconta Asaas atualizados.');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Erro ao sincronizar subconta.'));
+    } finally {
+      setLoadingAsaas(false);
+    }
+  };
+
+  const handleBillingModeChange = async (event) => {
+    const nextMode = event.target.value;
+    setSavingBillingMode(true);
+    try {
+      const result = await financialService.updateAsaasBillingSettings(nextMode);
+      setAsaasSubaccount(result);
+      toast.success('Configuracao de faturamento atualizada.');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Erro ao atualizar faturamento da subconta.'));
+    } finally {
+      setSavingBillingMode(false);
+    }
   };
 
   const totalPages = Math.ceil(transactions.total / 20);
@@ -327,6 +365,104 @@ export default function AdminFinancial() {
       </div>
 
       {/* KPI cards */}
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-700">Subconta Asaas</h2>
+            <p className="text-sm text-gray-500 mt-1">Dados financeiros da conta que recebe as assinaturas do estabelecimento.</p>
+          </div>
+          {asaasSubaccount.configured ? (
+            <button
+              onClick={handleSyncAsaas}
+              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-500"
+              title="Sincronizar Asaas"
+            >
+              <RefreshCw size={16} className={loadingAsaas ? 'animate-spin' : ''} />
+            </button>
+          ) : null}
+        </div>
+
+        {loadingAsaas ? (
+          <div className="h-16 bg-gray-50 rounded animate-pulse" />
+        ) : !asaasSubaccount.configured ? (
+          <div className="rounded-lg border border-dashed border-gray-200 p-4 text-sm text-gray-500 flex items-center gap-3">
+            <CreditCard size={18} className="text-gray-400" />
+            A subconta Asaas ainda nao foi configurada pelo super-admin.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="rounded-lg border border-gray-100 p-4">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Faturamento da subconta</p>
+                  <p className="text-sm text-gray-600">
+                    Escolha como as assinaturas do estabelecimento devem ser operadas dentro da subconta Asaas.
+                  </p>
+                </div>
+                <div className="w-full lg:w-80">
+                  <select
+                    value={asaasSubaccount.billing_mode || 'checkout_recurring'}
+                    onChange={handleBillingModeChange}
+                    disabled={savingBillingMode}
+                    className="input-base w-full text-sm py-2.5"
+                  >
+                    {(asaasSubaccount.billing_mode_options || []).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {(asaasSubaccount.billing_mode_options || []).find(
+                      (option) => option.value === (asaasSubaccount.billing_mode || 'checkout_recurring')
+                    )?.description || 'Defina o modelo de faturamento principal da subconta.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 text-sm">
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Wallet ID</p>
+                <p className="font-mono text-gray-700 break-all">{asaasSubaccount.wallet_id || '—'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Status Geral</p>
+                <p className="font-semibold text-gray-800">{asaasSubaccount.status?.general || 'PENDING'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Documentacao</p>
+                <p className="font-semibold text-gray-800">{asaasSubaccount.status?.documentation || 'PENDING'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">API Key</p>
+                <p className="font-mono text-gray-700 break-all">{asaasSubaccount.api_key_masked || '—'}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {asaasSubaccount.onboarding_links?.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {asaasSubaccount.onboarding_links.map((item) => (
+              <a
+                key={item.id}
+                href={item.onboardingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{item.title || item.type}</p>
+                  <p className="text-xs text-gray-400">{item.status || 'PENDING'}</p>
+                </div>
+                <ExternalLink size={14} className="text-gray-400 shrink-0" />
+              </a>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <KpiCard
           icon={DollarSign}

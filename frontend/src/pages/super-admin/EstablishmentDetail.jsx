@@ -14,6 +14,8 @@ import {
   Pencil,
   ToggleLeft,
   ToggleRight,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import Card, { CardHeader } from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -71,8 +73,27 @@ export default function EstablishmentDetail() {
 
   const [establishment, setEstablishment] = useState(null);
   const [admins, setAdmins] = useState([]);
+  const [asaasSubaccount, setAsaasSubaccount] = useState({ configured: false });
   const [loading, setLoading] = useState(true);
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showAsaasModal, setShowAsaasModal] = useState(false);
+  const [syncingAsaas, setSyncingAsaas] = useState(false);
+  const [creatingAsaas, setCreatingAsaas] = useState(false);
+  const [asaasForm, setAsaasForm] = useState({
+    name: '',
+    email: '',
+    cpfCnpj: '',
+    birthDate: '',
+    companyType: 'MEI',
+    incomeValue: '5000',
+    phone: '',
+    mobilePhone: '',
+    address: '',
+    addressNumber: '',
+    complement: '',
+    province: '',
+    postalCode: '',
+  });
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
 
@@ -87,6 +108,13 @@ export default function EstablishmentDetail() {
       ]);
       setEstablishment(estab);
       setAdmins(adminsData);
+      const subaccount = await superAdminService.getAsaasSubaccount(id).catch(() => ({ configured: false }));
+      setAsaasSubaccount(subaccount);
+      setAsaasForm((current) => ({
+        ...current,
+        name: estab.name || '',
+        phone: estab.phone || '',
+      }));
     } catch (err) {
       toast.error(getErrorMessage(err, 'Estabelecimento não encontrado.'));
       navigate('/super-admin/estabelecimentos');
@@ -117,6 +145,38 @@ export default function EstablishmentDetail() {
       load();
     } catch (err) {
       toast.error(getErrorMessage(err));
+    }
+  };
+
+  const setAsaasField = (field) => (event) => {
+    setAsaasForm((current) => ({ ...current, [field]: event.target.value }));
+  };
+
+  const handleCreateAsaasSubaccount = async (event) => {
+    event.preventDefault();
+    setCreatingAsaas(true);
+    try {
+      const result = await superAdminService.createAsaasSubaccount(id, asaasForm);
+      setAsaasSubaccount(result);
+      setShowAsaasModal(false);
+      toast.success('Subconta Asaas criada com sucesso.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setCreatingAsaas(false);
+    }
+  };
+
+  const handleSyncAsaas = async () => {
+    setSyncingAsaas(true);
+    try {
+      const result = await superAdminService.syncAsaasSubaccount(id);
+      setAsaasSubaccount(result);
+      toast.success('Dados da subconta Asaas atualizados.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setSyncingAsaas(false);
     }
   };
 
@@ -266,6 +326,73 @@ export default function EstablishmentDetail() {
             )}
           </Card>
 
+          <Card>
+            <CardHeader
+              title="Subconta Asaas"
+              description="Conta financeira do estabelecimento para cobrancas e assinaturas."
+              action={
+                asaasSubaccount.configured ? (
+                  <Button size="sm" variant="secondary" icon={RefreshCw} onClick={handleSyncAsaas} loading={syncingAsaas}>
+                    Sincronizar
+                  </Button>
+                ) : (
+                  <Button size="sm" icon={CreditCard} onClick={() => setShowAsaasModal(true)}>
+                    Criar subconta
+                  </Button>
+                )
+              }
+            />
+            {!asaasSubaccount.configured ? (
+              <div className="text-center py-6">
+                <CreditCard size={32} className="text-gray-700 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">Nenhuma subconta Asaas criada.</p>
+                <p className="text-xs text-gray-600 mt-1">Crie a subconta para que o estabelecimento receba os pagamentos na propria conta.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Account ID</p>
+                  <p className="text-gray-200 font-mono break-all">{asaasSubaccount.account_id || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Wallet ID</p>
+                  <p className="text-gray-200 font-mono break-all">{asaasSubaccount.wallet_id || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">API Key</p>
+                  <p className="text-gray-200 font-mono break-all">{asaasSubaccount.api_key_masked || '—'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Status Geral</p>
+                    <p className="text-gray-200">{asaasSubaccount.status?.general || 'PENDING'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Documentacao</p>
+                    <p className="text-gray-200">{asaasSubaccount.status?.documentation || 'PENDING'}</p>
+                  </div>
+                </div>
+                {asaasSubaccount.onboarding_links?.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-gray-500 text-xs uppercase tracking-wider">Links de onboarding</p>
+                    {asaasSubaccount.onboarding_links.map((item) => (
+                      <a
+                        key={item.id}
+                        href={item.onboardingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 rounded-lg border border-gray-800 px-3 py-2 text-gray-300 hover:bg-gray-800/50"
+                      >
+                        <span className="truncate text-xs">{item.title || item.type}</span>
+                        <ExternalLink size={12} className="shrink-0 text-gray-500" />
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </Card>
+
           {/* Quick links */}
           <Card>
             <CardHeader title="Ações rápidas" />
@@ -352,6 +479,43 @@ export default function EstablishmentDetail() {
             </Button>
             <Button type="submit" loading={isSubmitting} icon={UserPlus}>
               Criar usuário
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={showAsaasModal}
+        onClose={() => setShowAsaasModal(false)}
+        title="Criar Subconta Asaas"
+      >
+        <form onSubmit={handleCreateAsaasSubaccount} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input label="Nome / Razao social" required value={asaasForm.name} onChange={setAsaasField('name')} />
+            <Input label="Email" type="email" required value={asaasForm.email} onChange={setAsaasField('email')} />
+            <Input label="CPF/CNPJ" required value={asaasForm.cpfCnpj} onChange={setAsaasField('cpfCnpj')} />
+            <Input label="Data de nascimento" type="date" value={asaasForm.birthDate} onChange={setAsaasField('birthDate')} />
+            <Input label="Tipo de empresa" hint="Ex.: MEI" value={asaasForm.companyType} onChange={setAsaasField('companyType')} />
+            <Input label="Faturamento/Renda mensal" type="number" required value={asaasForm.incomeValue} onChange={setAsaasField('incomeValue')} />
+            <Input label="Telefone" required value={asaasForm.phone} onChange={setAsaasField('phone')} />
+            <Input label="Celular" required value={asaasForm.mobilePhone} onChange={setAsaasField('mobilePhone')} />
+            <Input label="CEP" required value={asaasForm.postalCode} onChange={setAsaasField('postalCode')} />
+            <Input label="Endereco" required className="sm:col-span-2" value={asaasForm.address} onChange={setAsaasField('address')} />
+            <Input label="Numero" required value={asaasForm.addressNumber} onChange={setAsaasField('addressNumber')} />
+            <Input label="Bairro" required value={asaasForm.province} onChange={setAsaasField('province')} />
+            <Input label="Complemento" className="sm:col-span-2" value={asaasForm.complement} onChange={setAsaasField('complement')} />
+          </div>
+
+          <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-300">
+            A subconta sera criada abaixo da conta raiz da plataforma. Depois disso, o estabelecimento podera acompanhar status e onboarding no financeiro.
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="secondary" type="button" onClick={() => setShowAsaasModal(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" icon={CreditCard} loading={creatingAsaas}>
+              Criar subconta
             </Button>
           </div>
         </form>

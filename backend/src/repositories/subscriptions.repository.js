@@ -52,6 +52,71 @@ class SubscriptionsRepository extends BaseRepository {
     if (error) throw error;
     return data;
   }
+
+  async findPendingByCustomerAndEstablishment(customerId, establishmentId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('establishment_id', establishmentId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findLatestByCustomerAndEstablishment(customerId, establishmentId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('establishment_id', establishmentId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findByProviderCheckoutId(providerCheckoutId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('provider_checkout_id', providerCheckoutId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findByProviderSubscriptionId(providerSubscriptionId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('provider_subscription_id', providerSubscriptionId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findLatestPendingByProviderCustomerId(providerCustomerId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('provider_customer_id', providerCustomerId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
 }
 
 module.exports = new SubscriptionsRepository();

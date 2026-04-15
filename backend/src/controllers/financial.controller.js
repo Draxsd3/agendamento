@@ -53,6 +53,32 @@ class FinancialController {
       res.json(result);
     } catch (err) { next(err); }
   }
+
+  async getAsaasSubaccount(req, res, next) {
+    try {
+      const result = await financialService.getAsaasSubaccount(req.user.establishmentId, {
+        sync: req.query.sync === 'true',
+      });
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
+  async syncAsaasSubaccount(req, res, next) {
+    try {
+      const result = await financialService.syncAsaasSubaccount(req.user.establishmentId);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
+  async updateAsaasBillingSettings(req, res, next) {
+    try {
+      const result = await financialService.updateAsaasBillingSettings(
+        req.user.establishmentId,
+        { billingMode: req.body.billing_mode }
+      );
+      res.json(result);
+    } catch (err) { next(err); }
+  }
 }
 
 module.exports = new FinancialController();

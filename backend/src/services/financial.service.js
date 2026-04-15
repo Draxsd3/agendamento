@@ -1,4 +1,5 @@
 const financialRepo = require('../repositories/financial.repository');
+const asaasAccountService = require('./asaas-account.service');
 
 // Preset period helpers
 function buildDateRange(period) {
@@ -132,6 +133,19 @@ class FinancialService {
       throw err;
     }
     return financialRepo.updatePaymentMethod(appointmentId, establishmentId, paymentMethod);
+  }
+
+  async getAsaasSubaccount(establishmentId, options) {
+    return asaasAccountService.getSubaccount(establishmentId, options);
+  }
+
+  async syncAsaasSubaccount(establishmentId) {
+    const updated = await asaasAccountService.syncSubaccount(establishmentId);
+    return asaasAccountService.getSubaccount(updated.id);
+  }
+
+  async updateAsaasBillingSettings(establishmentId, payload) {
+    return asaasAccountService.updateBillingSettings(establishmentId, payload);
   }
 }
 

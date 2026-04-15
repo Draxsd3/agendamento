@@ -14,6 +14,9 @@ router.get('/dashboard', superAdminController.getDashboard);
 router.get('/establishments', superAdminController.getAllEstablishments);
 router.get('/establishments/:id', superAdminController.getEstablishmentById);
 router.get('/establishments/:id/admins', superAdminController.getEstablishmentAdmins);
+router.get('/establishments/:id/asaas-subaccount', superAdminController.getAsaasSubaccount);
+router.post('/establishments/:id/asaas-subaccount/sync', superAdminController.syncAsaasSubaccount);
+router.post('/establishments/:id/asaas-subaccount', superAdminController.createAsaasSubaccount);
 
 router.post(
   '/establishments',
