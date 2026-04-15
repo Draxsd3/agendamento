@@ -68,6 +68,20 @@ class SubscriptionsRepository extends BaseRepository {
     return data;
   }
 
+  async findLatestByCustomerAndEstablishment(customerId, establishmentId) {
+    const { data, error } = await this.db
+      .from('subscriptions')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('establishment_id', establishmentId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
   async findByProviderCheckoutId(providerCheckoutId) {
     const { data, error } = await this.db
       .from('subscriptions')

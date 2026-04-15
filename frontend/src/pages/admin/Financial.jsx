@@ -223,6 +223,7 @@ export default function AdminFinancial() {
   const [loadingMain, setLoadingMain] = useState(true);
   const [loadingTx,   setLoadingTx]   = useState(true);
   const [loadingAsaas, setLoadingAsaas] = useState(true);
+  const [savingBillingMode, setSavingBillingMode] = useState(false);
 
   // ── load branches once ────────────────────────────────────────────────────
   useEffect(() => {
@@ -295,6 +296,20 @@ export default function AdminFinancial() {
       toast.error(getErrorMessage(err, 'Erro ao sincronizar subconta.'));
     } finally {
       setLoadingAsaas(false);
+    }
+  };
+
+  const handleBillingModeChange = async (event) => {
+    const nextMode = event.target.value;
+    setSavingBillingMode(true);
+    try {
+      const result = await financialService.updateAsaasBillingSettings(nextMode);
+      setAsaasSubaccount(result);
+      toast.success('Configuracao de faturamento atualizada.');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Erro ao atualizar faturamento da subconta.'));
+    } finally {
+      setSavingBillingMode(false);
     }
   };
 
@@ -375,22 +390,54 @@ export default function AdminFinancial() {
             A subconta Asaas ainda nao foi configurada pelo super-admin.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 text-sm">
+          <div className="space-y-4">
             <div className="rounded-lg border border-gray-100 p-4">
-              <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Wallet ID</p>
-              <p className="font-mono text-gray-700 break-all">{asaasSubaccount.wallet_id || '—'}</p>
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Faturamento da subconta</p>
+                  <p className="text-sm text-gray-600">
+                    Escolha como as assinaturas do estabelecimento devem ser operadas dentro da subconta Asaas.
+                  </p>
+                </div>
+                <div className="w-full lg:w-80">
+                  <select
+                    value={asaasSubaccount.billing_mode || 'checkout_recurring'}
+                    onChange={handleBillingModeChange}
+                    disabled={savingBillingMode}
+                    className="input-base w-full text-sm py-2.5"
+                  >
+                    {(asaasSubaccount.billing_mode_options || []).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {(asaasSubaccount.billing_mode_options || []).find(
+                      (option) => option.value === (asaasSubaccount.billing_mode || 'checkout_recurring')
+                    )?.description || 'Defina o modelo de faturamento principal da subconta.'}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="rounded-lg border border-gray-100 p-4">
-              <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Status Geral</p>
-              <p className="font-semibold text-gray-800">{asaasSubaccount.status?.general || 'PENDING'}</p>
-            </div>
-            <div className="rounded-lg border border-gray-100 p-4">
-              <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Documentacao</p>
-              <p className="font-semibold text-gray-800">{asaasSubaccount.status?.documentation || 'PENDING'}</p>
-            </div>
-            <div className="rounded-lg border border-gray-100 p-4">
-              <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">API Key</p>
-              <p className="font-mono text-gray-700 break-all">{asaasSubaccount.api_key_masked || '—'}</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 text-sm">
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Wallet ID</p>
+                <p className="font-mono text-gray-700 break-all">{asaasSubaccount.wallet_id || '—'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Status Geral</p>
+                <p className="font-semibold text-gray-800">{asaasSubaccount.status?.general || 'PENDING'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Documentacao</p>
+                <p className="font-semibold text-gray-800">{asaasSubaccount.status?.documentation || 'PENDING'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">API Key</p>
+                <p className="font-mono text-gray-700 break-all">{asaasSubaccount.api_key_masked || '—'}</p>
+              </div>
             </div>
           </div>
         )}

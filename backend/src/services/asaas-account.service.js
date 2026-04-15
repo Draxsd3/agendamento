@@ -4,6 +4,26 @@ const asaasService = require('./asaas.service');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 class AsaasAccountService {
+  get billingModeOptions() {
+    return [
+      {
+        value: 'checkout_recurring',
+        label: 'Checkout recorrente',
+        description: 'Cliente assina por checkout hospedado do Asaas.',
+      },
+      {
+        value: 'direct_subscription',
+        label: 'Assinatura direta por API',
+        description: 'Cartao validado direto pela API com recorrencia automatica.',
+      },
+      {
+        value: 'manual_billing',
+        label: 'Cobranca manual',
+        description: 'Equipe confirma e cobra fora do checkout automatico.',
+      },
+    ];
+  }
+
   async createSubaccount(establishmentId, payload) {
     const establishment = await establishmentsRepo.findById(establishmentId);
     if (!establishment) {
@@ -84,6 +104,36 @@ class AsaasAccountService {
     });
   }
 
+  async updateBillingSettings(establishmentId, payload) {
+    const establishment = await establishmentsRepo.findById(establishmentId);
+    if (!establishment) {
+      const err = new Error('Estabelecimento nao encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (!establishment.asaas_account_id) {
+      const err = new Error('Configure a subconta Asaas antes de definir o faturamento.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const allowedModes = this.billingModeOptions.map((item) => item.value);
+    const billingMode = String(payload?.billingMode || '').trim();
+    if (!allowedModes.includes(billingMode)) {
+      const err = new Error('Modo de faturamento invalido.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const updated = await establishmentsRepo.update(establishmentId, {
+      asaas_billing_mode: billingMode,
+      asaas_billing_updated_at: new Date().toISOString(),
+    });
+
+    return this._serializeSubaccount(updated);
+  }
+
   _normalizeCreatePayload(payload, establishment) {
     const clean = (value) => String(value || '').trim();
     const digits = (value) => clean(value).replace(/\D/g, '');
@@ -94,6 +144,7 @@ class AsaasAccountService {
       cpfCnpj: digits(payload.cpfCnpj),
       birthDate: clean(payload.birthDate) || null,
       companyType: clean(payload.companyType) || null,
+      incomeValue: Number(payload.incomeValue || 0),
       phone: digits(payload.phone),
       mobilePhone: digits(payload.mobilePhone || payload.phone),
       address: clean(payload.address),
@@ -106,6 +157,9 @@ class AsaasAccountService {
 
     const required = ['name', 'email', 'cpfCnpj', 'phone', 'mobilePhone', 'address', 'addressNumber', 'province', 'postalCode'];
     const missing = required.filter((field) => !normalized[field]);
+    if (!normalized.incomeValue || Number.isNaN(normalized.incomeValue) || normalized.incomeValue <= 0) {
+      missing.push('incomeValue');
+    }
 
     if (missing.length > 0) {
       const err = new Error(`Preencha os campos obrigatorios da subconta Asaas: ${missing.join(', ')}.`);
@@ -150,6 +204,9 @@ class AsaasAccountService {
       company_type: establishment.asaas_company_type,
       api_key_masked: this._maskApiKey(establishment.asaas_api_key),
       api_key: establishment.asaas_api_key || null,
+      billing_mode: establishment.asaas_billing_mode || 'checkout_recurring',
+      billing_mode_options: this.billingModeOptions,
+      billing_updated_at: establishment.asaas_billing_updated_at || null,
       status: establishment.asaas_account_status || {},
       onboarding_links: establishment.asaas_onboarding_links || [],
       last_synced_at: establishment.asaas_last_synced_at,

@@ -47,4 +47,11 @@ export const financialService = {
     const res = await api.post('/financial/asaas-subaccount/sync');
     return res.data;
   },
+
+  updateAsaasBillingSettings: async (billingMode) => {
+    const res = await api.patch('/financial/asaas-subaccount/billing-settings', {
+      billing_mode: billingMode,
+    });
+    return res.data;
+  },
 };

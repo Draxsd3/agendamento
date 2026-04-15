@@ -46,10 +46,11 @@ class AsaasService {
     return payload;
   }
 
-  async createCustomer(customer) {
+  async createCustomer(customer, apiKey) {
     return this.request('/customers', {
       method: 'POST',
       body: customer,
+      apiKey,
     });
   }
 
@@ -74,16 +75,18 @@ class AsaasService {
     });
   }
 
-  async updateCustomer(customerId, customer) {
+  async updateCustomer(customerId, customer, apiKey) {
     return this.request(`/customers/${customerId}`, {
       method: 'POST',
       body: customer,
+      apiKey,
     });
   }
 
-  async createRecurringCheckout({ customerId, plan, callbacks, nextDueDate }) {
+  async createRecurringCheckout({ customerId, plan, callbacks, nextDueDate, apiKey }) {
     return this.request('/checkouts', {
       method: 'POST',
+      apiKey,
       body: {
         billingTypes: ['CREDIT_CARD'],
         chargeTypes: ['RECURRENT'],
@@ -106,9 +109,10 @@ class AsaasService {
     });
   }
 
-  async cancelSubscription(subscriptionId) {
+  async cancelSubscription(subscriptionId, apiKey) {
     return this.request(`/subscriptions/${subscriptionId}`, {
       method: 'DELETE',
+      apiKey,
     });
   }
 

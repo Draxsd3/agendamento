@@ -1,6 +1,7 @@
 const subscriptionsRepo = require('../repositories/subscriptions.repository');
 const plansRepo = require('../repositories/plans.repository');
 const customersRepo = require('../repositories/customers.repository');
+const establishmentsRepo = require('../repositories/establishments.repository');
 const asaasService = require('./asaas.service');
 const env = require('../config/env');
 
@@ -59,7 +60,13 @@ class SubscriptionsService {
       };
     }
 
-    const providerCustomerId = await this._ensureAsaasCustomer(customer);
+    const asaasContext = await this._resolveAsaasContext(plan.establishment_id, customer.id);
+    const providerCustomerId = await this._ensureAsaasCustomer(customer, {
+      establishmentId: plan.establishment_id,
+      existingProviderCustomerId: asaasContext.providerCustomerId,
+      apiKey: asaasContext.apiKey,
+      persistOnCustomer: !asaasContext.usesSubaccount,
+    });
     const nextDueDate = this._calcNextDueDate();
     const callbacks = this._buildCallbacks(callbackUrls);
 
@@ -68,6 +75,7 @@ class SubscriptionsService {
       plan,
       callbacks,
       nextDueDate,
+      apiKey: asaasContext.apiKey,
     });
 
     const localSubscription = await subscriptionsRepo.create({
@@ -84,6 +92,8 @@ class SubscriptionsService {
       payment_status: 'checkout_created',
       metadata: {
         checkout,
+        uses_subaccount: asaasContext.usesSubaccount,
+        establishment_wallet_id: asaasContext.walletId,
       },
     });
 
@@ -113,7 +123,8 @@ class SubscriptionsService {
     }
 
     if (sub.provider_subscription_id) {
-      await asaasService.cancelSubscription(sub.provider_subscription_id);
+      const asaasContext = await this._resolveAsaasContext(sub.establishment_id, customer.id);
+      await asaasService.cancelSubscription(sub.provider_subscription_id, asaasContext.apiKey);
     }
 
     return subscriptionsRepo.update(subscriptionId, {
@@ -160,25 +171,64 @@ class SubscriptionsService {
     }
   }
 
-  async _ensureAsaasCustomer(customer) {
+  async _ensureAsaasCustomer(customer, options = {}) {
     const customerPayload = this._buildAsaasCustomerPayload(customer);
 
-    if (customer.asaas_customer_id) {
-      await asaasService.updateCustomer(customer.asaas_customer_id, customerPayload);
+    if (options.existingProviderCustomerId) {
+      await asaasService.updateCustomer(options.existingProviderCustomerId, customerPayload, options.apiKey);
+      if (options.persistOnCustomer) {
+        await customersRepo.update(customer.id, {
+          asaas_customer_synced_at: new Date().toISOString(),
+        });
+      }
+      return options.existingProviderCustomerId;
+    }
+
+    if (options.persistOnCustomer && customer.asaas_customer_id) {
+      await asaasService.updateCustomer(customer.asaas_customer_id, customerPayload, options.apiKey);
       await customersRepo.update(customer.id, {
         asaas_customer_synced_at: new Date().toISOString(),
       });
       return customer.asaas_customer_id;
     }
 
-    const createdCustomer = await asaasService.createCustomer(customerPayload);
+    const createdCustomer = await asaasService.createCustomer(customerPayload, options.apiKey);
 
-    await customersRepo.update(customer.id, {
-      asaas_customer_id: createdCustomer.id,
-      asaas_customer_synced_at: new Date().toISOString(),
-    });
+    if (options.persistOnCustomer) {
+      await customersRepo.update(customer.id, {
+        asaas_customer_id: createdCustomer.id,
+        asaas_customer_synced_at: new Date().toISOString(),
+      });
+    }
 
     return createdCustomer.id;
+  }
+
+  async _resolveAsaasContext(establishmentId, customerId) {
+    const establishment = await establishmentsRepo.findById(establishmentId);
+    if (!establishment) {
+      const err = new Error('Estabelecimento nao encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const usesSubaccount = Boolean(establishment.asaas_api_key);
+    if (!usesSubaccount) {
+      return {
+        apiKey: undefined,
+        usesSubaccount: false,
+        walletId: null,
+        providerCustomerId: null,
+      };
+    }
+
+    const latestSubscription = await subscriptionsRepo.findLatestByCustomerAndEstablishment(customerId, establishmentId);
+    return {
+      apiKey: establishment.asaas_api_key,
+      usesSubaccount: true,
+      walletId: establishment.asaas_wallet_id || null,
+      providerCustomerId: latestSubscription?.provider_customer_id || null,
+    };
   }
 
   _buildCallbacks(callbackUrls = {}) {

@@ -85,6 +85,7 @@ export default function EstablishmentDetail() {
     cpfCnpj: '',
     birthDate: '',
     companyType: 'MEI',
+    incomeValue: '5000',
     phone: '',
     mobilePhone: '',
     address: '',
@@ -495,6 +496,7 @@ export default function EstablishmentDetail() {
             <Input label="CPF/CNPJ" required value={asaasForm.cpfCnpj} onChange={setAsaasField('cpfCnpj')} />
             <Input label="Data de nascimento" type="date" value={asaasForm.birthDate} onChange={setAsaasField('birthDate')} />
             <Input label="Tipo de empresa" hint="Ex.: MEI" value={asaasForm.companyType} onChange={setAsaasField('companyType')} />
+            <Input label="Faturamento/Renda mensal" type="number" required value={asaasForm.incomeValue} onChange={setAsaasField('incomeValue')} />
             <Input label="Telefone" required value={asaasForm.phone} onChange={setAsaasField('phone')} />
             <Input label="Celular" required value={asaasForm.mobilePhone} onChange={setAsaasField('mobilePhone')} />
             <Input label="CEP" required value={asaasForm.postalCode} onChange={setAsaasField('postalCode')} />

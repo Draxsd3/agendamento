@@ -143,6 +143,10 @@ class FinancialService {
     const updated = await asaasAccountService.syncSubaccount(establishmentId);
     return asaasAccountService.getSubaccount(updated.id);
   }
+
+  async updateAsaasBillingSettings(establishmentId, payload) {
+    return asaasAccountService.updateBillingSettings(establishmentId, payload);
+  }
 }
 
 module.exports = new FinancialService();
