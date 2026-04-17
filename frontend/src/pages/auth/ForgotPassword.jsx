@@ -4,6 +4,8 @@ import { CalendarCheck, Mail } from 'lucide-react';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import toast from 'react-hot-toast';
+import { authService } from '@/services/auth.service';
+import { getErrorMessage } from '@/utils/errors';
 
 export default function ForgotPassword() {
   const {
@@ -12,10 +14,13 @@ export default function ForgotPassword() {
     formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm();
 
-  const onSubmit = async () => {
-    // Password recovery via Supabase Auth email or custom implementation
-    await new Promise((r) => setTimeout(r, 800));
-    toast.success('Se o email existir, você receberá as instruções em breve.');
+  const onSubmit = async ({ email }) => {
+    try {
+      await authService.forgotPassword({ email });
+      // Mensagem genérica independente de o e-mail existir (evita enumeração)
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
   };
 
   return (
