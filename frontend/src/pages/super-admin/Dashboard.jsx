@@ -17,7 +17,7 @@ function MetricCard({ label, value, description, icon: Icon }) {
         <div>
           <p className="super-admin-label">{label}</p>
           <p className="mt-3 text-3xl font-semibold tracking-tight text-stone-950">{value ?? '--'}</p>
-          <p className="mt-2 text-sm text-stone-600">{description}</p>
+          <p className="mt-2 text-sm text-stone-950">{description}</p>
         </div>
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700 shadow-sm">
           <Icon size={19} />
@@ -155,7 +155,7 @@ export default function SuperAdminDashboard() {
             ].map((item) => (
               <div key={item.title} className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
                 <p className="text-sm font-semibold text-stone-900">{item.title}</p>
-                <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-950">{item.text}</p>
               </div>
             ))}
           </div>
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
               <h3 className="mt-1 text-lg font-semibold text-stone-950">Camada institucional</h3>
             </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-stone-600">
+          <p className="mt-4 text-sm leading-6 text-stone-950">
             O objetivo desta area e parecer menos uma extensao do painel operacional e mais uma
             cabine de controle da plataforma. Por isso a paleta foi reduzida para pedra, branco
             e grafite, deixando a cor do sistema apenas onde ela realmente precisa aparecer.

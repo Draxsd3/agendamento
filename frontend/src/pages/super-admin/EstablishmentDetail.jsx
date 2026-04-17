@@ -41,10 +41,10 @@ function CopyField({ label, value, href, note }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <p className="super-admin-label">{label}</p>
-          <p className="mt-3 truncate rounded-2xl border border-stone-200 bg-white px-4 py-3 font-mono text-sm text-stone-700">
+          <p className="mt-3 truncate rounded-2xl border border-stone-200 bg-white px-4 py-3 font-mono text-sm text-stone-950">
             {value}
           </p>
-          {note ? <p className="mt-2 text-xs text-stone-600">{note}</p> : null}
+          {note ? <p className="mt-2 text-xs text-stone-950">{note}</p> : null}
         </div>
 
         <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ function CopyField({ label, value, href, note }) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition-colors hover:text-stone-950"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-950 transition-colors hover:opacity-75"
               title="Abrir"
             >
               <ExternalLink size={15} />
@@ -63,7 +63,7 @@ function CopyField({ label, value, href, note }) {
           <button
             type="button"
             onClick={copy}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition-colors hover:text-stone-950"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-950 transition-colors hover:opacity-75"
             title="Copiar"
           >
             {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
@@ -78,7 +78,7 @@ function InfoItem({ label, value, full = false }) {
   return (
     <div className={full ? 'md:col-span-2' : ''}>
       <p className="super-admin-label">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-800">{value || '-'}</p>
+      <p className="mt-2 text-sm leading-6 text-stone-950">{value || '-'}</p>
     </div>
   );
 }
@@ -321,8 +321,8 @@ export default function EstablishmentDetail() {
             {admins.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
                 <Users size={28} className="mx-auto mb-3 text-stone-400" />
-                <p className="text-sm font-medium text-stone-700">Nenhum admin vinculado.</p>
-                <p className="mt-1 text-xs text-stone-600">
+                <p className="text-sm font-medium text-stone-950">Nenhum admin vinculado.</p>
+                <p className="mt-1 text-xs text-stone-950">
                   Crie um usuario admin para liberar o acesso ao painel deste estabelecimento.
                 </p>
               </div>
@@ -331,12 +331,12 @@ export default function EstablishmentDetail() {
                 {admins.map((u) => (
                   <div key={u.id} className="rounded-3xl border border-stone-200 bg-stone-50/80 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm font-semibold text-stone-700">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm font-semibold text-stone-950">
                         {u.name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-stone-900">{u.name}</p>
-                        <p className="truncate text-xs text-stone-600">{u.email}</p>
+                        <p className="truncate text-xs text-stone-950">{u.email}</p>
                       </div>
                       <Badge value={u.is_active ? 'active' : 'inactive'}>
                         {u.is_active ? 'Ativo' : 'Inativo'}
@@ -380,8 +380,8 @@ export default function EstablishmentDetail() {
             {!asaasSubaccount.configured ? (
               <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
                 <CreditCard size={28} className="mx-auto mb-3 text-stone-400" />
-                <p className="text-sm font-medium text-stone-700">Nenhuma subconta Asaas criada.</p>
-                <p className="mt-1 text-xs text-stone-600">
+                <p className="text-sm font-medium text-stone-950">Nenhuma subconta Asaas criada.</p>
+                <p className="mt-1 text-xs text-stone-950">
                   Configure a subconta para separar recebimentos na conta do estabelecimento.
                 </p>
               </div>
@@ -404,10 +404,10 @@ export default function EstablishmentDetail() {
                         href={item.onboardingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700 transition-colors hover:bg-white"
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950 transition-colors hover:bg-white"
                       >
                         <span className="truncate">{item.title || item.type}</span>
-                        <ExternalLink size={14} className="shrink-0 text-stone-500" />
+                        <ExternalLink size={14} className="shrink-0 text-stone-950" />
                       </a>
                     ))}
                   </div>
@@ -423,25 +423,25 @@ export default function EstablishmentDetail() {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700 transition-colors hover:bg-white"
+                className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950 transition-colors hover:bg-white"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-950">
                   <Globe size={16} />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-stone-900">Ver pagina publica</p>
-                  <p className="text-xs text-stone-600">Abrir experiencia do cliente em nova aba.</p>
+                  <p className="text-xs text-stone-950">Abrir experiencia do cliente em nova aba.</p>
                 </div>
-                <ExternalLink size={14} className="text-stone-500" />
+                <ExternalLink size={14} className="text-stone-950" />
               </a>
 
-              <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-600">
+              <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-950">
                   <LogIn size={16} />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-stone-900">Login do admin</p>
-                  <p className="text-xs text-stone-600">Use o campo de copia acima para compartilhar o acesso.</p>
+                  <p className="text-xs text-stone-950">Use o campo de copia acima para compartilhar o acesso.</p>
                 </div>
               </div>
             </div>
@@ -454,7 +454,7 @@ export default function EstablishmentDetail() {
         onClose={() => setShowAdminModal(false)}
         title="Criar usuario admin"
       >
-        <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+        <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-950">
           Esse usuario tera acesso ao painel administrativo de <strong>{establishment.name}</strong>.
         </div>
 
@@ -489,7 +489,7 @@ export default function EstablishmentDetail() {
             })}
           />
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-600">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-950">
             <p className="mb-2 font-medium text-stone-800">Entregue ao dono:</p>
             <p>URL de acesso: <span className="font-mono text-stone-800">{loginUrl}</span></p>
             <p>Email: o informado acima</p>
@@ -529,7 +529,7 @@ export default function EstablishmentDetail() {
             <Input label="Complemento" className="sm:col-span-2" value={asaasForm.complement} onChange={setAsaasField('complement')} />
           </div>
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
+          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-950">
             A subconta sera criada abaixo da conta raiz da plataforma para separar recebimentos
             e acelerar o onboarding financeiro.
           </div>

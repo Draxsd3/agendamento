@@ -90,7 +90,7 @@ function SidebarContent({ onNavigate, onLogout, user }) {
                   <p className={`text-sm font-semibold ${isActive ? 'text-stone-950' : 'text-stone-100'}`}>
                     {label}
                   </p>
-                  <p className={`mt-0.5 text-xs ${isActive ? 'text-stone-600' : 'text-stone-400'}`}>
+                  <p className={`mt-0.5 text-xs ${isActive ? 'text-stone-950' : 'text-stone-400'}`}>
                     {description}
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function SuperAdminLayout() {
                   <p className="super-admin-label">{currentMeta.eyebrow}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-semibold text-stone-950">{currentMeta.title}</h1>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-950">
                       <Sparkles size={12} />
                       Neutro e consistente
                     </span>
@@ -202,7 +202,7 @@ export default function SuperAdminLayout() {
               <div className="hidden items-center gap-3 md:flex">
                 <div className="text-right">
                   <p className="text-sm font-semibold text-stone-950">{user?.name}</p>
-                  <p className="text-xs text-stone-500">Super Admin</p>
+                  <p className="text-xs text-stone-950">Super Admin</p>
                 </div>
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-900 text-sm font-bold text-white">
                   {user?.name?.charAt(0)?.toUpperCase() || 'S'}

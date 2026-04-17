@@ -14,7 +14,7 @@ function SummaryCard({ label, value, note }) {
     <div className="super-admin-soft-panel p-4">
       <p className="super-admin-label">{label}</p>
       <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-950">{value}</p>
-      <p className="mt-2 text-sm text-stone-600">{note}</p>
+      <p className="mt-2 text-sm text-stone-950">{note}</p>
     </div>
   );
 }
@@ -59,7 +59,7 @@ export default function SuperAdminEstablishments() {
       render: (row) => (
         <div>
           <p className="font-medium text-stone-900">{row.name}</p>
-          <p className="text-xs text-stone-600">/{row.slug}</p>
+          <p className="text-xs text-stone-950">/{row.slug}</p>
         </div>
       ),
     },
@@ -81,7 +81,7 @@ export default function SuperAdminEstablishments() {
         <div className="flex items-center gap-3">
           <Link
             to={`/super-admin/estabelecimentos/${row.id}`}
-            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs font-medium text-stone-700 transition-colors hover:border-stone-300 hover:bg-white"
+            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs font-medium text-stone-950 transition-colors hover:border-stone-300 hover:bg-white"
             title="Ver detalhes"
           >
             <Eye size={14} />
@@ -89,7 +89,7 @@ export default function SuperAdminEstablishments() {
           </Link>
           <Link
             to={`/super-admin/estabelecimentos/${row.id}/editar`}
-            className="text-xs font-medium text-stone-600 transition-colors hover:text-stone-950"
+            className="text-xs font-medium text-stone-950 transition-colors hover:opacity-75"
           >
             Editar
           </Link>
@@ -112,7 +112,7 @@ export default function SuperAdminEstablishments() {
             href={`/${row.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-stone-500 transition-colors hover:text-stone-800"
+            className="text-stone-950 transition-colors hover:opacity-75"
             title="Pagina publica"
           >
             <ExternalLink size={14} />
@@ -130,7 +130,7 @@ export default function SuperAdminEstablishments() {
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">
             Rede de estabelecimentos
           </h2>
-          <p className="mt-2 max-w-2xl text-sm text-stone-600">
+          <p className="mt-2 max-w-2xl text-sm text-stone-950">
             Acompanhe criacao, ativacao e acesso publico em uma lista mais limpa e alinhada
             com a identidade institucional do Super Admin.
           </p>
