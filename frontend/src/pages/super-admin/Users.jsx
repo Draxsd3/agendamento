@@ -63,9 +63,9 @@ function UsersSummaryCard({ title, description, value, icon: Icon, tone, active,
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-stone-500">{title}</p>
+          <p className="text-sm font-medium text-stone-600">{title}</p>
           <p className="mt-2 text-3xl font-semibold text-stone-950">{value}</p>
-          <p className="mt-2 text-sm text-stone-500">{description}</p>
+          <p className="mt-2 text-sm text-stone-600">{description}</p>
         </div>
         <div className={`rounded-xl border p-3 ${active ? 'border-current/20 bg-white/60' : 'border-stone-200 bg-stone-50'}`}>
           <Icon size={20} />
@@ -173,7 +173,7 @@ export default function SuperAdminUsers() {
       render: (row) => (
         <div>
           <p className="font-medium text-stone-900">{row.name}</p>
-          <p className="text-xs text-stone-500">{row.email}</p>
+          <p className="text-xs text-stone-600">{row.email}</p>
         </div>
       ),
     },
@@ -194,11 +194,11 @@ export default function SuperAdminUsers() {
       label: 'Vinculo',
       render: (row) => {
         if (row.role === 'super_admin') {
-          return <span className="text-sm text-stone-500">Acesso global ao sistema</span>;
+          return <span className="text-sm text-stone-600">Acesso global ao sistema</span>;
         }
 
         if (!row.establishments?.length) {
-          return <span className="text-sm text-stone-400">Sem vinculo identificado</span>;
+          return <span className="text-sm text-stone-500">Sem vinculo identificado</span>;
         }
 
         return (
@@ -210,7 +210,7 @@ export default function SuperAdminUsers() {
               >
                 <Building2 size={12} />
                 {item.name}
-                <span className="text-stone-400">
+                <span className="text-stone-500">
                   {item.relationship === 'admin' ? 'admin' : 'cliente'}
                 </span>
               </span>
@@ -260,7 +260,7 @@ export default function SuperAdminUsers() {
         <div>
           <p className="super-admin-label">Governanca</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">Usuarios</h1>
-          <p className="mt-2 text-sm text-stone-500">
+          <p className="mt-2 text-sm text-stone-600">
             Separe rapidamente quem opera estabelecimentos e quem agenda como cliente.
           </p>
         </div>
@@ -306,7 +306,7 @@ export default function SuperAdminUsers() {
               <Filter size={16} />
               Filtragem organizada
             </div>
-            <p className="mt-1 text-sm text-stone-500">
+            <p className="mt-1 text-sm text-stone-600">
               Filtre por tipo de usuario, status e estabelecimento para localizar mais rapido.
             </p>
           </div>
@@ -371,7 +371,7 @@ export default function SuperAdminUsers() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-600">
           <span className="rounded-full bg-stone-100 px-3 py-1">
             {filteredUsers.length} de {counts.total} usuarios exibidos
           </span>

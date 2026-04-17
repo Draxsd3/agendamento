@@ -95,6 +95,6 @@
   }
 
   .super-admin-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-400;
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-stone-500;
   }
 }

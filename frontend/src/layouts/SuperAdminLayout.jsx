@@ -49,11 +49,11 @@ function SidebarContent({ onNavigate, onLogout, user }) {
             <Shield size={19} className="text-stone-100" />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-400">
               Controle Global
             </p>
             <p className="mt-1 text-lg font-semibold text-white">Super Admin</p>
-            <p className="mt-1 text-sm text-stone-400">
+            <p className="mt-1 text-sm text-stone-300">
               Camada neutra para operar toda a plataforma.
             </p>
           </div>
@@ -71,7 +71,7 @@ function SidebarContent({ onNavigate, onLogout, user }) {
               `group flex items-start gap-3 rounded-2xl px-3.5 py-3 transition-all ${
                 isActive
                   ? 'bg-white text-stone-950 shadow-lg shadow-black/10'
-                  : 'text-stone-400 hover:bg-white/[0.05] hover:text-stone-100'
+                  : 'text-stone-300 hover:bg-white/[0.05] hover:text-white'
               }`
             }
           >
@@ -81,7 +81,7 @@ function SidebarContent({ onNavigate, onLogout, user }) {
                   className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl border ${
                     isActive
                       ? 'border-stone-200 bg-stone-100 text-stone-900'
-                      : 'border-white/10 bg-white/[0.04] text-stone-400 group-hover:text-stone-100'
+                      : 'border-white/10 bg-white/[0.04] text-stone-300 group-hover:text-white'
                   }`}
                 >
                   <Icon size={18} strokeWidth={isActive ? 2.1 : 1.8} />
@@ -90,7 +90,7 @@ function SidebarContent({ onNavigate, onLogout, user }) {
                   <p className={`text-sm font-semibold ${isActive ? 'text-stone-950' : 'text-stone-100'}`}>
                     {label}
                   </p>
-                  <p className={`mt-0.5 text-xs ${isActive ? 'text-stone-500' : 'text-stone-500'}`}>
+                  <p className={`mt-0.5 text-xs ${isActive ? 'text-stone-600' : 'text-stone-400'}`}>
                     {description}
                   </p>
                 </div>
@@ -107,13 +107,13 @@ function SidebarContent({ onNavigate, onLogout, user }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{user?.name || 'Super Admin'}</p>
-            <p className="truncate text-xs text-stone-500">{user?.email}</p>
+            <p className="truncate text-xs text-stone-400">{user?.email}</p>
           </div>
         </div>
 
         <button
           onClick={onLogout}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:bg-white/[0.08] hover:text-white"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm font-medium text-stone-200 transition-colors hover:bg-white/[0.08] hover:text-white"
         >
           <LogOut size={15} />
           Sair
@@ -191,7 +191,7 @@ export default function SuperAdminLayout() {
                   <p className="super-admin-label">{currentMeta.eyebrow}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <h1 className="text-2xl font-semibold text-stone-950">{currentMeta.title}</h1>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-500">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-stone-700">
                       <Sparkles size={12} />
                       Neutro e consistente
                     </span>

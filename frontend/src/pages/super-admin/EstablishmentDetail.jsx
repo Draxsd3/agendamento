@@ -44,7 +44,7 @@ function CopyField({ label, value, href, note }) {
           <p className="mt-3 truncate rounded-2xl border border-stone-200 bg-white px-4 py-3 font-mono text-sm text-stone-700">
             {value}
           </p>
-          {note ? <p className="mt-2 text-xs text-stone-500">{note}</p> : null}
+          {note ? <p className="mt-2 text-xs text-stone-600">{note}</p> : null}
         </div>
 
         <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ function CopyField({ label, value, href, note }) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-500 transition-colors hover:text-stone-900"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition-colors hover:text-stone-950"
               title="Abrir"
             >
               <ExternalLink size={15} />
@@ -63,7 +63,7 @@ function CopyField({ label, value, href, note }) {
           <button
             type="button"
             onClick={copy}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-500 transition-colors hover:text-stone-900"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition-colors hover:text-stone-950"
             title="Copiar"
           >
             {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
@@ -78,7 +78,7 @@ function InfoItem({ label, value, full = false }) {
   return (
     <div className={full ? 'md:col-span-2' : ''}>
       <p className="super-admin-label">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-700">{value || '-'}</p>
+      <p className="mt-2 text-sm leading-6 text-stone-800">{value || '-'}</p>
     </div>
   );
 }
@@ -224,20 +224,20 @@ export default function EstablishmentDetail() {
           <div className="flex items-start gap-4">
             <button
               onClick={() => navigate('/super-admin/estabelecimentos')}
-              className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-stone-300 transition-colors hover:bg-white/[0.08] hover:text-white"
+              className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-stone-200 transition-colors hover:bg-white/[0.08] hover:text-white"
             >
               <ArrowLeft size={18} />
             </button>
 
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-400">
                 Detalhe do estabelecimento
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <h2 className="text-3xl font-semibold tracking-tight text-white">{establishment.name}</h2>
                 <Badge value={establishment.status} />
               </div>
-              <p className="mt-2 text-sm text-stone-400">/{establishment.slug}</p>
+              <p className="mt-2 text-sm text-stone-300">/{establishment.slug}</p>
             </div>
           </div>
 
@@ -322,7 +322,7 @@ export default function EstablishmentDetail() {
               <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
                 <Users size={28} className="mx-auto mb-3 text-stone-400" />
                 <p className="text-sm font-medium text-stone-700">Nenhum admin vinculado.</p>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-stone-600">
                   Crie um usuario admin para liberar o acesso ao painel deste estabelecimento.
                 </p>
               </div>
@@ -336,7 +336,7 @@ export default function EstablishmentDetail() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-stone-900">{u.name}</p>
-                        <p className="truncate text-xs text-stone-500">{u.email}</p>
+                        <p className="truncate text-xs text-stone-600">{u.email}</p>
                       </div>
                       <Badge value={u.is_active ? 'active' : 'inactive'}>
                         {u.is_active ? 'Ativo' : 'Inativo'}
@@ -381,7 +381,7 @@ export default function EstablishmentDetail() {
               <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
                 <CreditCard size={28} className="mx-auto mb-3 text-stone-400" />
                 <p className="text-sm font-medium text-stone-700">Nenhuma subconta Asaas criada.</p>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-stone-600">
                   Configure a subconta para separar recebimentos na conta do estabelecimento.
                 </p>
               </div>
@@ -407,7 +407,7 @@ export default function EstablishmentDetail() {
                         className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700 transition-colors hover:bg-white"
                       >
                         <span className="truncate">{item.title || item.type}</span>
-                        <ExternalLink size={14} className="shrink-0 text-stone-400" />
+                        <ExternalLink size={14} className="shrink-0 text-stone-500" />
                       </a>
                     ))}
                   </div>
@@ -430,18 +430,18 @@ export default function EstablishmentDetail() {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-stone-900">Ver pagina publica</p>
-                  <p className="text-xs text-stone-500">Abrir experiencia do cliente em nova aba.</p>
+                  <p className="text-xs text-stone-600">Abrir experiencia do cliente em nova aba.</p>
                 </div>
-                <ExternalLink size={14} className="text-stone-400" />
+                <ExternalLink size={14} className="text-stone-500" />
               </a>
 
               <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-500">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-600">
                   <LogIn size={16} />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-stone-900">Login do admin</p>
-                  <p className="text-xs text-stone-500">Use o campo de copia acima para compartilhar o acesso.</p>
+                  <p className="text-xs text-stone-600">Use o campo de copia acima para compartilhar o acesso.</p>
                 </div>
               </div>
             </div>

@@ -17,7 +17,7 @@ function MetricCard({ label, value, description, icon: Icon }) {
         <div>
           <p className="super-admin-label">{label}</p>
           <p className="mt-3 text-3xl font-semibold tracking-tight text-stone-950">{value ?? '--'}</p>
-          <p className="mt-2 text-sm text-stone-500">{description}</p>
+          <p className="mt-2 text-sm text-stone-600">{description}</p>
         </div>
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700 shadow-sm">
           <Icon size={19} />
@@ -65,13 +65,13 @@ export default function SuperAdminDashboard() {
       <section className="super-admin-panel overflow-hidden border-none bg-stone-950 text-white shadow-2xl shadow-stone-950/20">
         <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.3fr_0.9fr] lg:px-8">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-400">
               Command Center
             </p>
             <h2 className="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-white">
               Uma camada mais silenciosa para operar toda a plataforma.
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-400">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-300">
               O Super Admin agora fica visualmente alinhado ao sistema, mas com uma presenca
               neutra e institucional para distinguir governanca, onboarding e acesso global.
             </p>
@@ -86,7 +86,7 @@ export default function SuperAdminDashboard() {
               </Link>
               <Link
                 to="/super-admin/usuarios"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-stone-200 transition-colors hover:bg-white/[0.08]"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-stone-100 transition-colors hover:bg-white/[0.08]"
               >
                 Revisar usuarios
               </Link>
@@ -96,11 +96,11 @@ export default function SuperAdminDashboard() {
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
             {highlights.map((item) => (
               <div key={item.label} className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-300">
                   {item.label}
                 </p>
                 <p className="mt-3 text-xl font-semibold text-white">{loading ? '--' : item.value}</p>
-                <p className="mt-1 text-sm text-stone-400">{item.description}</p>
+                <p className="mt-1 text-sm text-stone-300">{item.description}</p>
               </div>
             ))}
           </div>
@@ -155,7 +155,7 @@ export default function SuperAdminDashboard() {
             ].map((item) => (
               <div key={item.title} className="rounded-3xl border border-stone-200 bg-stone-50 p-4">
                 <p className="text-sm font-semibold text-stone-900">{item.title}</p>
-                <p className="mt-2 text-sm leading-6 text-stone-500">{item.text}</p>
+                <p className="mt-2 text-sm leading-6 text-stone-600">{item.text}</p>
               </div>
             ))}
           </div>
@@ -171,7 +171,7 @@ export default function SuperAdminDashboard() {
               <h3 className="mt-1 text-lg font-semibold text-stone-950">Camada institucional</h3>
             </div>
           </div>
-          <p className="mt-4 text-sm leading-6 text-stone-500">
+          <p className="mt-4 text-sm leading-6 text-stone-600">
             O objetivo desta area e parecer menos uma extensao do painel operacional e mais uma
             cabine de controle da plataforma. Por isso a paleta foi reduzida para pedra, branco
             e grafite, deixando a cor do sistema apenas onde ela realmente precisa aparecer.

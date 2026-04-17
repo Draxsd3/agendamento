@@ -68,7 +68,7 @@ export default function EstablishmentForm() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-900"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-950"
           >
             <ArrowLeft size={20} />
           </button>
@@ -113,7 +113,7 @@ export default function EstablishmentForm() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-700">Descricao</label>
+            <label className="text-sm font-medium text-stone-800">Descricao</label>
             <textarea
               className="input-base h-24 resize-none"
               placeholder="Breve descricao do estabelecimento..."
