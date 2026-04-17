@@ -1,4 +1,3 @@
-const EstablishmentsRepository = require('../repositories/establishments.repository');
 
 /**
  * Tenant isolation middleware.

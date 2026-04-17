@@ -48,7 +48,7 @@ class ProfessionalsService {
     return professionalsRepo.findByService(serviceId);
   }
 
-  async uploadAvatar(professionalId, establishmentId, { fileName, contentType, base64 }) {
+  async uploadAvatar(professionalId, establishmentId, { fileName: _fileName, contentType, base64 }) {
     await this.getById(professionalId, establishmentId);
 
     if (!base64 || !contentType) {

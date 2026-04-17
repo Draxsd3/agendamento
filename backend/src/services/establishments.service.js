@@ -13,7 +13,26 @@ const RESERVED_SLUGS = new Set([
   'cliente', 'api', 'assets', 'static',
 ]);
 
+// Campos que podem vazar dados de pagamento, PII fiscal e chaves de integracao.
+// NUNCA expor esses campos em rotas publicas.
+const PRIVATE_FIELDS = [
+  'asaas_account_id', 'asaas_api_key', 'asaas_wallet_id',
+  'asaas_account_email', 'asaas_person_type', 'asaas_cpf_cnpj',
+  'asaas_birth_date', 'asaas_company_type', 'asaas_account_status',
+  'asaas_onboarding_links', 'asaas_metadata', 'asaas_last_synced_at',
+  'asaas_billing_mode', 'asaas_billing_updated_at',
+];
+
 class EstablishmentsService {
+  sanitizePublic(establishment) {
+    if (!establishment) return establishment;
+    const safe = Object.assign({}, establishment);
+    for (const field of PRIVATE_FIELDS) {
+      delete safe[field];
+    }
+    return safe;
+  }
+
   async getAll(filters) {
     return establishmentsRepo.findAllPaginated(filters);
   }
@@ -21,7 +40,7 @@ class EstablishmentsService {
   async getById(id) {
     const establishment = await establishmentsRepo.findById(id);
     if (!establishment) {
-      const err = new Error('Estabelecimento não encontrado.');
+      const err = new Error('Estabelecimento nao encontrado.');
       err.statusCode = 404;
       throw err;
     }
@@ -31,16 +50,16 @@ class EstablishmentsService {
   async getBySlug(slug) {
     const establishment = await establishmentsRepo.findBySlug(slug);
     if (!establishment) {
-      const err = new Error('Estabelecimento não encontrado.');
+      const err = new Error('Estabelecimento nao encontrado.');
       err.statusCode = 404;
       throw err;
     }
     if (establishment.status !== 'active') {
-      const err = new Error('Estabelecimento não está ativo.');
+      const err = new Error('Estabelecimento nao esta ativo.');
       err.statusCode = 403;
       throw err;
     }
-    return establishment;
+    return this.sanitizePublic(establishment);
   }
 
   async getAdminEstablishment(id) {
@@ -49,13 +68,12 @@ class EstablishmentsService {
       err.statusCode = 400;
       throw err;
     }
-
     return this.getById(id);
   }
 
   _validateSlug(slug) {
     if (RESERVED_SLUGS.has(slug)) {
-      const err = new Error(`O slug "${slug}" é reservado pelo sistema. Escolha outro identificador.`);
+      const err = new Error('O slug "' + slug + '" e reservado pelo sistema. Escolha outro identificador.');
       err.statusCode = 409;
       throw err;
     }
@@ -65,7 +83,7 @@ class EstablishmentsService {
     this._validateSlug(payload.slug);
     const existing = await establishmentsRepo.findBySlug(payload.slug);
     if (existing) {
-      const err = new Error('Slug já está em uso. Escolha outro identificador.');
+      const err = new Error('Slug ja esta em uso. Escolha outro identificador.');
       err.statusCode = 409;
       throw err;
     }
@@ -79,7 +97,7 @@ class EstablishmentsService {
       this._validateSlug(payload.slug);
       const existing = await establishmentsRepo.findBySlug(payload.slug);
       if (existing && existing.id !== id) {
-        const err = new Error('Slug já está em uso.');
+        const err = new Error('Slug ja esta em uso.');
         err.statusCode = 409;
         throw err;
       }
@@ -122,20 +140,20 @@ class EstablishmentsService {
     const base64      = typeof payload.base64      === 'string' ? payload.base64.trim()      : '';
 
     if (!base64 || !contentType) {
-      const err = new Error('Arquivo de capa inválido.'); err.statusCode = 422; throw err;
+      const err = new Error('Arquivo de capa invalido.'); err.statusCode = 422; throw err;
     }
     if (!ALLOWED_LOGO_TYPES.includes(contentType)) {
-      const err = new Error('Formato não suportado. Use PNG, JPG ou WEBP.'); err.statusCode = 422; throw err;
+      const err = new Error('Formato nao suportado. Use PNG, JPG ou WEBP.'); err.statusCode = 422; throw err;
     }
 
     const buffer = Buffer.from(base64, 'base64');
     if (buffer.length > MAX_LOGO_SIZE_BYTES) {
-      const err = new Error('A capa deve ter no máximo 2 MB.'); err.statusCode = 422; throw err;
+      const err = new Error('A capa deve ter no maximo 2 MB.'); err.statusCode = 422; throw err;
     }
 
     await this.ensureBrandingBucket();
     const extension = this.getLogoExtension(contentType, fileName);
-    const path = `establishments/${id}/cover-${Date.now()}.${extension}`;
+    const path = 'establishments/' + id + '/cover-' + Date.now() + '.' + extension;
 
     const { error: uploadError } = await supabase.storage.from(BRANDING_BUCKET)
       .upload(path, buffer, { contentType, upsert: true, cacheControl: '3600' });
@@ -149,18 +167,18 @@ class EstablishmentsService {
   async uploadLogo(id, payload) {
     await this.getAdminEstablishment(id);
 
-    const fileName = typeof payload.fileName === 'string' ? payload.fileName.trim() : 'logo.png';
+    const fileName    = typeof payload.fileName    === 'string' ? payload.fileName.trim()    : 'logo.png';
     const contentType = typeof payload.contentType === 'string' ? payload.contentType.trim() : '';
-    const base64 = typeof payload.base64 === 'string' ? payload.base64.trim() : '';
+    const base64      = typeof payload.base64      === 'string' ? payload.base64.trim()      : '';
 
     if (!base64 || !contentType) {
-      const err = new Error('Arquivo de logo inválido.');
+      const err = new Error('Arquivo de logo invalido.');
       err.statusCode = 422;
       throw err;
     }
 
     if (!ALLOWED_LOGO_TYPES.includes(contentType)) {
-      const err = new Error('Formato não suportado. Use PNG, JPG ou WEBP.');
+      const err = new Error('Formato nao suportado. Use PNG, JPG ou WEBP.');
       err.statusCode = 422;
       throw err;
     }
@@ -168,13 +186,13 @@ class EstablishmentsService {
     const buffer = Buffer.from(base64, 'base64');
 
     if (!buffer.length || Number.isNaN(buffer.length)) {
-      const err = new Error('Não foi possível processar o arquivo enviado.');
+      const err = new Error('Nao foi possivel processar o arquivo enviado.');
       err.statusCode = 422;
       throw err;
     }
 
     if (buffer.length > MAX_LOGO_SIZE_BYTES) {
-      const err = new Error('A logo deve ter no máximo 2 MB.');
+      const err = new Error('A logo deve ter no maximo 2 MB.');
       err.statusCode = 422;
       throw err;
     }
@@ -182,7 +200,7 @@ class EstablishmentsService {
     await this.ensureBrandingBucket();
 
     const extension = this.getLogoExtension(contentType, fileName);
-    const path = `establishments/${id}/logo-${Date.now()}.${extension}`;
+    const path = 'establishments/' + id + '/logo-' + Date.now() + '.' + extension;
 
     const { error: uploadError } = await supabase
       .storage
@@ -213,7 +231,7 @@ class EstablishmentsService {
 
     const { error: createError } = await supabase.storage.createBucket(BRANDING_BUCKET, {
       public: true,
-      fileSizeLimit: `${MAX_LOGO_SIZE_BYTES}`,
+      fileSizeLimit: String(MAX_LOGO_SIZE_BYTES),
       allowedMimeTypes: ALLOWED_LOGO_TYPES,
     });
 
