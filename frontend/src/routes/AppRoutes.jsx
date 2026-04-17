@@ -28,6 +28,7 @@ import AdminAppointments from '@/pages/admin/Appointments';
 import AdminCustomers from '@/pages/admin/Customers';
 import AdminSettings from '@/pages/admin/Settings';
 import AdminPlans from '@/pages/admin/Plans';
+import AdminPortfolio from '@/pages/admin/Portfolio';
 import AdminBranches from '@/pages/admin/Branches';
 import AdminFinancial from '@/pages/admin/Financial';
 
@@ -192,6 +193,7 @@ export default function AppRoutes() {
         <Route path="clube" element={<AdminPlans />} />
         <Route path="filiais" element={<AdminBranches />} />
         <Route path="financeiro" element={<AdminFinancial />} />
+        <Route path="portfolio" element={<AdminPortfolio />} />
         <Route path="configuracoes" element={<AdminSettings />} />
       </Route>
 

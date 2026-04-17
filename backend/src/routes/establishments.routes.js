@@ -12,6 +12,8 @@ router.use(authMiddleware, roleMiddleware('establishment_admin'));
 router.get('/me', establishmentsController.getMine);
 router.post('/me/logo', establishmentsController.uploadLogo);
 router.post('/me/cover', establishmentsController.uploadCover);
+router.put('/me/portfolio', establishmentsController.updatePortfolio);
+router.post('/me/gallery', establishmentsController.uploadGalleryImage);
 
 router.put(
   '/me',

@@ -45,6 +45,16 @@ export const establishmentsService = {
     const res = await api.post('/establishments/me/cover', { fileName, contentType, base64 });
     return res.data;
   },
+
+  updatePortfolio: async (data) => {
+    const res = await api.put('/establishments/me/portfolio', data);
+    return res.data;
+  },
+
+  uploadGalleryImage: async ({ fileName, contentType, base64 }) => {
+    const res = await api.post('/establishments/me/gallery', { fileName, contentType, base64 });
+    return res.data;
+  },
 };
 
 export const publicEstablishmentsService = {

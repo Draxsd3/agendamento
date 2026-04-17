@@ -73,6 +73,20 @@ class EstablishmentsController {
     }
   }
 
+  async updatePortfolio(req, res, next) {
+    try {
+      const result = await establishmentsService.updatePortfolio(req.user.establishmentId, req.body);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
+  async uploadGalleryImage(req, res, next) {
+    try {
+      const result = await establishmentsService.uploadGalleryImage(req.user.establishmentId, req.body);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   async delete(req, res, next) {
     try {
       await establishmentsService.delete(req.params.id);

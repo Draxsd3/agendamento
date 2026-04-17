@@ -6,7 +6,7 @@ import { establishmentsService } from '@/services/establishments.service';
 import { getBrandingTheme } from '@/utils/branding';
 import {
   LayoutDashboard, Users, Scissors, CalendarCheck, Settings,
-  Star, Building2, LogOut, Menu, ChevronRight, DollarSign,
+  Star, Building2, LogOut, Menu, ChevronRight, DollarSign, ImagePlus,
 } from 'lucide-react';
 
 function SidebarContent({ navItems, onNavClick, onLogout, establishment, slug, branding, user }) {
@@ -123,6 +123,7 @@ export default function AdminLayout() {
     { to: `${base}/clube`,         label: 'Clube Assinante', icon: Star },
     { to: `${base}/filiais`,       label: 'Filiais',         icon: Building2 },
     { to: `${base}/financeiro`,    label: 'Financeiro',      icon: DollarSign },
+    { to: `${base}/portfolio`,     label: 'Portfólio',       icon: ImagePlus },
     { to: `${base}/configuracoes`, label: 'Configurações',   icon: Settings },
   ];
 

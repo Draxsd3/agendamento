@@ -252,6 +252,52 @@ class EstablishmentsService {
     return byType[contentType] || hinted || 'png';
   }
 
+  async updatePortfolio(id, payload) {
+    await this.getAdminEstablishment(id);
+    const norm = (v) => String(v || '').trim() || null;
+    const update = {};
+    if ('tagline'       in payload) update.tagline       = norm(payload.tagline);
+    if ('about'         in payload) update.about         = norm(payload.about);
+    if ('gallery'       in payload) update.gallery       = Array.isArray(payload.gallery) ? payload.gallery : [];
+    if ('highlights'    in payload) update.highlights    = Array.isArray(payload.highlights) ? payload.highlights : [];
+    if ('instagram_url' in payload) update.instagram_url = norm(payload.instagram_url);
+    if ('facebook_url'  in payload) update.facebook_url  = norm(payload.facebook_url);
+    if ('tiktok_url'    in payload) update.tiktok_url    = norm(payload.tiktok_url);
+    if ('whatsapp'      in payload) update.whatsapp      = norm(payload.whatsapp);
+    return establishmentsRepo.update(id, update);
+  }
+
+  async uploadGalleryImage(id, payload) {
+    const establishment = await this.getAdminEstablishment(id);
+    const { fileName, contentType, base64 } = payload;
+
+    if (!base64 || !contentType) {
+      const err = new Error('Arquivo invalido.'); err.statusCode = 422; throw err;
+    }
+    if (!ALLOWED_LOGO_TYPES.includes(contentType)) {
+      const err = new Error('Formato nao suportado. Use PNG, JPG ou WEBP.'); err.statusCode = 422; throw err;
+    }
+    const buffer = Buffer.from(base64, 'base64');
+    if (buffer.length > MAX_LOGO_SIZE_BYTES) {
+      const err = new Error('A imagem deve ter no maximo 2 MB.'); err.statusCode = 422; throw err;
+    }
+
+    await this.ensureBrandingBucket();
+    const extension = this.getLogoExtension(contentType, fileName || 'gallery.jpg');
+    const path = `establishments/${id}/gallery-${Date.now()}.${extension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BRANDING_BUCKET)
+      .upload(path, buffer, { contentType, upsert: false, cacheControl: '3600' });
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage.from(BRANDING_BUCKET).getPublicUrl(path);
+    const current = Array.isArray(establishment.gallery) ? establishment.gallery : [];
+    const gallery = [...current, { url: data.publicUrl, path }];
+    await establishmentsRepo.update(id, { gallery });
+    return { url: data.publicUrl, path, gallery };
+  }
+
   async delete(id) {
     await this.getById(id);
     return establishmentsRepo.delete(id);
