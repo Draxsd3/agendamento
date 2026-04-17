@@ -30,8 +30,8 @@ export default function EstablishmentForm() {
     }
   }, [id, isEdit, setValue]);
 
-  // Auto-generate slug from name
   const name = watch('name');
+
   useEffect(() => {
     if (!isEdit && name) {
       const slug = name
@@ -41,6 +41,7 @@ export default function EstablishmentForm() {
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-');
+
       setValue('slug', slug);
     }
   }, [name, isEdit, setValue]);
@@ -54,6 +55,7 @@ export default function EstablishmentForm() {
         await establishmentsService.create(data);
         toast.success('Estabelecimento criado.');
       }
+
       navigate('/super-admin/estabelecimentos');
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -61,40 +63,45 @@ export default function EstablishmentForm() {
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="space-y-6">
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="text-gray-400 hover:text-gray-100 p-1.5 rounded-lg hover:bg-gray-800 transition-colors"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-900"
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="page-title">{isEdit ? 'Editar' : 'Novo'} Estabelecimento</h1>
+          <div>
+            <p className="super-admin-label">{isEdit ? 'Edicao' : 'Cadastro'}</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">
+              {isEdit ? 'Editar' : 'Novo'} estabelecimento
+            </h1>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <Card className="max-w-2xl">
+      <Card className="super-admin-panel max-w-3xl border-none shadow-none">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Input
             label="Nome"
             placeholder="Barbearia Alpha"
             required
             error={errors.name?.message}
-            {...register('name', { required: 'Nome é obrigatório.' })}
+            {...register('name', { required: 'Nome e obrigatorio.' })}
           />
 
           <Input
             label="Slug (URL)"
             placeholder="barbearia-alpha"
             required
-            hint="Usado na URL pública: /{slug}"
+            hint="Usado na URL publica: /{slug}"
             error={errors.slug?.message}
             {...register('slug', {
-              required: 'Slug é obrigatório.',
+              required: 'Slug e obrigatorio.',
               pattern: {
                 value: /^[a-z0-9]+(-[a-z0-9]+)*$/,
-                message: 'Use apenas letras minúsculas, números e hífens.',
+                message: 'Use apenas letras minusculas, numeros e hifens.',
               },
             })}
           />
@@ -106,17 +113,17 @@ export default function EstablishmentForm() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300">Descrição</label>
+            <label className="text-sm font-medium text-stone-700">Descricao</label>
             <textarea
-              className="input-base resize-none h-24"
-              placeholder="Breve descrição do estabelecimento..."
+              className="input-base h-24 resize-none"
+              placeholder="Breve descricao do estabelecimento..."
               {...register('description')}
             />
           </div>
 
           <Input
-            label="Endereço"
-            placeholder="Rua das Flores, 123 — São Paulo, SP"
+            label="Endereco"
+            placeholder="Rua das Flores, 123 - Sao Paulo, SP"
             {...register('address')}
           />
 
@@ -124,8 +131,8 @@ export default function EstablishmentForm() {
             <Button variant="secondary" type="button" onClick={() => navigate(-1)}>
               Cancelar
             </Button>
-            <Button type="submit" loading={isSubmitting}>
-              {isEdit ? 'Salvar alterações' : 'Criar estabelecimento'}
+            <Button type="submit" loading={isSubmitting} className="bg-stone-900 hover:bg-stone-800">
+              {isEdit ? 'Salvar alteracoes' : 'Criar estabelecimento'}
             </Button>
           </div>
         </form>
