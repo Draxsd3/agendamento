@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,11 +24,16 @@ export default function Login() {
     return '/minha-conta';
   };
 
-  if (isAuthenticated) {
-    if (user?.role === 'super_admin') navigate('/super-admin', { replace: true });
-    else navigate(getRedirect(user), { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (user?.role === 'super_admin') {
+      navigate('/super-admin', { replace: true });
+      return;
+    }
+
+    navigate(getRedirect(user), { replace: true });
+  }, [isAuthenticated, user, navigate, location.state]);
 
   const onSubmit = async (data) => {
     try {

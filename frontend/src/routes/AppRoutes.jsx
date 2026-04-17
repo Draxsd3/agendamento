@@ -13,6 +13,7 @@ import Login from '@/pages/auth/Login';
 import SuperAdminLogin from '@/pages/auth/SuperAdminLogin';
 import Register from '@/pages/auth/Register';
 import ForgotPassword from '@/pages/auth/ForgotPassword';
+import ResetPassword from '@/pages/auth/ResetPassword';
 
 import SuperAdminDashboard from '@/pages/super-admin/Dashboard';
 import SuperAdminEstablishments from '@/pages/super-admin/Establishments';
@@ -127,20 +128,19 @@ function CustomerTenantRedirect() {
   return <Navigate to="/login" replace />;
 }
 
-export default function AppRoutes() {
+function RootRedirect() {
   const { loading, user } = useAuth();
 
   if (loading) return <LoadingSpinner fullScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'super_admin') return <Navigate to="/super-admin" replace />;
+  if (user.role === 'establishment_admin') return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
 
-  const getDefaultRedirect = () => {
-    if (!user) return '/login';
-    if (user.role === 'super_admin') return '/super-admin';
-    if (user.role === 'establishment_admin') return `/${user.establishmentSlug}/admin`;
+  const activeSlug = localStorage.getItem('activeEstablishmentSlug');
+  return <Navigate to={activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'} replace />;
+}
 
-    const activeSlug = localStorage.getItem('activeEstablishmentSlug');
-    return activeSlug ? `/${activeSlug}/cliente` : '/minha-conta';
-  };
-
+export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/agendamento/:slug/*" element={<LegacyTenantRedirect />} />
@@ -158,6 +158,7 @@ export default function AppRoutes() {
       <Route path="/super-admin/login" element={<SuperAdminLogin />} />
       <Route path="/cadastro" element={<Register />} />
       <Route path="/recuperar-senha" element={<ForgotPassword />} />
+      <Route path="/redefinir-senha" element={<ResetPassword />} />
 
       <Route
         path="/super-admin"
@@ -220,7 +221,7 @@ export default function AppRoutes() {
         <Route path="plano" element={<CustomerPlan />} />
       </Route>
 
-      <Route path="/" element={<Navigate to={getDefaultRedirect()} replace />} />
+      <Route path="/" element={<RootRedirect />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

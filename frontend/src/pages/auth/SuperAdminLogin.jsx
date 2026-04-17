@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,14 +14,16 @@ export default function SuperAdminLogin() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
-  if (isAuthenticated && user?.role === 'super_admin') {
-    navigate('/super-admin', { replace: true });
-    return null;
-  }
-  if (isAuthenticated && user?.role !== 'super_admin') {
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (user?.role === 'super_admin') {
+      navigate('/super-admin', { replace: true });
+      return;
+    }
+
     navigate('/', { replace: true });
-    return null;
-  }
+  }, [isAuthenticated, user, navigate]);
 
   const onSubmit = async (data) => {
     try {
