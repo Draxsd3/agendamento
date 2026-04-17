@@ -43,7 +43,7 @@ class SubscriptionsRepository extends BaseRepository {
       .from('subscriptions')
       .select(`
         *,
-        plans(id, name, price),
+        plans(id, name, price, billing_type),
         customers(id, users(id, name, email))
       `)
       .eq('establishment_id', establishmentId)

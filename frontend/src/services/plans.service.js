@@ -22,7 +22,22 @@ export const plansService = {
   },
 
   getSubscribers: async () => {
-    const res = await api.get('/plans/subscribers');
+    const res = await api.get('/subscriptions/admin');
+    return res.data;
+  },
+
+  activateSubscription: async (id) => {
+    const res = await api.patch(`/subscriptions/admin/${id}/activate`);
+    return res.data;
+  },
+
+  cancelSubscription: async (id) => {
+    const res = await api.patch(`/subscriptions/admin/${id}/cancel`);
+    return res.data;
+  },
+
+  generateCheckout: async (id) => {
+    const res = await api.post(`/subscriptions/admin/${id}/checkout`);
     return res.data;
   },
 

@@ -13,6 +13,7 @@ const branchesRoutes      = require('./branches.routes');
 const plansRoutes         = require('./plans.routes');
 const subscriptionsRoutes = require('./subscriptions.routes');
 const financialRoutes     = require('./financial.routes');
+const asaasRoutes         = require('./asaas.routes');
 
 const router = Router();
 
@@ -29,5 +30,6 @@ router.use('/branches',      branchesRoutes);
 router.use('/plans',         plansRoutes);
 router.use('/subscriptions', subscriptionsRoutes);
 router.use('/financial',    financialRoutes);
+router.use('/asaas',        asaasRoutes);
 
 module.exports = router;

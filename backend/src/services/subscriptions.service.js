@@ -43,6 +43,28 @@ class SubscriptionsService {
       throw err;
     }
 
+    const billingType = plan.billing_type || 'manual';
+
+    if (billingType === 'manual') {
+      const pendingManual = await subscriptionsRepo.findPendingByCustomerAndEstablishment(
+        customer.id,
+        plan.establishment_id
+      );
+      if (pendingManual) return { subscription: pendingManual };
+
+      const localSubscription = await subscriptionsRepo.create({
+        customer_id: customer.id,
+        plan_id: planId,
+        establishment_id: plan.establishment_id,
+        status: 'pending',
+        started_at: new Date().toISOString(),
+        payment_provider: 'manual',
+        payment_status: 'awaiting_confirmation',
+        metadata: {},
+      });
+      return { subscription: localSubscription };
+    }
+
     const pending = await subscriptionsRepo.findPendingByCustomerAndEstablishment(
       customer.id,
       plan.establishment_id
@@ -169,6 +191,110 @@ class SubscriptionsService {
       default:
         return { ignored: true, event: payload?.event || 'unknown' };
     }
+  }
+
+  async adminActivate(subscriptionId, establishmentId) {
+    const sub = await subscriptionsRepo.findById(subscriptionId);
+    if (!sub || sub.establishment_id !== establishmentId) {
+      const err = new Error('Assinatura nao encontrada.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (sub.status === 'active') {
+      const err = new Error('Assinatura ja esta ativa.');
+      err.statusCode = 409;
+      throw err;
+    }
+
+    const plan = await plansRepo.findById(sub.plan_id);
+    return subscriptionsRepo.update(subscriptionId, {
+      status: 'active',
+      payment_status: 'manual_confirmed',
+      expires_at: this._calcExpiresAt(plan?.billing_interval),
+    });
+  }
+
+  async adminCancel(subscriptionId, establishmentId) {
+    const sub = await subscriptionsRepo.findById(subscriptionId);
+    if (!sub || sub.establishment_id !== establishmentId) {
+      const err = new Error('Assinatura nao encontrada.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (sub.provider_subscription_id) {
+      const asaasContext = await this._resolveAsaasContext(establishmentId, sub.customer_id);
+      try {
+        await asaasService.cancelSubscription(sub.provider_subscription_id, asaasContext.apiKey);
+      } catch {}
+    }
+
+    return subscriptionsRepo.update(subscriptionId, {
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+      payment_status: 'cancelled',
+    });
+  }
+
+  async adminGenerateCheckout(subscriptionId, establishmentId, callbackUrls = {}) {
+    const sub = await subscriptionsRepo.findById(subscriptionId);
+    if (!sub || sub.establishment_id !== establishmentId) {
+      const err = new Error('Assinatura nao encontrada.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const plan = await plansRepo.findById(sub.plan_id);
+    const customer = await customersRepo.findById(sub.customer_id);
+    if (!customer) {
+      const err = new Error('Cliente nao encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const asaasContext = await this._resolveAsaasContext(establishmentId, customer.id);
+    const providerCustomerId = await this._ensureAsaasCustomer(customer, {
+      establishmentId,
+      existingProviderCustomerId: sub.provider_customer_id || asaasContext.providerCustomerId,
+      apiKey: asaasContext.apiKey,
+      persistOnCustomer: !asaasContext.usesSubaccount,
+    });
+
+    const nextDueDate = this._calcNextDueDate();
+    const callbacks = this._buildCallbacks(callbackUrls);
+
+    const checkout = await asaasService.createRecurringCheckout({
+      customerId: providerCustomerId,
+      plan,
+      callbacks,
+      nextDueDate,
+      apiKey: asaasContext.apiKey,
+    });
+
+    const checkoutUrl = checkout.link || this._buildCheckoutUrl(checkout.id);
+    await subscriptionsRepo.update(subscriptionId, {
+      payment_provider: 'asaas',
+      provider_customer_id: providerCustomerId,
+      provider_checkout_id: checkout.id,
+      checkout_url: checkoutUrl,
+      payment_method: 'credit_card',
+      payment_status: 'checkout_created',
+      metadata: {
+        ...(sub.metadata || {}),
+        checkout,
+        uses_subaccount: asaasContext.usesSubaccount,
+        establishment_wallet_id: asaasContext.walletId,
+      },
+    });
+
+    return {
+      checkout: {
+        id: checkout.id,
+        url: checkoutUrl,
+        expires_in_minutes: env.asaas.checkout.minutesToExpire,
+      },
+    };
   }
 
   async _ensureAsaasCustomer(customer, options = {}) {

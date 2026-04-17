@@ -64,6 +64,51 @@ class SubscriptionsController {
     }
   }
 
+  // Admin: get all subscriptions for the establishment
+  async getByEstablishment(req, res, next) {
+    try {
+      const data = await subscriptionsService.getByEstablishment(req.user.establishmentId);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Admin: manually activate a pending subscription (billing_type=manual)
+  async adminActivate(req, res, next) {
+    try {
+      const data = await subscriptionsService.adminActivate(req.params.id, req.user.establishmentId);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Admin: cancel any subscription
+  async adminCancel(req, res, next) {
+    try {
+      const data = await subscriptionsService.adminCancel(req.params.id, req.user.establishmentId);
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Admin: generate Asaas checkout for a pending subscription (billing_type=asaas)
+  async adminGenerateCheckout(req, res, next) {
+    try {
+      const { success_url, cancel_url, expired_url } = req.body;
+      const data = await subscriptionsService.adminGenerateCheckout(
+        req.params.id,
+        req.user.establishmentId,
+        { success_url, cancel_url, expired_url }
+      );
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async asaasWebhook(req, res, next) {
     try {
       const authToken =

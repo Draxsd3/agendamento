@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   Camera, Palette, Sparkles, Building2, Clock,
-  Image, Type, Check,
+  Image, Type, Check, CreditCard, RefreshCw, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CustomerAreaPreview from '@/components/branding/CustomerAreaPreview';
 import api from '@/services/api';
 import { establishmentsService } from '@/services/establishments.service';
+import { asaasService } from '@/services/asaas.service';
 import { extractPaletteFromImageSource, getBrandingTheme } from '@/utils/branding';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
@@ -78,6 +79,18 @@ export default function AdminSettings() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [detectedPalette, setDetectedPalette] = useState([]);
 
+  const [asaas,          setAsaas]          = useState(null);
+  const [asaasLoading,   setAsaasLoading]   = useState(true);
+  const [asaasFormOpen,  setAsaasFormOpen]  = useState(false);
+  const [savingAsaas,    setSavingAsaas]    = useState(false);
+  const [syncingAsaas,   setSyncingAsaas]   = useState(false);
+  const [asaasForm,      setAsaasForm]      = useState({
+    name: '', email: '', cpfCnpj: '', personType: 'FISICA',
+    birthDate: '', companyType: '', incomeValue: '',
+    phone: '', address: '', addressNumber: '', complement: '',
+    province: '', postalCode: '',
+  });
+
   const logoInputRef  = useRef(null);
   const coverInputRef = useRef(null);
 
@@ -87,6 +100,17 @@ export default function AdminSettings() {
   const accent  = brandingTheme.accentColor  || '#111827';
 
   // ── load ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.establishmentId) return;
+    asaasService.getSubaccount()
+      .then((data) => {
+        setAsaas(data);
+        if (data.configured) setAsaasFormOpen(false);
+      })
+      .catch(() => setAsaas(null))
+      .finally(() => setAsaasLoading(false));
+  }, [user]);
+
   useEffect(() => {
     if (!user?.establishmentId) return;
     const load = async () => {
@@ -157,6 +181,38 @@ export default function AdminSettings() {
       toast.success('Capa atualizada!');
     } catch (err) { toast.error(getErrorMessage(err)); }
     finally { setUploadingCover(false); }
+  };
+
+  const handleCreateSubaccount = async () => {
+    setSavingAsaas(true);
+    try {
+      const data = await asaasService.createSubaccount({
+        ...asaasForm,
+        incomeValue: Number(asaasForm.incomeValue),
+      });
+      setAsaas(data);
+      setAsaasFormOpen(false);
+      toast.success('Subconta Asaas criada com sucesso!');
+    } catch (err) { toast.error(getErrorMessage(err)); }
+    finally { setSavingAsaas(false); }
+  };
+
+  const handleSyncAsaas = async () => {
+    setSyncingAsaas(true);
+    try {
+      const data = await asaasService.syncSubaccount();
+      setAsaas(data);
+      toast.success('Status sincronizado.');
+    } catch (err) { toast.error(getErrorMessage(err)); }
+    finally { setSyncingAsaas(false); }
+  };
+
+  const handleBillingMode = async (mode) => {
+    try {
+      const data = await asaasService.updateBillingMode(mode);
+      setAsaas(data);
+      toast.success('Modo de cobrança atualizado.');
+    } catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   const handleSaveHours = async () => {
@@ -441,6 +497,219 @@ export default function AdminSettings() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── ASAAS INTEGRATION ────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100"
+          style={{ borderLeftWidth: 3, borderLeftColor: primary }}>
+          <div className="flex items-center gap-3">
+            <CreditCard size={16} style={{ color: primary }} />
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Integração Asaas</p>
+              <p className="text-xs text-gray-400">Cobranças recorrentes via checkout Asaas</p>
+            </div>
+          </div>
+          {!asaasLoading && asaas && (
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+              asaas.configured
+                ? 'bg-green-50 text-green-700'
+                : 'bg-gray-100 text-gray-500'
+            }`}>
+              {asaas.configured ? 'Conectado' : 'Nao configurado'}
+            </span>
+          )}
+        </div>
+
+        {asaasLoading ? (
+          <div className="p-6 space-y-3">
+            <div className="h-10 bg-gray-100 rounded-xl animate-pulse" />
+            <div className="h-10 bg-gray-100 rounded-xl animate-pulse" />
+          </div>
+        ) : asaas?.configured ? (
+          <div className="p-6 space-y-5">
+            {/* Account info */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">Email da subconta</p>
+                <p className="font-medium text-gray-800">{asaas.email || '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">Chave de API</p>
+                <p className="font-mono text-gray-700">{asaas.api_key_masked || '—'}</p>
+              </div>
+              {asaas.cpf_cnpj && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">CPF/CNPJ</p>
+                  <p className="font-medium text-gray-800">{asaas.cpf_cnpj}</p>
+                </div>
+              )}
+              {asaas.last_synced_at && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-0.5">Ultima sincronia</p>
+                  <p className="text-gray-600">{new Date(asaas.last_synced_at).toLocaleString('pt-BR')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Onboarding links */}
+            {asaas.onboarding_links?.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="text-xs font-semibold text-amber-800 mb-2">Documentacao pendente</p>
+                <div className="space-y-1.5">
+                  {asaas.onboarding_links.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.onboardingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-xs text-amber-700 hover:text-amber-900 underline"
+                    >
+                      {link.title || link.type}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Billing mode */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Modo de cobrança padrão</p>
+              <div className="space-y-2">
+                {(asaas.billing_mode_options || []).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleBillingMode(opt.value)}
+                    className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-colors ${
+                      asaas.billing_mode === opt.value
+                        ? 'border-gray-900 bg-gray-900 text-white'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                    }`}
+                    style={asaas.billing_mode === opt.value ? { backgroundColor: primary, borderColor: primary } : {}}
+                  >
+                    <p className="font-medium">{opt.label}</p>
+                    <p className={`text-xs mt-0.5 ${asaas.billing_mode === opt.value ? 'text-white/70' : 'text-gray-400'}`}>{opt.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSyncAsaas}
+              disabled={syncingAsaas}
+              className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={syncingAsaas ? 'animate-spin' : ''} />
+              Sincronizar status
+            </button>
+          </div>
+        ) : (
+          <div className="p-6">
+            <p className="text-sm text-gray-500 mb-4">
+              Configure uma subconta Asaas para aceitar pagamentos recorrentes diretamente pelos seus planos.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setAsaasFormOpen((v) => !v)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              {asaasFormOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              {asaasFormOpen ? 'Fechar formulário' : 'Configurar subconta Asaas'}
+            </button>
+
+            {asaasFormOpen && (
+              <div className="mt-5 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Nome *</label>
+                    <input className="input-base text-sm" placeholder="Nome do responsável ou empresa"
+                      value={asaasForm.name} onChange={(e) => setAsaasForm((f) => ({ ...f, name: e.target.value }))} />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Email *</label>
+                    <input type="email" className="input-base text-sm" placeholder="email@empresa.com"
+                      value={asaasForm.email} onChange={(e) => setAsaasForm((f) => ({ ...f, email: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">CPF / CNPJ *</label>
+                    <input className="input-base text-sm" placeholder="000.000.000-00"
+                      value={asaasForm.cpfCnpj} onChange={(e) => setAsaasForm((f) => ({ ...f, cpfCnpj: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Tipo de pessoa</label>
+                    <select className="input-base text-sm" value={asaasForm.personType}
+                      onChange={(e) => setAsaasForm((f) => ({ ...f, personType: e.target.value }))}>
+                      <option value="FISICA">Pessoa Física</option>
+                      <option value="JURIDICA">Pessoa Jurídica</option>
+                    </select>
+                  </div>
+                  {asaasForm.personType === 'FISICA' && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 block mb-1">Data de nascimento</label>
+                      <input type="date" className="input-base text-sm"
+                        value={asaasForm.birthDate} onChange={(e) => setAsaasForm((f) => ({ ...f, birthDate: e.target.value }))} />
+                    </div>
+                  )}
+                  {asaasForm.personType === 'JURIDICA' && (
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 block mb-1">Tipo de empresa</label>
+                      <select className="input-base text-sm" value={asaasForm.companyType}
+                        onChange={(e) => setAsaasForm((f) => ({ ...f, companyType: e.target.value }))}>
+                        <option value="">Selecione...</option>
+                        <option value="MEI">MEI</option>
+                        <option value="LIMITED">Ltda</option>
+                        <option value="INDIVIDUAL">Individual</option>
+                        <option value="ASSOCIATION">Associação</option>
+                      </select>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Renda mensal (R$) *</label>
+                    <input type="number" min="0" step="0.01" className="input-base text-sm" placeholder="3000.00"
+                      value={asaasForm.incomeValue} onChange={(e) => setAsaasForm((f) => ({ ...f, incomeValue: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Telefone *</label>
+                    <input className="input-base text-sm" placeholder="(11) 99999-9999"
+                      value={asaasForm.phone} onChange={(e) => setAsaasForm((f) => ({ ...f, phone: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">CEP *</label>
+                    <input className="input-base text-sm" placeholder="00000-000"
+                      value={asaasForm.postalCode} onChange={(e) => setAsaasForm((f) => ({ ...f, postalCode: e.target.value }))} />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Rua *</label>
+                    <input className="input-base text-sm" placeholder="Rua das Flores"
+                      value={asaasForm.address} onChange={(e) => setAsaasForm((f) => ({ ...f, address: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Número *</label>
+                    <input className="input-base text-sm" placeholder="123"
+                      value={asaasForm.addressNumber} onChange={(e) => setAsaasForm((f) => ({ ...f, addressNumber: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Complemento</label>
+                    <input className="input-base text-sm" placeholder="Apto 4"
+                      value={asaasForm.complement} onChange={(e) => setAsaasForm((f) => ({ ...f, complement: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600 block mb-1">Bairro *</label>
+                    <input className="input-base text-sm" placeholder="Centro"
+                      value={asaasForm.province} onChange={(e) => setAsaasForm((f) => ({ ...f, province: e.target.value }))} />
+                  </div>
+                </div>
+
+                <SaveButton loading={savingAsaas} onClick={handleCreateSubaccount} primary={primary}>
+                  Criar subconta Asaas
+                </SaveButton>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── BUSINESS HOURS ────────────────────────────────────────────────── */}
