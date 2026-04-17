@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Eye, Plus } from 'lucide-react';
+import { Plus, ExternalLink, Eye } from 'lucide-react';
 import Card from '@/components/common/Card';
 import Table from '@/components/common/Table';
 import Badge from '@/components/common/Badge';
@@ -8,16 +8,6 @@ import Button from '@/components/common/Button';
 import { establishmentsService } from '@/services/establishments.service';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
-
-function SummaryCard({ label, value, note }) {
-  return (
-    <div className="super-admin-soft-panel p-4">
-      <p className="super-admin-label">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-tight text-stone-950">{value}</p>
-      <p className="mt-2 text-sm text-stone-950">{note}</p>
-    </div>
-  );
-}
 
 export default function SuperAdminEstablishments() {
   const [data, setData] = useState([]);
@@ -43,26 +33,8 @@ export default function SuperAdminEstablishments() {
     }
   };
 
-  const metrics = useMemo(() => {
-    const active = data.filter((item) => item.status === 'active').length;
-    return {
-      total: data.length,
-      active,
-      inactive: data.length - active,
-    };
-  }, [data]);
-
   const columns = [
-    {
-      key: 'name',
-      label: 'Estabelecimento',
-      render: (row) => (
-        <div>
-          <p className="font-medium text-stone-900">{row.name}</p>
-          <p className="text-xs text-stone-950">/{row.slug}</p>
-        </div>
-      ),
-    },
+    { key: 'name', label: 'Nome' },
     { key: 'slug', label: 'Slug' },
     {
       key: 'status',
@@ -81,29 +53,28 @@ export default function SuperAdminEstablishments() {
         <div className="flex items-center gap-3">
           <Link
             to={`/super-admin/estabelecimentos/${row.id}`}
-            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs font-medium text-stone-950 transition-colors hover:border-stone-300 hover:bg-white"
+            className="flex items-center gap-1 text-blue-600 transition-colors hover:text-blue-700"
             title="Ver detalhes"
           >
-            <Eye size={14} />
-            Abrir
+            <Eye size={15} strokeWidth={1.75} />
           </Link>
           <Link
             to={`/super-admin/estabelecimentos/${row.id}/editar`}
-            className="text-xs font-medium text-stone-950 transition-colors hover:opacity-75"
+            className="text-xs text-gray-600 transition-colors hover:text-gray-900"
           >
             Editar
           </Link>
           {row.status === 'active' ? (
             <button
               onClick={() => handleSetStatus(row.id, 'inactive')}
-              className="text-xs font-medium text-rose-500 transition-colors hover:text-rose-600"
+              className="text-xs text-red-500 transition-colors hover:text-red-600"
             >
               Inativar
             </button>
           ) : (
             <button
               onClick={() => handleSetStatus(row.id, 'active')}
-              className="text-xs font-medium text-emerald-600 transition-colors hover:text-emerald-700"
+              className="text-xs text-green-600 transition-colors hover:text-green-700"
             >
               Ativar
             </button>
@@ -112,10 +83,10 @@ export default function SuperAdminEstablishments() {
             href={`/${row.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-stone-950 transition-colors hover:opacity-75"
+            className="text-gray-500 transition-colors hover:text-gray-800"
             title="Pagina publica"
           >
-            <ExternalLink size={14} />
+            <ExternalLink size={13} strokeWidth={1.75} />
           </a>
         </div>
       ),
@@ -123,36 +94,15 @@ export default function SuperAdminEstablishments() {
   ];
 
   return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="super-admin-label">Operacao</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">
-            Rede de estabelecimentos
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-stone-950">
-            Acompanhe criacao, ativacao e acesso publico em uma lista mais limpa e alinhada
-            com a identidade institucional do Super Admin.
-          </p>
-        </div>
+    <div>
+      <div className="page-header">
+        <h1 className="page-title">Estabelecimentos</h1>
         <Link to="/super-admin/estabelecimentos/novo">
-          <Button icon={Plus} className="rounded-2xl bg-stone-900 hover:bg-stone-800">
-            Novo estabelecimento
-          </Button>
+          <Button icon={Plus}>Novo Estabelecimento</Button>
         </Link>
-      </section>
+      </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <SummaryCard label="Base total" value={metrics.total} note="Todos os estabelecimentos cadastrados." />
-        <SummaryCard label="Operando" value={metrics.active} note="Acessos liberados e ativos." />
-        <SummaryCard label="Pausados" value={metrics.inactive} note="Operacoes temporariamente inativas." />
-      </section>
-
-      <Card className="super-admin-panel overflow-hidden border-none p-0 shadow-none" padding={false}>
-        <div className="border-b border-stone-200/80 px-6 py-5">
-          <p className="super-admin-label">Lista principal</p>
-          <h3 className="mt-2 text-lg font-semibold text-stone-950">Estabelecimentos cadastrados</h3>
-        </div>
+      <Card padding={false}>
         <Table
           columns={columns}
           data={data}

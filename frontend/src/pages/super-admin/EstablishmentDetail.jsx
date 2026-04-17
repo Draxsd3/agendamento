@@ -3,18 +3,18 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   ArrowLeft,
-  Check,
-  Copy,
-  CreditCard,
   ExternalLink,
+  Copy,
+  Check,
   Globe,
   LogIn,
-  Pencil,
-  RefreshCw,
-  ToggleLeft,
-  ToggleRight,
   UserPlus,
   Users,
+  Pencil,
+  ToggleLeft,
+  ToggleRight,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import Card, { CardHeader } from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
@@ -27,58 +27,42 @@ import api from '@/services/api';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
 
-function CopyField({ label, value, href, note }) {
+function CopyField({ label, value, href }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
     await navigator.clipboard.writeText(value);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="rounded-3xl border border-stone-200 bg-stone-50/80 p-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="super-admin-label">{label}</p>
-          <p className="mt-3 truncate rounded-2xl border border-stone-200 bg-white px-4 py-3 font-mono text-sm text-stone-950">
-            {value}
-          </p>
-          {note ? <p className="mt-2 text-xs text-stone-950">{note}</p> : null}
-        </div>
-
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium uppercase tracking-wider text-gray-500">{label}</span>
+      <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+        <span className="flex-1 truncate font-mono text-sm text-gray-900">{value}</span>
+        <div className="flex shrink-0 items-center gap-1.5">
           {href ? (
             <a
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-950 transition-colors hover:opacity-75"
+              className="text-gray-500 transition-colors hover:text-blue-600"
               title="Abrir"
             >
-              <ExternalLink size={15} />
+              <ExternalLink size={14} strokeWidth={1.75} />
             </a>
           ) : null}
-
           <button
             type="button"
             onClick={copy}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-950 transition-colors hover:opacity-75"
+            className="text-gray-500 transition-colors hover:text-green-600"
             title="Copiar"
           >
-            {copied ? <Check size={15} className="text-emerald-600" /> : <Copy size={15} />}
+            {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} strokeWidth={1.75} />}
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function InfoItem({ label, value, full = false }) {
-  return (
-    <div className={full ? 'md:col-span-2' : ''}>
-      <p className="super-admin-label">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-950">{value || '-'}</p>
     </div>
   );
 }
@@ -126,10 +110,7 @@ export default function EstablishmentDetail() {
       setEstablishment(estab);
       setAdmins(adminsData);
 
-      const subaccount = await superAdminService
-        .getAsaasSubaccount(id)
-        .catch(() => ({ configured: false }));
-
+      const subaccount = await superAdminService.getAsaasSubaccount(id).catch(() => ({ configured: false }));
       setAsaasSubaccount(subaccount);
       setAsaasForm((current) => ({
         ...current,
@@ -150,7 +131,6 @@ export default function EstablishmentDetail() {
 
   const handleToggleStatus = async () => {
     const next = establishment.status === 'active' ? 'inactive' : 'active';
-
     try {
       const updated = await establishmentsService.setStatus(id, next);
       setEstablishment(updated);
@@ -179,7 +159,6 @@ export default function EstablishmentDetail() {
   const handleCreateAsaasSubaccount = async (event) => {
     event.preventDefault();
     setCreatingAsaas(true);
-
     try {
       const result = await superAdminService.createAsaasSubaccount(id, asaasForm);
       setAsaasSubaccount(result);
@@ -194,7 +173,6 @@ export default function EstablishmentDetail() {
 
   const handleSyncAsaas = async () => {
     setSyncingAsaas(true);
-
     try {
       const result = await superAdminService.syncAsaasSubaccount(id);
       setAsaasSubaccount(result);
@@ -208,8 +186,8 @@ export default function EstablishmentDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <div className="h-9 w-9 animate-spin rounded-full border-2 border-stone-300 border-t-stone-900" />
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-blue-500" />
       </div>
     );
   }
@@ -219,158 +197,145 @@ export default function EstablishmentDetail() {
 
   return (
     <div className="space-y-6">
-      <section className="super-admin-panel overflow-hidden border-none bg-stone-950 text-white shadow-2xl shadow-stone-950/20">
-        <div className="flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
-          <div className="flex items-start gap-4">
-            <button
-              onClick={() => navigate('/super-admin/estabelecimentos')}
-              className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-stone-200 transition-colors hover:bg-white/[0.08] hover:text-white"
-            >
-              <ArrowLeft size={18} />
-            </button>
-
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-400">
-                Detalhe do estabelecimento
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <h2 className="text-3xl font-semibold tracking-tight text-white">{establishment.name}</h2>
-                <Badge value={establishment.status} />
-              </div>
-              <p className="mt-2 text-sm text-stone-300">/{establishment.slug}</p>
-            </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/super-admin/estabelecimentos')}
+            className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <ArrowLeft size={20} strokeWidth={1.75} />
+          </button>
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">{establishment.name}</h1>
+            <p className="text-sm text-gray-500">/{establishment.slug}</p>
           </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Link to={`/super-admin/estabelecimentos/${id}/editar`}>
-              <Button variant="secondary" icon={Pencil} className="rounded-2xl border-white/10 bg-white text-stone-900 hover:bg-stone-100">
-                Editar
-              </Button>
-            </Link>
-            <Button
-              variant={establishment.status === 'active' ? 'danger' : 'primary'}
-              size="md"
-              icon={establishment.status === 'active' ? ToggleLeft : ToggleRight}
-              className={establishment.status === 'active' ? 'rounded-2xl' : 'rounded-2xl bg-stone-100 text-stone-900 hover:bg-white'}
-              onClick={handleToggleStatus}
-            >
-              {establishment.status === 'active' ? 'Inativar' : 'Ativar'}
-            </Button>
-          </div>
+          <Badge value={establishment.status} />
         </div>
-      </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
-        <div className="space-y-6">
-          <Card className="super-admin-panel border-none shadow-none">
-            <CardHeader
-              title="Informacoes principais"
-              description="Dados institucionais usados para operacao, links e identificacao."
-            />
-            <div className="grid gap-5 md:grid-cols-2">
-              <InfoItem label="Nome" value={establishment.name} />
-              <InfoItem label="Slug" value={establishment.slug} />
-              <InfoItem label="Telefone" value={establishment.phone || '-'} />
-              <InfoItem label="Criado em" value={new Date(establishment.created_at).toLocaleDateString('pt-BR')} />
-              <InfoItem label="Endereco" value={establishment.address || '-'} full />
-              <InfoItem label="Descricao" value={establishment.description || '-'} full />
+        <div className="flex gap-2">
+          <Link to={`/super-admin/estabelecimentos/${id}/editar`}>
+            <Button variant="secondary" icon={Pencil} size="sm">
+              Editar
+            </Button>
+          </Link>
+          <Button
+            variant={establishment.status === 'active' ? 'danger' : 'primary'}
+            size="sm"
+            icon={establishment.status === 'active' ? ToggleLeft : ToggleRight}
+            onClick={handleToggleStatus}
+          >
+            {establishment.status === 'active' ? 'Inativar' : 'Ativar'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader title="Informacoes" />
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+              {[
+                { label: 'Nome', value: establishment.name },
+                { label: 'Slug', value: establishment.slug },
+                { label: 'Telefone', value: establishment.phone || '-' },
+                { label: 'Criado em', value: new Date(establishment.created_at).toLocaleDateString('pt-BR') },
+              ].map((item) => (
+                <div key={item.label}>
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">{item.label}</p>
+                  <p className="text-gray-900">{item.value}</p>
+                </div>
+              ))}
+
+              {establishment.address ? (
+                <div className="sm:col-span-2">
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Endereco</p>
+                  <p className="text-gray-900">{establishment.address}</p>
+                </div>
+              ) : null}
+
+              {establishment.description ? (
+                <div className="sm:col-span-2">
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Descricao</p>
+                  <p className="text-gray-900">{establishment.description}</p>
+                </div>
+              ) : null}
             </div>
           </Card>
 
-          <Card className="super-admin-panel border-none shadow-none">
+          <Card>
             <CardHeader
               title="URLs de acesso"
-              description="Atalhos prontos para compartilhar com clientes e com o dono do estabelecimento."
+              description="Copie e envie ao dono e clientes do estabelecimento."
             />
             <div className="space-y-4">
               <CopyField
-                label="Pagina publica de agendamento"
+                label="Pagina publica de agendamento (clientes)"
                 value={bookingUrl}
                 href={bookingUrl}
-                note="Link para clientes acessarem a agenda publica."
               />
-              <CopyField
-                label="Login do admin do estabelecimento"
-                value={loginUrl}
-                note="Entregue esse link junto com as credenciais criadas abaixo."
-              />
+
+              <div>
+                <CopyField label="Login do admin do estabelecimento" value={loginUrl} />
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-gray-500">
+                  <LogIn size={11} strokeWidth={1.75} />
+                  Envie ao dono junto com as credenciais criadas abaixo.
+                </p>
+              </div>
             </div>
           </Card>
         </div>
 
         <div className="space-y-6">
-          <Card className="super-admin-panel border-none shadow-none">
+          <Card>
             <CardHeader
-              title="Usuario admin"
-              description="Responsavel pela operacao do estabelecimento."
+              title="Usuario Admin"
+              description="Responsavel por gerenciar este estabelecimento."
               action={(
-                <Button
-                  icon={UserPlus}
-                  size="sm"
-                  className="rounded-2xl bg-stone-900 hover:bg-stone-800"
-                  onClick={() => {
-                    reset();
-                    setShowAdminModal(true);
-                  }}
-                >
+                <Button icon={UserPlus} size="sm" onClick={() => { reset(); setShowAdminModal(true); }}>
                   Criar
                 </Button>
               )}
             />
 
             {admins.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
-                <Users size={28} className="mx-auto mb-3 text-stone-400" />
-                <p className="text-sm font-medium text-stone-950">Nenhum admin vinculado.</p>
-                <p className="mt-1 text-xs text-stone-950">
-                  Crie um usuario admin para liberar o acesso ao painel deste estabelecimento.
-                </p>
+              <div className="py-6 text-center">
+                <Users size={32} className="mx-auto mb-2 text-gray-400" strokeWidth={1.75} />
+                <p className="text-sm text-gray-600">Nenhum admin vinculado.</p>
+                <p className="mt-1 text-xs text-gray-500">Crie um usuario admin para este estabelecimento.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {admins.map((u) => (
-                  <div key={u.id} className="rounded-3xl border border-stone-200 bg-stone-50/80 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200 bg-white text-sm font-semibold text-stone-950">
+                  <div key={u.id} className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white shrink-0">
+                      <span className="text-xs font-semibold text-gray-700">
                         {u.name?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-stone-900">{u.name}</p>
-                        <p className="truncate text-xs text-stone-950">{u.email}</p>
-                      </div>
-                      <Badge value={u.is_active ? 'active' : 'inactive'}>
-                        {u.is_active ? 'Ativo' : 'Inativo'}
-                      </Badge>
+                      </span>
                     </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900">{u.name}</p>
+                      <p className="truncate text-xs text-gray-500">{u.email}</p>
+                    </div>
+                    <Badge value={u.is_active ? 'active' : 'inactive'}>
+                      {u.is_active ? 'Ativo' : 'Inativo'}
+                    </Badge>
                   </div>
                 ))}
               </div>
             )}
           </Card>
 
-          <Card className="super-admin-panel border-none shadow-none">
+          <Card>
             <CardHeader
               title="Subconta Asaas"
-              description="Conta financeira usada para cobrancas e assinaturas."
+              description="Conta financeira do estabelecimento para cobrancas e assinaturas."
               action={
                 asaasSubaccount.configured ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    icon={RefreshCw}
-                    onClick={handleSyncAsaas}
-                    loading={syncingAsaas}
-                    className="rounded-2xl"
-                  >
+                  <Button size="sm" variant="secondary" icon={RefreshCw} onClick={handleSyncAsaas} loading={syncingAsaas}>
                     Sincronizar
                   </Button>
                 ) : (
-                  <Button
-                    size="sm"
-                    icon={CreditCard}
-                    className="rounded-2xl bg-stone-900 hover:bg-stone-800"
-                    onClick={() => setShowAsaasModal(true)}
-                  >
+                  <Button size="sm" icon={CreditCard} onClick={() => setShowAsaasModal(true)}>
                     Criar subconta
                   </Button>
                 )
@@ -378,36 +343,51 @@ export default function EstablishmentDetail() {
             />
 
             {!asaasSubaccount.configured ? (
-              <div className="rounded-3xl border border-dashed border-stone-200 bg-stone-50 px-5 py-8 text-center">
-                <CreditCard size={28} className="mx-auto mb-3 text-stone-400" />
-                <p className="text-sm font-medium text-stone-950">Nenhuma subconta Asaas criada.</p>
-                <p className="mt-1 text-xs text-stone-950">
-                  Configure a subconta para separar recebimentos na conta do estabelecimento.
+              <div className="py-6 text-center">
+                <CreditCard size={32} className="mx-auto mb-2 text-gray-400" strokeWidth={1.75} />
+                <p className="text-sm text-gray-600">Nenhuma subconta Asaas criada.</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Crie a subconta para que o estabelecimento receba os pagamentos na propria conta.
                 </p>
               </div>
             ) : (
-              <div className="space-y-4 text-sm">
-                <InfoItem label="Account ID" value={asaasSubaccount.account_id || '-'} />
-                <InfoItem label="Wallet ID" value={asaasSubaccount.wallet_id || '-'} />
-                <InfoItem label="API Key" value={asaasSubaccount.api_key_masked || '-'} />
-                <div className="grid gap-4 md:grid-cols-2">
-                  <InfoItem label="Status geral" value={asaasSubaccount.status?.general || 'PENDING'} />
-                  <InfoItem label="Documentacao" value={asaasSubaccount.status?.documentation || 'PENDING'} />
+              <div className="space-y-3 text-sm">
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Account ID</p>
+                  <p className="break-all font-mono text-gray-900">{asaasSubaccount.account_id || '-'}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Wallet ID</p>
+                  <p className="break-all font-mono text-gray-900">{asaasSubaccount.wallet_id || '-'}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">API Key</p>
+                  <p className="break-all font-mono text-gray-900">{asaasSubaccount.api_key_masked || '-'}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Status Geral</p>
+                    <p className="text-gray-900">{asaasSubaccount.status?.general || 'PENDING'}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs uppercase tracking-wider text-gray-500">Documentacao</p>
+                    <p className="text-gray-900">{asaasSubaccount.status?.documentation || 'PENDING'}</p>
+                  </div>
                 </div>
 
                 {asaasSubaccount.onboarding_links?.length > 0 ? (
                   <div className="space-y-2">
-                    <p className="super-admin-label">Onboarding</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-500">Links de onboarding</p>
                     {asaasSubaccount.onboarding_links.map((item) => (
                       <a
                         key={item.id}
                         href={item.onboardingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950 transition-colors hover:bg-white"
+                        className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50"
                       >
-                        <span className="truncate">{item.title || item.type}</span>
-                        <ExternalLink size={14} className="shrink-0 text-stone-950" />
+                        <span className="truncate text-xs">{item.title || item.type}</span>
+                        <ExternalLink size={12} className="shrink-0 text-gray-500" strokeWidth={1.75} />
                       </a>
                     ))}
                   </div>
@@ -416,46 +396,41 @@ export default function EstablishmentDetail() {
             )}
           </Card>
 
-          <Card className="super-admin-panel border-none shadow-none">
+          <Card>
             <CardHeader title="Acoes rapidas" />
-            <div className="space-y-3">
+            <div className="space-y-2">
               <a
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950 transition-colors hover:bg-white"
+                className="group flex items-center gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-950">
-                  <Globe size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-stone-900">Ver pagina publica</p>
-                  <p className="text-xs text-stone-950">Abrir experiencia do cliente em nova aba.</p>
-                </div>
-                <ExternalLink size={14} className="text-stone-950" />
+                <Globe size={16} className="text-blue-600" strokeWidth={1.75} />
+                <span className="flex-1 text-sm text-gray-700 group-hover:text-gray-900">
+                  Ver pagina publica
+                </span>
+                <ExternalLink size={12} className="text-gray-400" strokeWidth={1.75} />
               </a>
 
-              <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-950">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-stone-950">
-                  <LogIn size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-stone-900">Login do admin</p>
-                  <p className="text-xs text-stone-950">Use o campo de copia acima para compartilhar o acesso.</p>
-                </div>
+              <div className="flex cursor-not-allowed select-none items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 opacity-70">
+                <LogIn size={16} className="text-gray-400" strokeWidth={1.75} />
+                <span className="flex-1 text-sm text-gray-500">
+                  Login do admin
+                </span>
+                <span className="text-xs italic text-gray-400">use o campo de copia acima</span>
               </div>
             </div>
           </Card>
         </div>
-      </section>
+      </div>
 
       <Modal
         isOpen={showAdminModal}
         onClose={() => setShowAdminModal(false)}
-        title="Criar usuario admin"
+        title="Criar Usuario Admin"
       >
-        <div className="mb-4 rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-950">
-          Esse usuario tera acesso ao painel administrativo de <strong>{establishment.name}</strong>.
+        <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
+          Este usuario tera acesso ao painel de administracao do <strong>{establishment.name}</strong>.
         </div>
 
         <form onSubmit={handleSubmit(onCreateAdmin)} className="space-y-4">
@@ -489,18 +464,18 @@ export default function EstablishmentDetail() {
             })}
           />
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-950">
-            <p className="mb-2 font-medium text-stone-800">Entregue ao dono:</p>
-            <p>URL de acesso: <span className="font-mono text-stone-800">{loginUrl}</span></p>
-            <p>Email: o informado acima</p>
-            <p>Senha: a cadastrada acima</p>
+          <div className="space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600">
+            <p className="mb-2 font-medium text-gray-700">Credenciais para entregar ao dono:</p>
+            <p>URL de acesso: <span className="font-mono text-blue-600">{loginUrl}</span></p>
+            <p>Email: o que foi cadastrado acima</p>
+            <p>Senha: a que foi cadastrada acima</p>
           </div>
 
           <div className="flex gap-3 pt-2">
             <Button variant="secondary" type="button" onClick={() => setShowAdminModal(false)}>
               Cancelar
             </Button>
-            <Button type="submit" loading={isSubmitting} icon={UserPlus} className="bg-stone-900 hover:bg-stone-800">
+            <Button type="submit" loading={isSubmitting} icon={UserPlus}>
               Criar usuario
             </Button>
           </div>
@@ -510,7 +485,7 @@ export default function EstablishmentDetail() {
       <Modal
         isOpen={showAsaasModal}
         onClose={() => setShowAsaasModal(false)}
-        title="Criar subconta Asaas"
+        title="Criar Subconta Asaas"
       >
         <form onSubmit={handleCreateAsaasSubaccount} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -529,16 +504,15 @@ export default function EstablishmentDetail() {
             <Input label="Complemento" className="sm:col-span-2" value={asaasForm.complement} onChange={setAsaasField('complement')} />
           </div>
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-3 text-sm text-stone-950">
-            A subconta sera criada abaixo da conta raiz da plataforma para separar recebimentos
-            e acelerar o onboarding financeiro.
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
+            A subconta sera criada abaixo da conta raiz da plataforma. Depois disso, o estabelecimento podera acompanhar status e onboarding no financeiro.
           </div>
 
           <div className="flex gap-3 pt-2">
             <Button variant="secondary" type="button" onClick={() => setShowAsaasModal(false)}>
               Cancelar
             </Button>
-            <Button type="submit" icon={CreditCard} loading={creatingAsaas} className="bg-stone-900 hover:bg-stone-800">
+            <Button type="submit" icon={CreditCard} loading={creatingAsaas}>
               Criar subconta
             </Button>
           </div>

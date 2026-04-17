@@ -23,19 +23,19 @@ const roleSummary = {
     title: 'Super Admins',
     description: 'Acessam e administram todo o sistema.',
     icon: Shield,
-    tone: 'border-stone-200 bg-stone-100 text-stone-950',
+    tone: 'border-slate-200 bg-slate-50 text-slate-700',
   },
   establishment_admin: {
     title: 'Usuarios de estabelecimento',
     description: 'Administram agenda, servicos e operacao do estabelecimento.',
     icon: UserCog,
-    tone: 'border-stone-300 bg-stone-50 text-stone-950',
+    tone: 'border-blue-200 bg-blue-50 text-blue-700',
   },
   customer: {
     title: 'Clientes de estabelecimento',
     description: 'Clientes vinculados por agendamentos nos estabelecimentos.',
     icon: Users,
-    tone: 'border-zinc-200 bg-zinc-50 text-stone-950',
+    tone: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   },
 };
 
@@ -58,17 +58,17 @@ function UsersSummaryCard({ title, description, value, icon: Icon, tone, active,
       type="button"
       onClick={onClick}
       className={`w-full rounded-2xl border p-5 text-left transition-all ${
-        active ? `${tone} shadow-sm` : 'border-stone-200 bg-white hover:border-stone-300'
+        active ? `${tone} shadow-sm` : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-stone-950">{title}</p>
-          <p className="mt-2 text-3xl font-semibold text-stone-950">{value}</p>
-          <p className="mt-2 text-sm text-stone-950">{description}</p>
+          <p className="text-sm font-medium text-gray-500">{title}</p>
+          <p className="mt-2 text-3xl font-semibold text-gray-900">{value}</p>
+          <p className="mt-2 text-sm text-gray-500">{description}</p>
         </div>
-        <div className={`rounded-xl border p-3 ${active ? 'border-current/20 bg-white/60' : 'border-stone-200 bg-stone-50'}`}>
-          <Icon size={20} />
+        <div className={`rounded-xl border p-3 ${active ? 'border-current/20 bg-white/60' : 'border-gray-200 bg-gray-50'}`}>
+          <Icon size={20} strokeWidth={1.75} />
         </div>
       </div>
     </button>
@@ -109,7 +109,7 @@ export default function SuperAdminUsers() {
       await superAdminService.toggleUserStatus(userId);
       toast.success('Status atualizado.');
       load();
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };
@@ -172,8 +172,8 @@ export default function SuperAdminUsers() {
       label: 'Usuario',
       render: (row) => (
         <div>
-          <p className="font-medium text-stone-900">{row.name}</p>
-          <p className="text-xs text-stone-950">{row.email}</p>
+          <p className="font-medium text-gray-900">{row.name}</p>
+          <p className="text-xs text-gray-500">{row.email}</p>
         </div>
       ),
     },
@@ -194,11 +194,11 @@ export default function SuperAdminUsers() {
       label: 'Vinculo',
       render: (row) => {
         if (row.role === 'super_admin') {
-          return <span className="text-sm text-stone-950">Acesso global ao sistema</span>;
+          return <span className="text-sm text-gray-600">Acesso global ao sistema</span>;
         }
 
         if (!row.establishments?.length) {
-          return <span className="text-sm text-stone-950">Sem vinculo identificado</span>;
+          return <span className="text-sm text-gray-500">Sem vinculo identificado</span>;
         }
 
         return (
@@ -206,11 +206,11 @@ export default function SuperAdminUsers() {
             {row.establishments.map((item) => (
               <span
                 key={`${row.id}-${item.id}-${item.relationship}`}
-                className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs text-stone-950"
+                className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-700"
               >
-                <Building2 size={12} />
+                <Building2 size={12} strokeWidth={1.75} />
                 {item.name}
-                <span className="text-stone-950">
+                <span className="text-gray-500">
                   {item.relationship === 'admin' ? 'admin' : 'cliente'}
                 </span>
               </span>
@@ -249,7 +249,7 @@ export default function SuperAdminUsers() {
             {row.is_active ? 'Desativar' : 'Ativar'}
           </button>
         ) : (
-          <span className="text-xs text-stone-400">-</span>
+          <span className="text-xs text-gray-400">-</span>
         ),
     },
   ];
@@ -258,13 +258,12 @@ export default function SuperAdminUsers() {
     <div className="space-y-6">
       <div className="page-header">
         <div>
-          <p className="super-admin-label">Governanca</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">Usuarios</h1>
-          <p className="mt-2 text-sm text-stone-950">
+          <h1 className="page-title">Usuarios</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Separe rapidamente quem opera estabelecimentos e quem agenda como cliente.
           </p>
         </div>
-        <Button icon={Plus} className="rounded-2xl bg-stone-900 hover:bg-stone-800" onClick={() => { reset(); setShowModal(true); }}>
+        <Button icon={Plus} onClick={() => { reset(); setShowModal(true); }}>
           Novo Admin
         </Button>
       </div>
@@ -299,14 +298,14 @@ export default function SuperAdminUsers() {
         />
       </div>
 
-      <Card className="super-admin-panel space-y-5 border-none shadow-none">
+      <Card className="space-y-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-stone-950">
-              <Filter size={16} />
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Filter size={16} strokeWidth={1.75} />
               Filtragem organizada
             </div>
-            <p className="mt-1 text-sm text-stone-950">
+            <p className="mt-1 text-sm text-gray-500">
               Filtre por tipo de usuario, status e estabelecimento para localizar mais rapido.
             </p>
           </div>
@@ -325,7 +324,7 @@ export default function SuperAdminUsers() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-950">Tipo de usuario</label>
+            <label className="text-sm font-medium text-gray-700">Tipo de usuario</label>
             <select
               className="input-base"
               value={filters.role}
@@ -340,7 +339,7 @@ export default function SuperAdminUsers() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-950">Status</label>
+            <label className="text-sm font-medium text-gray-700">Status</label>
             <select
               className="input-base"
               value={filters.status}
@@ -355,7 +354,7 @@ export default function SuperAdminUsers() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-950">Estabelecimento</label>
+            <label className="text-sm font-medium text-gray-700">Estabelecimento</label>
             <select
               className="input-base"
               value={filters.establishmentId}
@@ -371,29 +370,29 @@ export default function SuperAdminUsers() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-950">
-          <span className="rounded-full bg-stone-100 px-3 py-1">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+          <span className="rounded-full bg-gray-100 px-3 py-1">
             {filteredUsers.length} de {counts.total} usuarios exibidos
           </span>
           {filters.role !== 'all' && (
-            <span className="rounded-full bg-stone-200 px-3 py-1 text-stone-950">
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">
               Tipo: {filterOptions.find((option) => option.value === filters.role)?.label}
             </span>
           )}
           {filters.status !== 'all' && (
-            <span className="rounded-full bg-zinc-100 px-3 py-1 text-stone-950">
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
               Status: {statusOptions.find((option) => option.value === filters.status)?.label}
             </span>
           )}
           {filters.establishmentId !== 'all' && (
-            <span className="rounded-full bg-stone-100 px-3 py-1 text-stone-950">
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
               Estabelecimento: {establishments.find((item) => item.id === filters.establishmentId)?.name}
             </span>
           )}
         </div>
       </Card>
 
-      <Card className="super-admin-panel border-none shadow-none" padding={false}>
+      <Card padding={false}>
         <Table
           columns={columns}
           data={filteredUsers}

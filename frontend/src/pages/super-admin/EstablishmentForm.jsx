@@ -31,7 +31,6 @@ export default function EstablishmentForm() {
   }, [id, isEdit, setValue]);
 
   const name = watch('name');
-
   useEffect(() => {
     if (!isEdit && name) {
       const slug = name
@@ -41,7 +40,6 @@ export default function EstablishmentForm() {
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-');
-
       setValue('slug', slug);
     }
   }, [name, isEdit, setValue]);
@@ -55,7 +53,6 @@ export default function EstablishmentForm() {
         await establishmentsService.create(data);
         toast.success('Estabelecimento criado.');
       }
-
       navigate('/super-admin/estabelecimentos');
     } catch (err) {
       toast.error(getErrorMessage(err));
@@ -63,25 +60,20 @@ export default function EstablishmentForm() {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <div className="page-header">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-950 transition-colors hover:border-stone-300"
+            className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} strokeWidth={1.75} />
           </button>
-          <div>
-            <p className="super-admin-label">{isEdit ? 'Edicao' : 'Cadastro'}</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-950">
-              {isEdit ? 'Editar' : 'Novo'} estabelecimento
-            </h1>
-          </div>
+          <h1 className="page-title">{isEdit ? 'Editar' : 'Novo'} Estabelecimento</h1>
         </div>
-      </section>
+      </div>
 
-      <Card className="super-admin-panel max-w-3xl border-none shadow-none">
+      <Card className="max-w-2xl">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Input
             label="Nome"
@@ -113,7 +105,7 @@ export default function EstablishmentForm() {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-stone-950">Descricao</label>
+            <label className="text-sm font-medium text-gray-700">Descricao</label>
             <textarea
               className="input-base h-24 resize-none"
               placeholder="Breve descricao do estabelecimento..."
@@ -131,7 +123,7 @@ export default function EstablishmentForm() {
             <Button variant="secondary" type="button" onClick={() => navigate(-1)}>
               Cancelar
             </Button>
-            <Button type="submit" loading={isSubmitting} className="bg-stone-900 hover:bg-stone-800">
+            <Button type="submit" loading={isSubmitting}>
               {isEdit ? 'Salvar alteracoes' : 'Criar estabelecimento'}
             </Button>
           </div>
