@@ -51,7 +51,13 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-2">
+            <a
+              href="/login"
+              className="inline-flex items-center gap-2 border border-border text-foreground text-sm font-bold px-5 py-2.5 rounded-full hover:bg-secondary transition-colors uppercase tracking-wide"
+            >
+              Entrar
+            </a>
             <a
               href={WHATS}
               target="_blank"
@@ -82,6 +88,9 @@ const Navbar = () => {
                   {l.label}
                 </a>
               ))}
+              <a href="/login" className="border border-border text-foreground font-bold py-3 rounded-full text-center uppercase tracking-wide">
+                Entrar
+              </a>
               <a href={WHATS} target="_blank" rel="noopener noreferrer" className="bg-ink text-ink-foreground font-bold py-3 rounded-full text-center mt-2 uppercase tracking-wide">
                 Agendar demo
               </a>

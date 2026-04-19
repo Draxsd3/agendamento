@@ -18,7 +18,6 @@ const Hero = () => {
     <section className="pt-28 pb-16 md:pt-36 md:pb-24">
       <div className="container">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left text */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -44,18 +43,25 @@ const Hero = () => {
               ))}
             </ul>
 
-            <a
-              href={WHATS}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 bg-ink text-ink-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-ink/85 transition-colors uppercase tracking-wide"
-            >
-              Agendar demonstração
-              <Icon as={ArrowRight} size="md" className="group-hover:translate-x-1 transition-transform" />
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href="/login"
+                className="group inline-flex items-center gap-2 bg-ink text-ink-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-ink/85 transition-colors uppercase tracking-wide"
+              >
+                Entrar na plataforma
+                <Icon as={ArrowRight} size="md" className="group-hover:translate-x-1 transition-transform" />
+              </a>
+              <a
+                href={WHATS}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-border text-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-secondary transition-colors uppercase tracking-wide"
+              >
+                Agendar demonstração
+              </a>
+            </div>
           </motion.div>
 
-          {/* Right image */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
