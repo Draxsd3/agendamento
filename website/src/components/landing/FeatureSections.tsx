@@ -7,7 +7,6 @@ import appSettings from "@/assets/mockup-settings.png";
 const FeatureSections = () => {
   return (
     <section id="funcionalidades" className="py-20 md:py-28 space-y-24">
-      {/* Feature 1 */}
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -18,25 +17,25 @@ const FeatureSections = () => {
         >
           <div>
             <div className="inline-block text-xs uppercase tracking-[0.25em] text-primary font-semibold mb-4">
-              Visão do cliente
+              Visao do cliente
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight leading-[1.05] mb-5">
               Cliente agenda em <span className="underline-brush">30 segundos</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Link único, design profissional e fluxo simples. Seu cliente escolhe serviço,
-              profissional e horário — sem precisar baixar app nem criar conta.
+              Link unico, design profissional e fluxo simples. Seu cliente escolhe servico,
+              profissional e horario sem precisar baixar app nem criar conta.
             </p>
             <div className="space-y-3">
               {[
                 "Mostra disponibilidade em tempo real",
                 "Funciona perfeitamente no celular",
-                "Confirmação automática por WhatsApp",
-                "Cliente recebe lembrete antes do horário",
-              ].map((b) => (
-                <div key={b} className="flex items-start gap-2.5 text-foreground/85">
-                  <span className="text-primary font-bold mt-1">✦</span>
-                  {b}
+                "Confirmacao automatica por WhatsApp",
+                "Cliente recebe lembrete antes do horario",
+              ].map((benefit) => (
+                <div key={benefit} className="flex items-start gap-2.5 text-foreground/85">
+                  <span className="text-primary font-bold mt-1">*</span>
+                  {benefit}
                 </div>
               ))}
             </div>
@@ -44,13 +43,12 @@ const FeatureSections = () => {
           <div className="relative">
             <div className="absolute -inset-6 bg-gradient-to-tr from-primary/20 to-transparent rounded-[2rem] blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
-              <img src={appClient} alt="Visão do cliente agendando" className="w-full h-auto block" />
+              <img src={appClient} alt="Visao do cliente agendando" className="w-full h-auto block" />
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Feature 2 — só aqui muda só a ordem */}
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -62,7 +60,7 @@ const FeatureSections = () => {
           <div className="relative lg:order-1 order-2">
             <div className="absolute -inset-6 bg-gradient-to-bl from-primary/20 to-transparent rounded-[2rem] blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
-              <img src={appSettings} alt="Configurações da equipe" className="w-full h-auto block" />
+              <img src={appSettings} alt="Configuracoes da equipe" className="w-full h-auto block" />
             </div>
           </div>
           <div className="lg:order-2 order-1">
@@ -73,16 +71,14 @@ const FeatureSections = () => {
               Controle total da <span className="underline-brush">sua equipe</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Cada profissional com sua agenda, serviços e horários. Você gerencia tudo de um
-              lugar só, sem confusão e sem horário sobreposto.
+              Cada profissional com sua agenda, servicos e horarios. Voce gerencia tudo de um
+              lugar so, sem confusao e sem horario sobreposto.
             </p>
             <a
-              href="https://wa.me/5513997071051?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/cadastro"
               className="group inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all"
             >
-              Quero ver funcionando
+              Criar conta e testar
               <Icon as={ArrowRight} size="sm" />
             </a>
           </div>

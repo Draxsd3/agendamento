@@ -24,6 +24,8 @@ const Footer = () => {
               <li><a href="#precos" className="hover:text-foreground transition-colors">Planos</a></li>
               <li><a href="#como-funciona" className="hover:text-foreground transition-colors">Como funciona</a></li>
               <li><a href="#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+              <li><a href="/login" className="hover:text-foreground transition-colors">Entrar</a></li>
+              <li><a href="/cadastro" className="hover:text-foreground transition-colors">Criar conta</a></li>
             </ul>
           </div>
 
@@ -47,8 +49,8 @@ const Footer = () => {
         <div className="border-t border-border pt-8 text-muted-foreground text-sm flex flex-col md:flex-row justify-between items-center gap-4">
           <span>© 2026 StreetLabs. Todos os direitos reservados.</span>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-foreground transition-colors">Termos</a>
-            <a href="#" className="hover:text-foreground transition-colors">Privacidade</a>
+            <a href="/cadastro" className="hover:text-foreground transition-colors">Começar</a>
+            <a href="/login" className="hover:text-foreground transition-colors">Entrar</a>
           </div>
         </div>
       </div>

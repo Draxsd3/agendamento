@@ -2,8 +2,6 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Icon } from "@/components/Icon";
 
-const WHATS = "https://wa.me/5513997071051?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o";
-
 const CTASection = () => {
   return (
     <section className="ink-section bg-background text-foreground py-24 md:py-32 relative overflow-hidden">
@@ -20,22 +18,32 @@ const CTASection = () => {
           <h2 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[0.98]">
             Pronto pra parar de
             <br />
-            <span className="text-gradient">perder horários</span>?
+            <span className="text-gradient">perder horarios</span>?
           </h2>
           <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-xl mx-auto">
-            Agende uma demonstração personalizada pelo WhatsApp e veja o StreetLabs funcionando com a realidade do seu negócio.
+            Crie sua conta, entre no sistema e veja o StreetLabs funcionando na rotina do seu negocio.
           </p>
-          <a
-            href={WHATS}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-8 py-4 rounded-full text-base hover:bg-primary/90 transition-all uppercase tracking-wide"
-          >
-            Falar no WhatsApp
-            <Icon as={ArrowRight} size="md" className="group-hover:translate-x-1 transition-transform" />
-          </a>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="/cadastro"
+              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-8 py-4 rounded-full text-base hover:bg-primary/90 transition-all uppercase tracking-wide"
+            >
+              Criar conta
+              <Icon
+                as={ArrowRight}
+                size="md"
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            </a>
+            <a
+              href="/login"
+              className="inline-flex items-center gap-2 border border-border text-foreground font-bold px-8 py-4 rounded-full text-base hover:bg-secondary transition-colors uppercase tracking-wide"
+            >
+              Entrar
+            </a>
+          </div>
           <div className="mt-6 text-sm text-muted-foreground">
-            +55 13 99707-1051 · Resposta em até 1h em horário comercial
+            Precisa falar com a equipe? WhatsApp: +55 13 99707-1051
           </div>
         </motion.div>
       </div>

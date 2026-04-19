@@ -3,13 +3,11 @@ import { ArrowRight, Check } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import appDashboard from "@/assets/mockup-dashboard.png";
 
-const WHATS = "https://wa.me/5513997071051?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20demonstra%C3%A7%C3%A3o";
-
 const bullets = [
-  "Agenda, clientes e equipe num só lugar",
-  "Lembretes automáticos de WhatsApp",
+  "Agenda, clientes e equipe num so lugar",
+  "Lembretes automaticos de WhatsApp",
   "Cliente agenda em 30 segundos, sem login",
-  "Relatórios de faturamento em tempo real",
+  "Relatorios de faturamento em tempo real",
   "E muito mais...",
 ];
 
@@ -35,10 +33,10 @@ const Hero = () => {
             </p>
 
             <ul className="space-y-2.5 mb-10">
-              {bullets.map((b) => (
-                <li key={b} className="flex items-start gap-2.5 text-foreground/85">
+              {bullets.map((bullet) => (
+                <li key={bullet} className="flex items-start gap-2.5 text-foreground/85">
                   <Icon as={Check} size="md" className="text-foreground mt-0.5" />
-                  <span>{b}</span>
+                  <span>{bullet}</span>
                 </li>
               ))}
             </ul>
@@ -49,15 +47,17 @@ const Hero = () => {
                 className="group inline-flex items-center gap-2 bg-ink text-ink-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-ink/85 transition-colors uppercase tracking-wide"
               >
                 Entrar na plataforma
-                <Icon as={ArrowRight} size="md" className="group-hover:translate-x-1 transition-transform" />
+                <Icon
+                  as={ArrowRight}
+                  size="md"
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </a>
               <a
-                href={WHATS}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/cadastro"
                 className="inline-flex items-center gap-2 border border-border text-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-secondary transition-colors uppercase tracking-wide"
               >
-                Agendar demonstração
+                Criar conta
               </a>
             </div>
           </motion.div>
@@ -72,7 +72,7 @@ const Hero = () => {
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
               <img
                 src={appDashboard}
-                alt="StreetLabs Agendamento em ação"
+                alt="StreetLabs Agendamento em acao"
                 className="w-full h-auto block"
               />
             </div>

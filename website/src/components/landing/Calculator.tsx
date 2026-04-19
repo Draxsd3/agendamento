@@ -1,16 +1,23 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Calendar, Smartphone, FileSpreadsheet, MessageCircle, BookOpen, FileText, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Calendar,
+  Smartphone,
+  FileSpreadsheet,
+  MessageCircle,
+  BookOpen,
+  FileText,
+  Users,
+} from "lucide-react";
 import { Icon } from "@/components/Icon";
-
-const WHATS = "https://wa.me/5513997071051?text=Ol%C3%A1%2C%20gostaria%20de%20saber%20mais";
 
 const tools = [
   { name: "Caderno de agenda", icon: BookOpen },
   { name: "WhatsApp manual", icon: MessageCircle },
   { name: "Google Calendar", icon: Calendar },
   { name: "Planilhas", icon: FileSpreadsheet },
-  { name: "Anotações no celular", icon: Smartphone },
+  { name: "Anotacoes no celular", icon: Smartphone },
   { name: "Cadastro em papel", icon: FileText },
   { name: "Recepcionista anotando", icon: Users },
 ];
@@ -20,13 +27,10 @@ const Calculator = () => {
   const [days, setDays] = useState(22);
 
   const toggle = (name: string) => {
-    setSelected((prev) =>
-      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
-    );
+    setSelected((prev) => (prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]));
   };
 
   const result = useMemo(() => {
-    // Each tool = ~12min/day saved
     const minutesPerDay = selected.length * 12;
     const totalMinutes = minutesPerDay * days;
     const hours = Math.floor(totalMinutes / 60);
@@ -45,46 +49,45 @@ const Calculator = () => {
           className="text-center mb-14 max-w-3xl mx-auto"
         >
           <h2 className="font-display text-4xl md:text-6xl font-bold tracking-tight mb-5 leading-[1.05]">
-            Quanto tempo você
+            Quanto tempo voce
             <br />
             pode <span className="underline-brush">economizar</span>?
           </h2>
           <p className="text-muted-foreground text-lg">
-            Compare sua rotina atual com o que o StreetLabs faz por você — e descubra quanto tempo você ganha de volta.
+            Compare sua rotina atual com o que o StreetLabs faz por voce e descubra quanto tempo voce ganha de volta.
           </p>
         </motion.div>
 
         <div className="max-w-4xl mx-auto bg-card border border-border rounded-[2rem] p-8 md:p-12 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.08)]">
-          {/* Tools */}
           <div className="mb-10">
             <h3 className="font-display text-xl font-bold text-foreground mb-5">
-              Quais ferramentas você usa atualmente?
+              Quais ferramentas voce usa atualmente?
             </h3>
             <div className="flex flex-wrap gap-2.5">
-              {tools.map((t) => {
-                const isOn = selected.includes(t.name);
+              {tools.map((tool) => {
+                const isOn = selected.includes(tool.name);
+
                 return (
                   <button
-                    key={t.name}
-                    onClick={() => toggle(t.name)}
+                    key={tool.name}
+                    onClick={() => toggle(tool.name)}
                     className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all text-sm font-medium ${
                       isOn
                         ? "bg-foreground text-background border-foreground"
                         : "bg-background text-foreground/70 border-border hover:border-foreground/40"
                     }`}
                   >
-                    <Icon as={t.icon} size="sm" />
-                    {t.name}
+                    <Icon as={tool.icon} size="sm" />
+                    {tool.name}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Days slider */}
           <div className="mb-10">
             <h3 className="font-display text-xl font-bold text-foreground mb-2">
-              Quantos dias por mês você atende?
+              Quantos dias por mes voce atende?
             </h3>
             <div className="flex items-baseline gap-2 mb-4">
               <span className="font-display text-4xl font-bold text-primary">{days}</span>
@@ -100,7 +103,7 @@ const Calculator = () => {
                 min={5}
                 max={30}
                 value={days}
-                onChange={(e) => setDays(Number(e.target.value))}
+                onChange={(event) => setDays(Number(event.target.value))}
                 className="absolute inset-0 w-full opacity-0 cursor-pointer"
               />
               <div
@@ -110,33 +113,37 @@ const Calculator = () => {
             </div>
           </div>
 
-          {/* Result */}
           <div className="border-t border-border pt-10">
             <h3 className="font-display text-xl font-bold text-foreground mb-2">Seu resultado</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Usando <span className="font-semibold text-foreground">{selected.length}</span> ferramenta{selected.length !== 1 ? "s" : ""} pra gerenciar sua agenda, com o StreetLabs você economiza:
+              Usando <span className="font-semibold text-foreground">{selected.length}</span>{" "}
+              ferramenta{selected.length !== 1 ? "s" : ""} para gerenciar sua agenda, com o
+              StreetLabs voce economiza:
             </p>
 
             <div className="font-display text-6xl md:text-8xl font-bold text-foreground leading-none mb-2">
-              {result.hours}<span className="text-primary">h</span>
+              {result.hours}
+              <span className="text-primary">h</span>
             </div>
-            <div className="text-muted-foreground mb-8">por mês</div>
+            <div className="text-muted-foreground mb-8">por mes</div>
 
             <p className="text-foreground/80 mb-8">
-              Isso equivale a <span className="font-bold text-primary">{result.fullDays} dias inteiros</span> de trabalho que você poderia usar atendendo mais clientes.
+              Isso equivale a <span className="font-bold text-primary">{result.fullDays} dias inteiros</span> de trabalho que voce poderia usar atendendo mais clientes.
             </p>
 
             <a
-              href={WHATS}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/cadastro"
               className="group inline-flex items-center gap-2 bg-ink text-ink-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-ink/85 transition-colors uppercase tracking-wide"
             >
-              Começar a economizar tempo
-              <Icon as={ArrowRight} size="md" className="group-hover:translate-x-1 transition-transform" />
+              Criar conta agora
+              <Icon
+                as={ArrowRight}
+                size="md"
+                className="group-hover:translate-x-1 transition-transform"
+              />
             </a>
             <p className="text-xs text-muted-foreground mt-4">
-              Chega de perder seu tempo precioso com cadernos e planilhas.
+              Troque cadernos e planilhas por uma agenda profissional.
             </p>
           </div>
         </div>
