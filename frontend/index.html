@@ -16,7 +16,15 @@
     <div id="root"></div>
     <script>
       if (window.location.pathname === "/") {
-        window.location.replace("/site/index.html");
+        window.__USE_EMBEDDED_SITE__ = true;
+        fetch("/site/index.html")
+          .then((response) => response.text())
+          .then((html) => {
+            document.open();
+            document.write(html);
+            document.close();
+            window.history.replaceState({}, "", "/");
+          });
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
