@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Outlet, useParams } from 'react-router-dom';
+import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { CalendarCheck, CreditCard, LogIn, UserCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { publicEstablishmentsService } from '@/services/establishments.service';
@@ -8,6 +8,7 @@ import { getBrandingTheme } from '@/utils/branding';
 
 export default function TenantLayout() {
   const { slug } = useParams();
+  const location = useLocation();
   const { isAuthenticated, user } = useAuth();
   const [establishment, setEstablishment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,9 +28,14 @@ export default function TenantLayout() {
   }, [slug]);
 
   const branding = useMemo(() => getBrandingTheme(establishment), [establishment]);
+  const isPortfolioPage = location.pathname === `/${slug}`;
 
   if (loading) {
     return <LoadingSpinner fullScreen />;
+  }
+
+  if (isPortfolioPage) {
+    return <Outlet context={{ establishment, branding }} />;
   }
 
   return (
