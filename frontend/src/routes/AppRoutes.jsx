@@ -38,6 +38,7 @@ import CustomerProfile from '@/pages/customer/Profile';
 import CustomerClub from '@/pages/customer/Club';
 import CustomerPlan from '@/pages/customer/Plan';
 
+import HomePage from '@/pages/public/HomePage';
 import EstablishmentPage from '@/pages/public/EstablishmentPage';
 import BookingFlow from '@/pages/public/BookingFlow';
 import TenantLogin from '@/pages/public/TenantLogin';
@@ -129,11 +130,11 @@ function CustomerTenantRedirect() {
   return <Navigate to="/login" replace />;
 }
 
-function RootRedirect() {
+function RootEntry() {
   const { loading, user } = useAuth();
 
   if (loading) return <LoadingSpinner fullScreen />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <HomePage />;
   if (user.role === 'super_admin') return <Navigate to="/super-admin" replace />;
   if (user.role === 'establishment_admin') return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
 
@@ -223,7 +224,7 @@ export default function AppRoutes() {
         <Route path="plano" element={<CustomerPlan />} />
       </Route>
 
-      <Route path="/" element={<RootRedirect />} />
+      <Route path="/" element={<RootEntry />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
