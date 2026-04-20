@@ -1,15 +1,35 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Outlet, NavLink, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CustomerBrandPanel from '@/components/branding/CustomerBrandPanel';
 import { establishmentsService } from '@/services/establishments.service';
 import { getBrandingTheme } from '@/utils/branding';
 import {
   LayoutDashboard, Users, Scissors, CalendarCheck, Settings,
-  Star, Building2, LogOut, Menu, ChevronRight, DollarSign, ImagePlus,
+  Star, Building2, LogOut, Menu, ChevronRight, ChevronDown, DollarSign, PanelsTopLeft,
 } from 'lucide-react';
 
 function SidebarContent({ navItems, onNavClick, onLogout, establishment, slug, branding, user }) {
+  const location = useLocation();
+  const [openGroups, setOpenGroups] = useState({});
+
+  useEffect(() => {
+    setOpenGroups((current) => {
+      const next = { ...current };
+      navItems.forEach((item) => {
+        if (!item.children) return;
+        const hasActiveChild = item.children.some((child) => location.pathname.startsWith(child.to));
+        if (hasActiveChild) next[item.label] = true;
+        if (next[item.label] === undefined) next[item.label] = false;
+      });
+      return next;
+    });
+  }, [location.pathname, navItems]);
+
+  const toggleGroup = (label) => {
+    setOpenGroups((current) => ({ ...current, [label]: !current[label] }));
+  };
+
   return (
     <div className="flex flex-col h-full bg-white">
       <CustomerBrandPanel
@@ -20,51 +40,106 @@ function SidebarContent({ navItems, onNavClick, onLogout, establishment, slug, b
       />
 
       <nav className="flex-1 px-4 pt-5 pb-2 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={onNavClick}
-            className={({ isActive }) =>
-              `flex items-center gap-4 px-3 py-3.5 rounded-xl transition-colors group ${
-                isActive
-                  ? 'font-semibold'
-                  : 'text-gray-400 hover:text-gray-700'
-              }`
-            }
-            style={({ isActive }) =>
-              isActive
-                ? { color: branding.accentColor, backgroundColor: branding.softAccent }
-                : undefined
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <Icon
-                  size={22}
-                  className={!isActive ? 'text-gray-400 group-hover:text-gray-600' : ''}
-                  strokeWidth={isActive ? 2 : 1.5}
-                  style={isActive ? { color: branding.primaryColor } : undefined}
-                />
-                <span
-                  className={`text-base flex-1 ${
-                    isActive ? '' : 'font-medium text-gray-500 group-hover:text-gray-800'
-                  }`}
-                >
-                  {label}
-                </span>
-                {isActive && (
-                  <ChevronRight
-                    size={16}
-                    style={{ color: branding.primaryColor }}
-                    strokeWidth={2}
-                  />
+        {navItems.map((item) => {
+          if (!item.children) {
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={onNavClick}
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-3 py-3.5 rounded-xl transition-colors group ${
+                    isActive ? 'font-semibold' : 'text-gray-400 hover:text-gray-700'
+                  }`
+                }
+                style={({ isActive }) =>
+                  isActive
+                    ? { color: branding.accentColor, backgroundColor: branding.softAccent }
+                    : undefined
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon
+                      size={22}
+                      className={!isActive ? 'text-gray-400 group-hover:text-gray-600' : ''}
+                      strokeWidth={isActive ? 2 : 1.5}
+                      style={isActive ? { color: branding.primaryColor } : undefined}
+                    />
+                    <span className={`text-base flex-1 ${isActive ? '' : 'font-medium text-gray-500 group-hover:text-gray-800'}`}>
+                      {item.label}
+                    </span>
+                    {isActive && (
+                      <ChevronRight
+                        size={16}
+                        style={{ color: branding.primaryColor }}
+                        strokeWidth={2}
+                      />
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          </NavLink>
-        ))}
+              </NavLink>
+            );
+          }
+
+          const isGroupActive = item.children.some((child) => location.pathname.startsWith(child.to));
+          const isOpen = openGroups[item.label];
+
+          return (
+            <div key={item.label} className="space-y-1">
+              <button
+                type="button"
+                onClick={() => toggleGroup(item.label)}
+                className={`flex items-center gap-4 w-full px-3 py-3.5 rounded-xl transition-colors group ${
+                  isGroupActive ? 'font-semibold' : 'text-gray-400 hover:text-gray-700'
+                }`}
+                style={isGroupActive ? { color: branding.accentColor, backgroundColor: branding.softAccent } : undefined}
+              >
+                <item.icon
+                  size={22}
+                  className={!isGroupActive ? 'text-gray-400 group-hover:text-gray-600' : ''}
+                  strokeWidth={isGroupActive ? 2 : 1.5}
+                  style={isGroupActive ? { color: branding.primaryColor } : undefined}
+                />
+                <span className={`text-base flex-1 text-left ${isGroupActive ? '' : 'font-medium text-gray-500 group-hover:text-gray-800'}`}>
+                  {item.label}
+                </span>
+                {isOpen ? (
+                  <ChevronDown size={16} style={isGroupActive ? { color: branding.primaryColor } : undefined} strokeWidth={2} />
+                ) : (
+                  <ChevronRight size={16} style={isGroupActive ? { color: branding.primaryColor } : undefined} strokeWidth={2} />
+                )}
+              </button>
+
+              {isOpen && (
+                <div className="pl-4 space-y-1">
+                  {item.children.map((child) => (
+                    <NavLink
+                      key={child.to}
+                      to={child.to}
+                      end={child.end}
+                      onClick={onNavClick}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                          isActive ? 'font-semibold' : 'text-gray-400 hover:text-gray-700'
+                        }`
+                      }
+                      style={({ isActive }) =>
+                        isActive
+                          ? { color: branding.accentColor, backgroundColor: branding.softAccent }
+                          : undefined
+                      }
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
+                      <span className="flex-1">{child.label}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-1">
@@ -115,16 +190,23 @@ export default function AdminLayout() {
 
   const base = `/${slug}/admin`;
   const navItems = [
-    { to: base,                    label: 'Dashboard',       icon: LayoutDashboard, end: true },
-    { to: `${base}/agendamentos`,  label: 'Agendamentos',    icon: CalendarCheck },
-    { to: `${base}/profissionais`, label: 'Profissionais',   icon: Users },
-    { to: `${base}/servicos`,      label: 'Serviços',        icon: Scissors },
-    { to: `${base}/clientes`,      label: 'Clientes',        icon: Users },
-    { to: `${base}/clube`,         label: 'Clube Assinante', icon: Star },
-    { to: `${base}/filiais`,       label: 'Filiais',         icon: Building2 },
-    { to: `${base}/financeiro`,    label: 'Financeiro',      icon: DollarSign },
-    { to: `${base}/portfolio`,     label: 'Portfólio',       icon: ImagePlus },
-    { to: `${base}/configuracoes`, label: 'Configurações',   icon: Settings },
+    { to: base, label: 'Dashboard', icon: LayoutDashboard, end: true },
+    { to: `${base}/agendamentos`, label: 'Agendamentos', icon: CalendarCheck },
+    { to: `${base}/profissionais`, label: 'Profissionais', icon: Users },
+    { to: `${base}/servicos`, label: 'Serviços', icon: Scissors },
+    { to: `${base}/clientes`, label: 'Clientes', icon: Users },
+    { to: `${base}/clube`, label: 'Clube Assinante', icon: Star },
+    { to: `${base}/filiais`, label: 'Filiais', icon: Building2 },
+    { to: `${base}/financeiro`, label: 'Financeiro', icon: DollarSign },
+    {
+      label: 'Personalizar sistema',
+      icon: PanelsTopLeft,
+      children: [
+        { to: `${base}/personalizar/portfolio`, label: 'Portfólio' },
+        { to: `${base}/personalizar/tela-cliente`, label: 'Tela do cliente' },
+      ],
+    },
+    { to: `${base}/configuracoes`, label: 'Configurações', icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -136,12 +218,10 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-100 fixed h-screen shadow-sm">
         <SidebarContent {...sidebarProps} onNavClick={() => {}} />
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-20 md:hidden"
@@ -149,7 +229,6 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 z-30 shadow-xl transform transition-transform duration-300 md:hidden ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -158,9 +237,7 @@ export default function AdminLayout() {
         <SidebarContent {...sidebarProps} onNavClick={() => setMobileOpen(false)} />
       </aside>
 
-      {/* Main content */}
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        {/* Mobile header */}
         <header className="md:hidden bg-white border-b border-gray-200 h-14 flex items-center px-4 gap-3 sticky top-0 z-10">
           <button
             onClick={() => setMobileOpen(true)}
@@ -169,10 +246,7 @@ export default function AdminLayout() {
           >
             <Menu size={20} />
           </button>
-          <span
-            className="font-semibold text-sm truncate"
-            style={{ color: branding.accentColor }}
-          >
+          <span className="font-semibold text-sm truncate" style={{ color: branding.accentColor }}>
             {establishment?.name || 'Painel Admin'}
           </span>
         </header>

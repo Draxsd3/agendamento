@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  ImagePlus, Trash2, Check, Instagram, Globe,
+  ImagePlus, Check, Instagram, Globe,
   MessageCircle, Sparkles, AlignLeft, BarChart2, X,
 } from 'lucide-react';
 import { establishmentsService } from '@/services/establishments.service';
