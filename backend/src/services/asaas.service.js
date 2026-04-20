@@ -53,7 +53,8 @@ class AsaasService {
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      const err = new Error(payload?.errors?.[0]?.description || payload?.message || 'Erro ao comunicar com o Asaas.');
+      const description = payload?.errors?.[0]?.description || payload?.message || 'Erro ao comunicar com o Asaas.';
+      const err = new Error(this.normalizeErrorMessage(description));
       err.statusCode = response.status;
       err.details = payload;
       throw err;
@@ -144,6 +145,16 @@ class AsaasService {
     };
 
     return cycles[interval] || 'MONTHLY';
+  }
+
+  normalizeErrorMessage(message) {
+    const normalized = String(message || '').trim();
+
+    if (/^o email .+ ja esta em uso\.?$/i.test(normalized) || /^o email .+ já está em uso\.?$/i.test(normalized)) {
+      return 'Este email ja esta em uso no Asaas.';
+    }
+
+    return normalized || 'Erro ao comunicar com o Asaas.';
   }
 }
 

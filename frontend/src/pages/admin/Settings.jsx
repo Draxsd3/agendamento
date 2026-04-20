@@ -47,11 +47,11 @@ function fileToBase64(file) {
 }
 
 // ─── Save button ──────────────────────────────────────────────────────────────
-function SaveButton({ loading, onClick, children, primary }) {
+function SaveButton({ loading, disabled = false, onClick, children, primary }) {
   return (
     <button
       type="button"
-      disabled={loading}
+      disabled={loading || disabled}
       onClick={onClick}
       className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
       style={{ backgroundColor: primary }}
@@ -81,6 +81,7 @@ export default function AdminSettings() {
 
   const [asaas,          setAsaas]          = useState(null);
   const [asaasLoading,   setAsaasLoading]   = useState(true);
+  const [asaasLoadError, setAsaasLoadError] = useState('');
   const [asaasFormOpen,  setAsaasFormOpen]  = useState(false);
   const [savingAsaas,    setSavingAsaas]    = useState(false);
   const [syncingAsaas,   setSyncingAsaas]   = useState(false);
@@ -104,10 +105,14 @@ export default function AdminSettings() {
     if (!user?.establishmentId) return;
     asaasService.getSubaccount()
       .then((data) => {
+        setAsaasLoadError('');
         setAsaas(data);
         if (data.configured) setAsaasFormOpen(false);
       })
-      .catch(() => setAsaas(null))
+      .catch((err) => {
+        setAsaas(null);
+        setAsaasLoadError(getErrorMessage(err, 'Nao foi possivel carregar o status da integracao Asaas.'));
+      })
       .finally(() => setAsaasLoading(false));
   }, [user]);
 
@@ -186,12 +191,18 @@ export default function AdminSettings() {
   };
 
   const handleCreateSubaccount = async () => {
+    if (asaasLoadError) {
+      toast.error(asaasLoadError);
+      return;
+    }
+
     setSavingAsaas(true);
     try {
       const data = await asaasService.createSubaccount({
         ...asaasForm,
         incomeValue: Number(asaasForm.incomeValue),
       });
+      setAsaasLoadError('');
       setAsaas(data);
       setAsaasFormOpen(false);
       toast.success('Subconta Asaas criada com sucesso!');
@@ -615,6 +626,17 @@ export default function AdminSettings() {
           </div>
         ) : (
           <div className="p-6">
+            {asaasLoadError && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4">
+                <p className="text-sm font-medium text-red-900">
+                  Nao foi possivel carregar a integracao Asaas.
+                </p>
+                <p className="mt-1 text-xs text-red-700">
+                  {asaasLoadError}
+                </p>
+              </div>
+            )}
+
             {asaas?.integration_ready === false && (
               <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm font-medium text-amber-900">
@@ -722,7 +744,12 @@ export default function AdminSettings() {
                   </div>
                 </div>
 
-                <SaveButton loading={savingAsaas} onClick={handleCreateSubaccount} primary={primary}>
+                <SaveButton
+                  loading={savingAsaas}
+                  disabled={Boolean(asaasLoadError) || asaas?.integration_ready === false}
+                  onClick={handleCreateSubaccount}
+                  primary={primary}
+                >
                   Criar subconta Asaas
                 </SaveButton>
               </div>
