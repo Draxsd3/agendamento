@@ -1,10 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  MapPin, Phone, Clock, Star, Check, Percent, Crown,
-  Instagram, Globe, MessageCircle, AlignLeft, ChevronRight,
-  Calendar, Users, Scissors, ArrowRight, ArrowUpRight,
-  Sparkles, Quote,
+  MapPin,
+  Phone,
+  Clock,
+  Star,
+  Check,
+  Percent,
+  Crown,
+  Instagram,
+  Globe,
+  MessageCircle,
+  AlignLeft,
+  ChevronRight,
+  Calendar,
+  Users,
+  Scissors,
+  ArrowRight,
+  ArrowUpRight,
+  Sparkles,
+  Quote,
 } from 'lucide-react';
 import { publicEstablishmentsService } from '@/services/establishments.service';
 import { plansService, subscriptionsService } from '@/services/plans.service';
@@ -17,58 +32,103 @@ import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
 
 const WEEKDAY_LABELS = {
-  sunday: 'Domingo', monday: 'Segunda', tuesday: 'Terça', wednesday: 'Quarta',
-  thursday: 'Quinta', friday: 'Sexta', saturday: 'Sábado',
+  sunday: 'Domingo',
+  monday: 'Segunda',
+  tuesday: 'Terca',
+  wednesday: 'Quarta',
+  thursday: 'Quinta',
+  friday: 'Sexta',
+  saturday: 'Sabado',
 };
-const WEEKDAY_SHORT = {
-  sunday: 'Dom', monday: 'Seg', tuesday: 'Ter', wednesday: 'Qua',
-  thursday: 'Qui', friday: 'Sex', saturday: 'Sáb',
-};
-const WEEKDAY_INDEX = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
-  thursday: 4, friday: 5, saturday: 6,
-};
-const INTERVAL_LABEL = { monthly: 'mês', quarterly: 'trimestre', annual: 'ano' };
 
-function fmt(v) {
-  return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const WEEKDAY_INDEX = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+const INTERVAL_LABEL = {
+  monthly: 'mes',
+  quarterly: 'trimestre',
+  annual: 'ano',
+};
+
+function fmt(value) {
+  return Number(value).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
 }
 
 function initials(name = '') {
-  return name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
+  return name
+    .split(' ')
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 }
 
-/* Helpers p/ cor */
 function hexToRgb(hex) {
-  const h = (hex || '').replace('#', '');
-  if (h.length !== 6) return { r: 0, g: 0, b: 0 };
+  const value = (hex || '').replace('#', '');
+  if (value.length !== 6) {
+    return { r: 0, g: 0, b: 0 };
+  }
+
   return {
-    r: parseInt(h.slice(0, 2), 16),
-    g: parseInt(h.slice(2, 4), 16),
-    b: parseInt(h.slice(4, 6), 16),
+    r: parseInt(value.slice(0, 2), 16),
+    g: parseInt(value.slice(2, 4), 16),
+    b: parseInt(value.slice(4, 6), 16),
   };
 }
+
 function rgba(hex, alpha = 1) {
   const { r, g, b } = hexToRgb(hex);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+function splitHighlight(text = '') {
+  const numberMatch = text.match(/^\d[\d+k.,%]*/);
+  const number = numberMatch ? numberMatch[0] : '';
+  const label = text.replace(/^\d[\d+k.,%]*\s*/, '') || text;
+  return { number, label };
+}
+
 function SocialLinks({ establishment, variant = 'dark' }) {
   const links = [
-    establishment.instagram_url && { href: establishment.instagram_url, icon: Instagram, label: 'Instagram' },
-    establishment.facebook_url  && { href: establishment.facebook_url,  icon: Globe,      label: 'Facebook' },
-    establishment.tiktok_url    && { href: establishment.tiktok_url,    icon: AlignLeft,  label: 'TikTok' },
-    establishment.whatsapp      && {
+    establishment.instagram_url && {
+      href: establishment.instagram_url,
+      icon: Instagram,
+      label: 'Instagram',
+    },
+    establishment.facebook_url && {
+      href: establishment.facebook_url,
+      icon: Globe,
+      label: 'Facebook',
+    },
+    establishment.tiktok_url && {
+      href: establishment.tiktok_url,
+      icon: AlignLeft,
+      label: 'TikTok',
+    },
+    establishment.whatsapp && {
       href: `https://wa.me/${establishment.whatsapp.replace(/\D/g, '')}`,
-      icon: MessageCircle, label: 'WhatsApp',
+      icon: MessageCircle,
+      label: 'WhatsApp',
     },
   ].filter(Boolean);
 
-  if (!links.length) return null;
+  if (!links.length) {
+    return null;
+  }
 
-  const base =
+  const baseClass =
     variant === 'light'
-      ? 'border-white/25 bg-white/10 text-white hover:bg-white hover:text-ink'
+      ? 'border-white/20 bg-white/10 text-white hover:bg-white hover:text-ink'
       : 'border-ink-line bg-white text-ink-soft hover:border-ink hover:text-ink';
 
   return (
@@ -81,11 +141,30 @@ function SocialLinks({ establishment, variant = 'dark' }) {
           rel="noopener noreferrer"
           aria-label={label}
           title={label}
-          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all ${base}`}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all ${baseClass}`}
         >
           <Icon size={16} strokeWidth={1.75} />
         </a>
       ))}
+    </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title, description, align = 'left', accent }) {
+  const alignment = align === 'center' ? 'text-center mx-auto' : '';
+
+  return (
+    <div className={`max-w-2xl ${alignment}`}>
+      <p className="mb-3 inline-flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-ink-soft">
+        {accent ? <Sparkles size={11} style={{ color: accent }} /> : null}
+        {eyebrow}
+      </p>
+      <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-tight text-ink md:text-5xl">
+        {title}
+      </h2>
+      {description ? (
+        <p className="mt-4 text-base leading-7 text-ink-soft">{description}</p>
+      ) : null}
     </div>
   );
 }
@@ -112,44 +191,58 @@ export default function EstablishmentPage() {
       try {
         const estab = await publicEstablishmentsService.getBySlug(slug);
         setEstablishment(estab);
+
         const [svcData, profData, hoursData, plansData] = await Promise.all([
           publicEstablishmentsService.getServices(estab.id),
           publicEstablishmentsService.getProfessionals(estab.id),
           publicEstablishmentsService.getBusinessHours(estab.id),
           plansService.getPublicPlans(slug).catch(() => []),
         ]);
+
         setServices(svcData);
         setProfessionals(profData);
         setBusinessHours(hoursData);
         setPlans(plansData);
+
         if (isAuthenticated && user?.role === 'customer') {
-          const subs = await subscriptionsService.getMine().catch(() => []);
-          setMySubscriptions(subs);
+          const subscriptions = await subscriptionsService.getMine().catch(() => []);
+          setMySubscriptions(subscriptions);
         }
       } catch (err) {
-        setError(err.response?.data?.error || 'Estabelecimento não encontrado.');
+        setError(err.response?.data?.error || 'Estabelecimento nao encontrado.');
       } finally {
         setLoading(false);
       }
     };
+
     load();
-  }, [slug, isAuthenticated]);
+  }, [slug, isAuthenticated, user?.role]);
 
   const handleSubscribe = async () => {
-    if (!confirmPlan) return;
+    if (!confirmPlan) {
+      return;
+    }
+
     if (!isAuthenticated || user?.role !== 'customer') {
-      toast.error('Faça login como cliente para assinar um plano.');
+      toast.error('Faca login como cliente para assinar um plano.');
       navigate(`/${slug}/login`, { state: { from: `/${slug}/planos` } });
       return;
     }
+
     setSubscribing(true);
+
     try {
       const result = await subscriptionsService.subscribe(confirmPlan.id);
-      if (result?.checkout?.url) { window.location.href = result.checkout.url; return; }
+
+      if (result?.checkout?.url) {
+        window.location.href = result.checkout.url;
+        return;
+      }
+
       toast.success(`Plano "${confirmPlan.name}" assinado com sucesso!`);
       setConfirmPlan(null);
-      const subs = await subscriptionsService.getMine().catch(() => []);
-      setMySubscriptions(subs);
+      const subscriptions = await subscriptionsService.getMine().catch(() => []);
+      setMySubscriptions(subscriptions);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -158,43 +251,56 @@ export default function EstablishmentPage() {
   };
 
   const isSubscribed = (planId) =>
-    mySubscriptions.some((s) => s.plan_id === planId && s.status === 'active');
+    mySubscriptions.some((subscription) => subscription.plan_id === planId && subscription.status === 'active');
+
   const hasActiveSub = mySubscriptions.some(
-    (s) => s.establishment_id === establishment?.id && s.status === 'active'
+    (subscription) => subscription.establishment_id === establishment?.id && subscription.status === 'active'
   );
 
   const todayKey = Object.keys(WEEKDAY_INDEX).find(
-    (k) => WEEKDAY_INDEX[k] === new Date().getDay()
+    (key) => WEEKDAY_INDEX[key] === new Date().getDay()
   );
-  const todayHours = businessHours.find((bh) => bh.weekday === todayKey);
+  const todayHours = businessHours.find((businessHour) => businessHour.weekday === todayKey);
   const isOpenToday = todayHours?.is_open;
 
   const branding = getBrandingTheme(establishment);
   const primary = branding.primaryColor || '#0f172a';
-  const accent  = branding.accentColor  || '#7c3aed';
+  const accent = branding.accentColor || '#6d28d9';
 
   const gallery = Array.isArray(establishment?.gallery)
-    ? establishment.gallery.filter((g) => g?.url)
+    ? establishment.gallery.filter((image) => image?.url)
     : [];
   const highlights = Array.isArray(establishment?.highlights)
     ? establishment.highlights.filter(Boolean)
     : [];
 
+  const heroGallery = gallery.slice(0, 3);
+  const topServices = services.slice(0, 6);
+  const heroHighlights = highlights.slice(0, 3).map(splitHighlight);
+
   const featuredService = useMemo(() => {
-    if (!services.length) return null;
+    if (!services.length) {
+      return null;
+    }
+
     return [...services].sort((a, b) => Number(b.price) - Number(a.price))[0];
   }, [services]);
 
-  if (loading) return <LoadingSpinner fullScreen />;
+  if (loading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
   if (error) {
     return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center px-6">
-        <div className="max-w-md text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">Ops</p>
-          <h1 className="font-display text-4xl font-bold text-ink">{error}</h1>
-          <Link to="/" className="mt-8 inline-flex btn-ink">
-            Voltar ao início
-          </Link>
+      <div className="min-h-screen bg-canvas px-6">
+        <div className="mx-auto flex min-h-screen max-w-md items-center justify-center text-center">
+          <div>
+            <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">Ops</p>
+            <h1 className="font-display text-4xl font-bold text-ink">{error}</h1>
+            <Link to="/" className="mt-8 inline-flex btn-ink">
+              Voltar ao inicio
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -204,46 +310,55 @@ export default function EstablishmentPage() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
+      <div
+        className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[34rem] opacity-80"
+        style={{
+          background: `radial-gradient(circle at top left, ${rgba(accent, 0.2)} 0%, rgba(255,255,255,0) 45%), radial-gradient(circle at top right, ${rgba(primary, 0.12)} 0%, rgba(255,255,255,0) 40%)`,
+        }}
+      />
 
-      {/* ── NAVBAR (sticky) ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6 sm:pt-5">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-ink-line bg-white/85 px-4 py-2.5 backdrop-blur-md shadow-[0_10px_30px_-20px_rgba(15,23,42,0.25)]">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-ink-line/80 bg-white/80 px-4 py-2.5 backdrop-blur-xl shadow-[0_20px_50px_-35px_rgba(15,23,42,0.55)]">
           <Link to={`/${slug}`} className="flex items-center gap-2.5">
             <div
-              className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white"
+              className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white"
               style={{ background: brandGradient }}
             >
-              {establishment.logo_url
-                ? <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
-                : <span>{(establishment.name || 'E').charAt(0)}</span>
-              }
+              {establishment.logo_url ? (
+                <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span>{(establishment.name || 'E').charAt(0)}</span>
+              )}
             </div>
-            <span className="font-display text-sm font-bold text-ink sm:text-base">
-              {establishment.name}
-            </span>
+            <div className="leading-tight">
+              <span className="block font-display text-sm font-bold text-ink sm:text-base">
+                {establishment.name}
+              </span>
+              <span className="block text-xs text-ink-soft">/{establishment.slug}</span>
+            </div>
           </Link>
 
           <div className="hidden items-center gap-7 md:flex">
-            {establishment.about && (
+            {establishment.about ? (
               <a href="#sobre" className="text-sm font-medium text-ink-soft transition-colors hover:text-ink">
                 Sobre
               </a>
-            )}
-            {services.length > 0 && (
+            ) : null}
+            {services.length > 0 ? (
               <a href="#servicos" className="text-sm font-medium text-ink-soft transition-colors hover:text-ink">
-                Serviços
+                Servicos
               </a>
-            )}
-            {professionals.length > 0 && (
+            ) : null}
+            {professionals.length > 0 ? (
               <a href="#equipe" className="text-sm font-medium text-ink-soft transition-colors hover:text-ink">
                 Equipe
               </a>
-            )}
-            {plans.length > 0 && (
+            ) : null}
+            {plans.length > 0 ? (
               <a href="#planos" className="text-sm font-medium text-ink-soft transition-colors hover:text-ink">
                 Planos
               </a>
-            )}
+            ) : null}
             <a href="#contato" className="text-sm font-medium text-ink-soft transition-colors hover:text-ink">
               Contato
             </a>
@@ -257,6 +372,7 @@ export default function EstablishmentPage() {
             Agendar
             <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
           </button>
+
           <button
             onClick={() => navigate(`/${slug}/agendar`)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white sm:hidden"
@@ -268,659 +384,779 @@ export default function EstablishmentPage() {
         </nav>
       </header>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative mx-auto mt-6 max-w-6xl px-4 sm:px-6">
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-ink-line bg-ink text-canvas">
-          {/* Background */}
-          <div className="absolute inset-0">
-            {establishment.cover_url ? (
-              <img src={establishment.cover_url} alt="" className="h-full w-full object-cover opacity-70" />
-            ) : (
-              <div className="h-full w-full" style={{ background: brandGradient }} />
-            )}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `linear-gradient(135deg, ${rgba(primary, 0.55)} 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.85) 100%)`,
-              }}
-            />
-          </div>
-
-          {/* Glow */}
-          <div
-            className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full opacity-50 blur-3xl"
-            style={{ background: accent }}
-          />
-
-          <div className="relative z-10 grid gap-10 px-6 py-14 sm:px-10 sm:py-20 md:grid-cols-[1.3fr_1fr] md:items-end md:px-14 md:py-24">
-            {/* Left - text */}
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-white/80 backdrop-blur-sm">
-                <Sparkles size={11} />
-                Portfolio oficial · /{establishment.slug}
-              </div>
-
-              <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl">
-                {establishment.name}
-              </h1>
-
-              {establishment.tagline && (
-                <p className="mt-5 max-w-xl text-lg font-light leading-relaxed text-white/85 md:text-xl">
-                  {establishment.tagline}
-                </p>
+      <main className="relative z-10">
+        <section className="mx-auto mt-6 max-w-6xl px-4 sm:px-6">
+          <div className="relative overflow-hidden rounded-[2.75rem] border border-ink-line bg-ink text-canvas shadow-[0_36px_90px_-45px_rgba(15,23,42,0.6)]">
+            <div className="absolute inset-0">
+              {establishment.cover_url ? (
+                <img src={establishment.cover_url} alt="" className="h-full w-full object-cover opacity-65" />
+              ) : (
+                <div className="h-full w-full" style={{ background: brandGradient }} />
               )}
-
-              {/* Meta chips */}
-              <div className="mt-7 flex flex-wrap gap-2">
-                {isOpenToday !== undefined && (
-                  <span
-                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-sm"
-                    style={
-                      isOpenToday
-                        ? { borderColor: 'rgba(134,239,172,0.4)', background: 'rgba(134,239,172,0.15)', color: '#bbf7d0' }
-                        : { borderColor: 'rgba(252,165,165,0.35)', background: 'rgba(252,165,165,0.12)', color: '#fecaca' }
-                    }
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${isOpenToday ? 'bg-emerald-300' : 'bg-red-300'}`} />
-                    {isOpenToday
-                      ? `Aberto hoje · ${todayHours.start_time.slice(0, 5)}–${todayHours.end_time.slice(0, 5)}`
-                      : 'Fechado hoje'}
-                  </span>
-                )}
-                {establishment.address && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
-                    <MapPin size={12} /> {establishment.address}
-                  </span>
-                )}
-                {establishment.phone && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
-                    <Phone size={12} /> {establishment.phone}
-                  </span>
-                )}
-              </div>
-
-              {/* CTAs */}
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => navigate(`/${slug}/agendar`)}
-                  className="group inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold uppercase tracking-wide text-ink transition-all hover:gap-3"
-                >
-                  <Calendar size={16} /> Agendar agora
-                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-                </button>
-                {plans.length > 0 && (
-                  <Link
-                    to={`/${slug}/planos`}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-4 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:border-white hover:bg-white/10"
-                  >
-                    <Star size={15} /> Clube do assinante
-                  </Link>
-                )}
-              </div>
-
-              <div className="mt-8">
-                <SocialLinks establishment={establishment} variant="light" />
-              </div>
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(120deg, ${rgba(primary, 0.72)} 0%, rgba(0,0,0,0.46) 46%, rgba(0,0,0,0.9) 100%)`,
+                }}
+              />
             </div>
+            <div
+              className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full opacity-50 blur-3xl"
+              style={{ background: accent }}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/65 to-transparent" />
 
-            {/* Right - featured service card */}
-            {featuredService && (
-              <div className="hidden md:block">
-                <div className="relative ml-auto max-w-sm rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-xl">
-                  <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-white/70">
-                    Em destaque
+            <div className="relative z-10 grid gap-10 px-6 py-14 sm:px-10 sm:py-20 md:grid-cols-[1.08fr_0.92fr] md:items-end md:px-14 md:py-24">
+              <div>
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-white/80 backdrop-blur-sm">
+                  <Sparkles size={11} />
+                  Portfolio oficial · /{establishment.slug}
+                </div>
+
+                <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.92] tracking-tight text-white md:text-7xl">
+                  {establishment.name}
+                </h1>
+
+                {establishment.tagline ? (
+                  <p className="mt-5 max-w-2xl text-lg font-light leading-relaxed text-white/88 md:text-2xl">
+                    {establishment.tagline}
                   </p>
-                  <h3 className="font-display text-2xl font-bold leading-tight text-white">
-                    {featuredService.name}
-                  </h3>
-                  {featuredService.description && (
-                    <p className="mt-2 line-clamp-3 text-sm text-white/75">
-                      {featuredService.description}
-                    </p>
-                  )}
-                  <div className="mt-5 flex items-center justify-between border-t border-white/20 pt-4">
-                    <span className="inline-flex items-center gap-1.5 text-xs text-white/80">
-                      <Clock size={12} /> {featuredService.duration_minutes} min
+                ) : null}
+
+                {establishment.about ? (
+                  <p className="mt-6 max-w-2xl text-sm leading-7 text-white/74 md:text-base">
+                    {establishment.about}
+                  </p>
+                ) : null}
+
+                <div className="mt-7 flex flex-wrap gap-2">
+                  {isOpenToday !== undefined ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-sm"
+                      style={
+                        isOpenToday
+                          ? {
+                              borderColor: 'rgba(134,239,172,0.4)',
+                              background: 'rgba(134,239,172,0.14)',
+                              color: '#bbf7d0',
+                            }
+                          : {
+                              borderColor: 'rgba(252,165,165,0.35)',
+                              background: 'rgba(252,165,165,0.12)',
+                              color: '#fecaca',
+                            }
+                      }
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${isOpenToday ? 'bg-emerald-300' : 'bg-red-300'}`} />
+                      {isOpenToday
+                        ? `Aberto hoje · ${todayHours.start_time.slice(0, 5)}-${todayHours.end_time.slice(0, 5)}`
+                        : 'Fechado hoje'}
                     </span>
-                    <span className="font-display text-2xl font-bold text-white">
-                      {fmt(featuredService.price)}
+                  ) : null}
+
+                  {establishment.address ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
+                      <MapPin size={12} /> {establishment.address}
                     </span>
-                  </div>
+                  ) : null}
+
+                  {establishment.phone ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white/85 backdrop-blur-sm">
+                      <Phone size={12} /> {establishment.phone}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mt-9 flex flex-wrap items-center gap-3">
                   <button
                     onClick={() => navigate(`/${slug}/agendar`)}
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:translate-y-[-1px]"
+                    className="group inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-4 text-sm font-bold uppercase tracking-wide text-ink transition-all hover:gap-3"
                   >
-                    Reservar agora <ArrowUpRight size={13} />
+                    <Calendar size={16} />
+                    Agendar agora
+                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                   </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
-      {/* ── STATS / HIGHLIGHTS STRIP ────────────────────────────────────── */}
-      {highlights.length > 0 && (
-        <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
-          <div className="grid gap-3 rounded-3xl border border-ink-line bg-white p-6 sm:grid-cols-2 md:grid-cols-4">
-            {highlights.slice(0, 4).map((h, i) => {
-              const numMatch = h.match(/^\d[\d+k.,%]*/);
-              const numPart = numMatch ? numMatch[0] : '';
-              const textPart = h.replace(/^\d[\d+k.,%]*\s*/, '') || h;
-              return (
-                <div
-                  key={i}
-                  className="flex flex-col border-ink-line md:not-last:border-r md:pr-4 md:[&:not(:last-child)]:border-r"
-                >
-                  <span
-                    className="font-display text-3xl font-bold leading-none tracking-tight"
-                    style={{ color: primary }}
-                  >
-                    {numPart || '✓'}
-                  </span>
-                  <span className="mt-2 text-sm text-ink-soft">{textPart}</span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ── SOBRE ──────────────────────────────────────────────────────── */}
-      {establishment.about && (
-        <section id="sobre" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="grid gap-12 md:grid-cols-[1fr_1.3fr] md:items-center">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">Sobre</p>
-              <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink md:text-5xl">
-                A casa.
-                <br />
-                O <span className="underline-brush">estilo</span>.
-                <br />
-                A marca.
-              </h2>
-            </div>
-            <div className="relative">
-              <div
-                className="absolute -left-4 top-0 h-full w-1 rounded-full"
-                style={{ background: brandGradient }}
-              />
-              <p className="pl-8 text-lg leading-relaxed text-ink-soft md:text-xl">
-                {establishment.about}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── SERVIÇOS ───────────────────────────────────────────────────── */}
-      {services.length > 0 && (
-        <section id="servicos" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">
-                O que oferecemos
-              </p>
-              <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink md:text-5xl">
-                Serviços <span className="underline-brush">selecionados</span>
-              </h2>
-            </div>
-            <button
-              onClick={() => navigate(`/${slug}/agendar`)}
-              className="inline-flex items-center gap-1 text-sm font-bold uppercase tracking-wider text-ink underline-offset-4 hover:underline"
-            >
-              Ver agenda <ChevronRight size={14} />
-            </button>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((svc, idx) => (
-              <button
-                key={svc.id}
-                type="button"
-                onClick={() => navigate(`/${slug}/agendar`)}
-                className="group relative flex flex-col overflow-hidden rounded-3xl border border-ink-line bg-white p-6 text-left transition-all hover:-translate-y-1 hover:shadow-[0_28px_50px_-30px_rgba(15,23,42,0.3)]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{ background: rgba(primary, 0.12), color: primary }}
-                  >
-                    <Scissors size={18} strokeWidth={1.75} />
-                  </div>
-                  <span
-                    className="font-display text-xs font-bold uppercase tracking-widest"
-                    style={{ color: primary }}
-                  >
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 font-display text-xl font-bold leading-tight text-ink">
-                  {svc.name}
-                </h3>
-                {svc.description && (
-                  <p className="mt-2 line-clamp-2 text-sm text-ink-soft">
-                    {svc.description}
-                  </p>
-                )}
-
-                <div className="mt-auto flex items-center justify-between border-t border-ink-line pt-4">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-soft">
-                    <Clock size={12} /> {svc.duration_minutes} min
-                  </span>
-                  <span className="font-display text-2xl font-bold text-ink">
-                    {fmt(svc.price)}
-                  </span>
-                </div>
-
-                <div
-                  className="absolute inset-x-0 bottom-0 h-[3px] origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"
-                  style={{ background: brandGradient }}
-                />
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── EQUIPE ─────────────────────────────────────────────────────── */}
-      {professionals.length > 0 && (
-        <section id="equipe" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="mb-10 flex items-end justify-between">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">
-                A equipe
-              </p>
-              <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink md:text-5xl">
-                Quem assina o <span className="underline-brush">trabalho</span>
-              </h2>
-            </div>
-            <Users size={26} className="text-ink-soft" />
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {professionals.map((prof) => (
-              <div
-                key={prof.id}
-                className="group relative overflow-hidden rounded-3xl border border-ink-line bg-white p-6 transition-transform hover:-translate-y-1"
-              >
-                <div className="mb-5 flex h-40 items-center justify-center overflow-hidden rounded-2xl"
-                  style={{ background: rgba(accent, 0.08) }}
-                >
-                  {prof.avatar_url ? (
-                    <img src={prof.avatar_url} alt={prof.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span
-                      className="font-display text-4xl font-bold text-white"
-                      style={{
-                        background: brandGradient,
-                        width: '5rem',
-                        height: '5rem',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '9999px',
-                      }}
+                  {plans.length > 0 ? (
+                    <Link
+                      to={`/${slug}/planos`}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-4 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:border-white hover:bg-white/10"
                     >
-                      {initials(prof.name)}
-                    </span>
-                  )}
+                      <Star size={15} />
+                      Clube do assinante
+                    </Link>
+                  ) : null}
                 </div>
-                <p className="font-display text-lg font-bold leading-tight text-ink">
-                  {prof.name}
-                </p>
-                {prof.specialty && (
-                  <p className="mt-1 text-sm text-ink-soft">{prof.specialty}</p>
-                )}
-                <div
-                  className="mt-4 h-[2px] w-8 rounded-full transition-all group-hover:w-16"
-                  style={{ background: primary }}
-                />
+
+                <div className="mt-8 flex flex-wrap items-end gap-6">
+                  <SocialLinks establishment={establishment} variant="light" />
+
+                  {heroHighlights.length > 0 ? (
+                    <div className="flex flex-wrap gap-5 text-white/78">
+                      {heroHighlights.map(({ number, label }, index) => (
+                        <div key={`${label}-${index}`}>
+                          <p className="font-display text-2xl font-bold text-white">{number || '•'}</p>
+                          <p className="max-w-[10rem] text-[11px] uppercase tracking-[0.22em]">
+                            {label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {/* ── GALERIA ────────────────────────────────────────────────────── */}
-      {gallery.length > 0 && (
-        <section id="galeria" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="mb-10 flex items-end justify-between">
-            <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.28em] text-ink-soft">
-                Portfolio
-              </p>
-              <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink md:text-5xl">
-                Cenas do <span className="underline-brush">estúdio</span>
-              </h2>
-            </div>
-            <span className="text-sm text-ink-soft">
-              {gallery.length} {gallery.length === 1 ? 'foto' : 'fotos'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {gallery.map((img, idx) => {
-              const isBig = idx % 5 === 0;
-              return (
-                <button
-                  key={img.url || idx}
-                  type="button"
-                  onClick={() => setLightboxImg(img.url)}
-                  className={`group relative overflow-hidden rounded-2xl bg-ink-line/40 ${
-                    isBig ? 'col-span-2 row-span-2' : ''
-                  }`}
-                  style={{ aspectRatio: isBig ? '1/1' : '4/3' }}
-                >
-                  <img
-                    src={img.url}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                  <div
-                    className="absolute bottom-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-ink opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <ArrowUpRight size={14} />
+              <div className="grid gap-4 md:justify-items-end">
+                {heroGallery.length > 0 ? (
+                  <div className="grid w-full max-w-md grid-cols-3 gap-3">
+                    {heroGallery.map((image, index) => (
+                      <button
+                        key={image.url || index}
+                        type="button"
+                        onClick={() => setLightboxImg(image.url)}
+                        className={`group relative overflow-hidden rounded-[1.7rem] border border-white/15 bg-white/10 backdrop-blur-sm ${
+                          index === 0 ? 'col-span-3 aspect-[1.2/0.9]' : 'aspect-square'
+                        }`}
+                      >
+                        <img
+                          src={image.url}
+                          alt=""
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
+                      </button>
+                    ))}
                   </div>
-                </button>
-              );
-            })}
+                ) : null}
+
+                {featuredService ? (
+                  <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 p-6 backdrop-blur-xl">
+                    <div className="absolute inset-x-0 top-0 h-px bg-white/35" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-white/68">
+                          Assinatura visual
+                        </p>
+                        <h3 className="font-display text-2xl font-bold leading-tight text-white">
+                          {featuredService.name}
+                        </h3>
+                      </div>
+                      <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/75">
+                        destaque
+                      </span>
+                    </div>
+
+                    {featuredService.description ? (
+                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-white/72">
+                        {featuredService.description}
+                      </p>
+                    ) : null}
+
+                    <div className="mt-6 grid grid-cols-2 gap-3 border-t border-white/15 pt-5">
+                      <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-white/55">Duracao</p>
+                        <p className="mt-2 font-display text-2xl font-bold text-white">
+                          {featuredService.duration_minutes}
+                          <span className="ml-1 text-sm font-medium text-white/70">min</span>
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/15 p-4">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-white/55">Investimento</p>
+                        <p className="mt-2 font-display text-2xl font-bold text-white">
+                          {fmt(featuredService.price)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => navigate(`/${slug}/agendar`)}
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-ink transition-transform hover:translate-y-[-1px]"
+                    >
+                      Reservar agora
+                      <ArrowUpRight size={13} />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
         </section>
-      )}
 
-      {/* ── PLANOS ─────────────────────────────────────────────────────── */}
-      {plans.length > 0 && (
-        <section id="planos" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="mb-3 inline-flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-ink-soft">
-                <Star size={11} style={{ color: accent }} /> Clube do assinante
-              </p>
-              <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-ink md:text-5xl">
-                Vire <span className="underline-brush">membro</span> da casa
-              </h2>
-              <p className="mt-3 max-w-xl text-ink-soft">
-                Benefícios exclusivos, descontos e prioridade na agenda para quem assina.
-              </p>
+        {highlights.length > 0 ? (
+          <section className="mx-auto mt-10 max-w-6xl px-4 sm:px-6">
+            <div className="grid gap-3 rounded-[2rem] border border-ink-line bg-white p-4 shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] sm:grid-cols-2 md:grid-cols-4 md:p-6">
+              {highlights.slice(0, 4).map((highlight, index) => {
+                const { number, label } = splitHighlight(highlight);
+                return (
+                  <div
+                    key={`${highlight}-${index}`}
+                    className="rounded-[1.4rem] border border-ink-line/70 bg-canvas px-4 py-5"
+                  >
+                    <p className="font-display text-3xl font-bold tracking-tight" style={{ color: primary }}>
+                      {number || '•'}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-ink-soft">{label}</p>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          </section>
+        ) : null}
 
-          {hasActiveSub && (
-            <div
-              className="mb-6 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm"
-              style={{
-                borderColor: rgba(accent, 0.35),
-                background: rgba(accent, 0.1),
-                color: primary,
-              }}
-            >
-              <Crown size={16} />
-              Você já é assinante deste estabelecimento.
-            </div>
-          )}
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan, i) => {
-              const active = isSubscribed(plan.id);
-              const featured = i === Math.floor(plans.length / 2);
-              return (
-                <div
-                  key={plan.id}
-                  className={`relative flex flex-col overflow-hidden rounded-3xl border p-7 transition-transform hover:-translate-y-1 ${
-                    featured ? 'text-white' : 'bg-white text-ink border-ink-line'
-                  }`}
-                  style={
-                    featured
-                      ? { background: brandGradient, borderColor: 'transparent' }
-                      : {}
+        {establishment.about || gallery.length > 0 ? (
+          <section id="sobre" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+            <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+              <div className="rounded-[2rem] border border-ink-line bg-white p-8 shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)]">
+                <SectionHeading
+                  eyebrow="Manifesto"
+                  title="Uma presenca publica que vende antes mesmo do primeiro contato."
+                  description={
+                    establishment.about ||
+                    'Seu portfolio precisa parecer uma marca premium: forte no primeiro impacto, claro na oferta e facil de converter em agendamento.'
                   }
-                >
-                  {featured && (
-                    <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm">
-                      <Sparkles size={10} /> Popular
-                    </span>
-                  )}
-                  {active && !featured && (
-                    <span
-                      className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
-                      style={{ background: rgba(accent, 0.15), color: accent }}
+                  accent={accent}
+                />
+
+                <div className="mt-8 grid gap-3">
+                  {topServices.slice(0, 3).map((service) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => navigate(`/${slug}/agendar`)}
+                      className="group flex items-center justify-between rounded-[1.4rem] border border-ink-line bg-canvas px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-transparent"
+                      style={{ boxShadow: `inset 0 0 0 1px ${rgba(primary, 0)}` }}
                     >
-                      <Crown size={10} /> Ativo
+                      <div>
+                        <p className="font-display text-lg font-bold text-ink">{service.name}</p>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          {service.duration_minutes} min
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display text-xl font-bold text-ink">{fmt(service.price)}</p>
+                        <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-soft">
+                          reservar <ArrowUpRight size={12} />
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {gallery.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {gallery.slice(0, 5).map((image, index) => (
+                    <button
+                      key={image.url || index}
+                      type="button"
+                      onClick={() => setLightboxImg(image.url)}
+                      className={`group relative overflow-hidden rounded-[2rem] border border-ink-line bg-white shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] ${
+                        index === 0 ? 'sm:col-span-2 aspect-[1.45/0.9]' : 'aspect-square'
+                      }`}
+                    >
+                      <img
+                        src={image.url}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-90" />
+                      <div className="absolute bottom-4 left-4 rounded-full border border-white/20 bg-black/25 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-white backdrop-blur-sm">
+                        portfolio
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
+
+        {services.length > 0 ? (
+          <section id="servicos" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <SectionHeading
+                eyebrow="Servicos"
+                title="Sessao, estilo e investimento apresentados com clareza."
+                description="Cada item vira uma oferta clara, com tempo estimado e faixa de valor para facilitar a decisao do cliente."
+              />
+
+              <button
+                onClick={() => navigate(`/${slug}/agendar`)}
+                className="inline-flex items-center gap-1 text-sm font-bold uppercase tracking-wider text-ink underline-offset-4 hover:underline"
+              >
+                Ver agenda
+                <ChevronRight size={14} />
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {services.map((service, index) => (
+                <button
+                  key={service.id}
+                  type="button"
+                  onClick={() => navigate(`/${slug}/agendar`)}
+                  className="group relative flex flex-col overflow-hidden rounded-[2rem] border border-ink-line bg-white p-6 text-left shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1 hover:shadow-[0_32px_70px_-40px_rgba(15,23,42,0.45)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div
+                      className="inline-flex h-12 w-12 items-center justify-center rounded-2xl"
+                      style={{ background: rgba(primary, 0.1), color: primary }}
+                    >
+                      <Scissors size={18} strokeWidth={1.75} />
+                    </div>
+                    <span
+                      className="font-display text-xs font-bold uppercase tracking-widest"
+                      style={{ color: primary }}
+                    >
+                      {String(index + 1).padStart(2, '0')}
                     </span>
+                  </div>
+
+                  <h3 className="mt-5 font-display text-xl font-bold leading-tight text-ink">
+                    {service.name}
+                  </h3>
+
+                  {service.description ? (
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink-soft">
+                      {service.description}
+                    </p>
+                  ) : null}
+
+                  <div className="mt-auto flex items-center justify-between border-t border-ink-line pt-4">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-soft">
+                      <Clock size={12} />
+                      {service.duration_minutes} min
+                    </span>
+                    <span className="font-display text-2xl font-bold text-ink">
+                      {fmt(service.price)}
+                    </span>
+                  </div>
+
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-[3px] origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100"
+                    style={{ background: brandGradient }}
+                  />
+                </button>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {professionals.length > 0 ? (
+          <section id="equipe" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+            <div className="mb-10 flex items-end justify-between gap-4">
+              <SectionHeading
+                eyebrow="Equipe"
+                title="Quem assina o trabalho e sustenta a reputacao da casa."
+                description="Uma apresentacao forte dos profissionais ajuda a transformar curiosidade em confianca."
+              />
+              <Users size={26} className="hidden text-ink-soft md:block" />
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {professionals.map((professional) => (
+                <div
+                  key={professional.id}
+                  className="group relative overflow-hidden rounded-[2rem] border border-ink-line bg-white p-6 shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] transition-transform hover:-translate-y-1"
+                >
+                  <div
+                    className="mb-5 flex h-44 items-center justify-center overflow-hidden rounded-[1.6rem]"
+                    style={{ background: rgba(accent, 0.08) }}
+                  >
+                    {professional.avatar_url ? (
+                      <img
+                        src={professional.avatar_url}
+                        alt={professional.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        className="inline-flex h-20 w-20 items-center justify-center rounded-full font-display text-3xl font-bold text-white"
+                        style={{ background: brandGradient }}
+                      >
+                        {initials(professional.name)}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="font-display text-lg font-bold leading-tight text-ink">
+                    {professional.name}
+                  </p>
+
+                  {professional.specialty ? (
+                    <p className="mt-1 text-sm text-ink-soft">{professional.specialty}</p>
+                  ) : null}
+
+                  <div
+                    className="mt-4 h-[2px] w-8 rounded-full transition-all group-hover:w-16"
+                    style={{ background: primary }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {gallery.length > 0 ? (
+          <section id="galeria" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <SectionHeading
+                eyebrow="Portfolio"
+                title="Visual forte, composicao limpa e trabalho em primeiro plano."
+                description="A galeria vira uma vitrine real da marca, com ritmo visual e mais peso para as melhores pecas."
+              />
+              <span className="text-sm text-ink-soft">
+                {gallery.length} {gallery.length === 1 ? 'foto' : 'fotos'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {gallery.map((image, index) => {
+                const isBig = index % 5 === 0;
+                return (
+                  <button
+                    key={image.url || index}
+                    type="button"
+                    onClick={() => setLightboxImg(image.url)}
+                    className={`group relative overflow-hidden rounded-[1.8rem] border border-ink-line bg-white shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] ${
+                      isBig ? 'col-span-2 row-span-2' : ''
+                    }`}
+                    style={{ aspectRatio: isBig ? '1 / 1' : '4 / 3' }}
+                  >
+                    <img
+                      src={image.url}
+                      alt=""
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-80" />
+                    <div className="absolute bottom-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink opacity-0 transition-opacity group-hover:opacity-100">
+                      <ArrowUpRight size={14} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {plans.length > 0 ? (
+          <section id="planos" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+            <div className="mb-10">
+              <SectionHeading
+                eyebrow="Clube do assinante"
+                title="Planos com cara de beneficio real, nao de tabela fria."
+                description="Beneficios exclusivos, descontos e prioridade na agenda para quem quer manter recorrencia com o estudio."
+                accent={accent}
+              />
+            </div>
+
+            {hasActiveSub ? (
+              <div
+                className="mb-6 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm"
+                style={{
+                  borderColor: rgba(accent, 0.35),
+                  background: rgba(accent, 0.1),
+                  color: primary,
+                }}
+              >
+                <Crown size={16} />
+                Voce ja e assinante deste estabelecimento.
+              </div>
+            ) : null}
+
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {plans.map((plan, index) => {
+                const active = isSubscribed(plan.id);
+                const featured = index === Math.floor(plans.length / 2);
+
+                return (
+                  <div
+                    key={plan.id}
+                    className={`relative flex flex-col overflow-hidden rounded-[2rem] border p-7 shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)] transition-transform hover:-translate-y-1 ${
+                      featured ? 'text-white' : 'border-ink-line bg-white text-ink'
+                    }`}
+                    style={featured ? { background: brandGradient, borderColor: 'transparent' } : {}}
+                  >
+                    {featured ? (
+                      <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-white/18 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm">
+                        <Sparkles size={10} />
+                        Popular
+                      </span>
+                    ) : null}
+
+                    {active && !featured ? (
+                      <span
+                        className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
+                        style={{ background: rgba(accent, 0.15), color: accent }}
+                      >
+                        <Crown size={10} />
+                        Ativo
+                      </span>
+                    ) : null}
+
+                    <p
+                      className={`text-[11px] font-bold uppercase tracking-[0.28em] ${
+                        featured ? 'text-white/80' : 'text-ink-soft'
+                      }`}
+                    >
+                      Plano
+                    </p>
+                    <h3 className={`mt-2 font-display text-2xl font-bold leading-tight ${featured ? 'text-white' : 'text-ink'}`}>
+                      {plan.name}
+                    </h3>
+
+                    {plan.description ? (
+                      <p className={`mt-2 text-sm leading-6 ${featured ? 'text-white/85' : 'text-ink-soft'}`}>
+                        {plan.description}
+                      </p>
+                    ) : null}
+
+                    <div className="mt-6 flex items-baseline gap-1.5">
+                      <span className="font-display text-4xl font-bold tracking-tight">
+                        {fmt(plan.price)}
+                      </span>
+                      <span className={`text-sm ${featured ? 'text-white/80' : 'text-ink-soft'}`}>
+                        /{INTERVAL_LABEL[plan.billing_interval]}
+                      </span>
+                    </div>
+
+                    <ul className="mt-6 flex-1 space-y-2.5 text-sm">
+                      {plan.discount_percent > 0 ? (
+                        <li className="flex items-start gap-2">
+                          <Percent
+                            size={14}
+                            className={`mt-0.5 shrink-0 ${featured ? 'text-white' : ''}`}
+                            style={!featured ? { color: accent } : {}}
+                          />
+                          <span className={featured ? 'text-white/90' : 'text-ink-soft'}>
+                            {plan.discount_percent}% de desconto nos servicos
+                          </span>
+                        </li>
+                      ) : null}
+
+                      {(plan.benefits || []).map((benefit, benefitIndex) => (
+                        <li key={benefitIndex} className="flex items-start gap-2">
+                          <Check
+                            size={14}
+                            className={`mt-0.5 shrink-0 ${featured ? 'text-white' : ''}`}
+                            style={!featured ? { color: accent } : {}}
+                          />
+                          <span className={featured ? 'text-white/90' : 'text-ink-soft'}>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {!active ? (
+                      <button
+                        onClick={() => setConfirmPlan(plan)}
+                        className={`group mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all ${
+                          featured ? 'bg-white text-ink hover:gap-3' : 'bg-ink text-canvas hover:gap-3'
+                        }`}
+                      >
+                        Assinar plano
+                        <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                    ) : (
+                      <div className="mt-7 rounded-full border border-current/20 px-5 py-3 text-center text-xs font-bold uppercase tracking-widest">
+                        Plano ativo
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        <section id="contato" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+          <div className="overflow-hidden rounded-[2.4rem] border border-ink-line bg-white shadow-[0_28px_60px_-45px_rgba(15,23,42,0.35)]">
+            <div className="grid gap-0 md:grid-cols-[0.92fr_1.08fr]">
+              <div className="border-b border-ink-line bg-ink px-8 py-10 text-canvas md:border-b-0 md:border-r">
+                <p className="mb-3 inline-flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-white/65">
+                  <MessageCircle size={11} />
+                  Contato
+                </p>
+                <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-tight">
+                  Tudo pronto para transformar visita em agendamento.
+                </h2>
+                <p className="mt-4 max-w-md text-sm leading-7 text-white/72">
+                  Endereco, horarios, canais oficiais e um CTA forte no mesmo bloco para fechar a conversao.
+                </p>
+
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => navigate(`/${slug}/agendar`)}
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold uppercase tracking-wide text-ink"
+                  >
+                    <Calendar size={15} />
+                    Agendar agora
+                  </button>
+                  <SocialLinks establishment={establishment} variant="light" />
+                </div>
+              </div>
+
+              <div className="grid gap-0 md:grid-cols-3">
+                {businessHours.length > 0 ? (
+                  <div className="border-b border-ink-line px-6 py-8 md:border-b-0 md:border-r">
+                    <div className="mb-5 inline-flex items-center gap-2">
+                      <div
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
+                        style={{ background: rgba(primary, 0.12), color: primary }}
+                      >
+                        <Clock size={16} />
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-ink">Horarios</h3>
+                    </div>
+
+                    <ul className="space-y-2 text-sm">
+                      {businessHours.map((businessHour) => {
+                        const isToday = businessHour.weekday === todayKey;
+
+                        return (
+                          <li
+                            key={businessHour.weekday}
+                            className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 ${
+                              isToday ? 'bg-canvas' : ''
+                            }`}
+                          >
+                            <span
+                              className={`font-medium ${
+                                businessHour.is_open ? 'text-ink' : 'text-ink-soft'
+                              } ${isToday ? 'font-bold' : ''}`}
+                            >
+                              {WEEKDAY_LABELS[businessHour.weekday]}
+                            </span>
+                            {businessHour.is_open ? (
+                              <span className="font-semibold tabular-nums text-ink">
+                                {businessHour.start_time.slice(0, 5)} · {businessHour.end_time.slice(0, 5)}
+                              </span>
+                            ) : (
+                              <span className="text-ink-soft">Fechado</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <div className="border-b border-ink-line px-6 py-8 md:border-b-0 md:border-r">
+                  <div className="mb-5 inline-flex items-center gap-2">
+                    <div
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
+                      style={{ background: rgba(primary, 0.12), color: primary }}
+                    >
+                      <MapPin size={16} />
+                    </div>
+                    <h3 className="font-display text-lg font-bold text-ink">Onde estamos</h3>
+                  </div>
+
+                  {establishment.address ? (
+                    <>
+                      <p className="text-sm leading-7 text-ink-soft">{establishment.address}</p>
+                      <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(establishment.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline"
+                      >
+                        Abrir no mapa
+                        <ArrowUpRight size={13} />
+                      </a>
+                    </>
+                  ) : (
+                    <p className="text-sm text-ink-soft">Endereco sob consulta.</p>
                   )}
 
-                  <p
-                    className={`text-[11px] font-bold uppercase tracking-[0.28em] ${
-                      featured ? 'text-white/80' : 'text-ink-soft'
-                    }`}
-                  >
-                    Plano
-                  </p>
-                  <h3
-                    className={`mt-2 font-display text-2xl font-bold leading-tight ${
-                      featured ? 'text-white' : 'text-ink'
-                    }`}
-                  >
-                    {plan.name}
-                  </h3>
-                  {plan.description && (
-                    <p className={`mt-2 text-sm ${featured ? 'text-white/85' : 'text-ink-soft'}`}>
-                      {plan.description}
+                  {establishment.phone ? (
+                    <p className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft">
+                      <Phone size={13} />
+                      {establishment.phone}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="px-6 py-8">
+                  <div className="mb-5 inline-flex items-center gap-2">
+                    <div
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
+                      style={{ background: rgba(primary, 0.12), color: primary }}
+                    >
+                      <Star size={16} />
+                    </div>
+                    <h3 className="font-display text-lg font-bold text-ink">Destaque</h3>
+                  </div>
+
+                  {featuredService ? (
+                    <div className="rounded-[1.4rem] border border-ink-line bg-canvas p-4">
+                      <p className="font-display text-xl font-bold text-ink">{featuredService.name}</p>
+                      <p className="mt-2 text-sm leading-6 text-ink-soft">
+                        {featuredService.description || 'Servico em destaque para apresentar o melhor da casa logo no primeiro scroll.'}
+                      </p>
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-[0.2em] text-ink-soft">
+                          {featuredService.duration_minutes} min
+                        </span>
+                        <span className="font-display text-2xl font-bold text-ink">
+                          {fmt(featuredService.price)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-7 text-ink-soft">
+                      Ative servicos para exibir uma oferta principal nesta area.
                     </p>
                   )}
-
-                  <div className="mt-6 flex items-baseline gap-1.5">
-                    <span className="font-display text-4xl font-bold tracking-tight">
-                      {fmt(plan.price)}
-                    </span>
-                    <span className={`text-sm ${featured ? 'text-white/80' : 'text-ink-soft'}`}>
-                      /{INTERVAL_LABEL[plan.billing_interval]}
-                    </span>
-                  </div>
-
-                  <ul className="mt-6 flex-1 space-y-2.5 text-sm">
-                    {plan.discount_percent > 0 && (
-                      <li className="flex items-start gap-2">
-                        <Percent
-                          size={14}
-                          className={`mt-0.5 shrink-0 ${featured ? 'text-white' : ''}`}
-                          style={!featured ? { color: accent } : {}}
-                        />
-                        <span className={featured ? 'text-white/90' : 'text-ink-soft'}>
-                          {plan.discount_percent}% de desconto nos serviços
-                        </span>
-                      </li>
-                    )}
-                    {(plan.benefits || []).map((b, j) => (
-                      <li key={j} className="flex items-start gap-2">
-                        <Check
-                          size={14}
-                          className={`mt-0.5 shrink-0 ${featured ? 'text-white' : ''}`}
-                          style={!featured ? { color: accent } : {}}
-                        />
-                        <span className={featured ? 'text-white/90' : 'text-ink-soft'}>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {!active && (
-                    <button
-                      onClick={() => setConfirmPlan(plan)}
-                      className={`group mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                        featured
-                          ? 'bg-white text-ink hover:gap-3'
-                          : 'bg-ink text-canvas hover:gap-3'
-                      }`}
-                    >
-                      Assinar plano
-                      <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-                    </button>
-                  )}
-                  {active && (
-                    <div className="mt-7 rounded-full border border-current/20 px-5 py-3 text-center text-xs font-bold uppercase tracking-widest">
-                      Plano ativo
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
         </section>
-      )}
 
-      {/* ── CONTATO (Horários + Localização + Social) ──────────────────── */}
-      <section id="contato" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-        <div className="grid gap-10 rounded-3xl border border-ink-line bg-white p-8 md:grid-cols-3 md:p-10">
-          {/* Horários */}
-          {businessHours.length > 0 && (
-            <div>
-              <div className="mb-5 inline-flex items-center gap-2">
-                <div
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
-                  style={{ background: rgba(primary, 0.12), color: primary }}
-                >
-                  <Clock size={16} />
-                </div>
-                <h3 className="font-display text-lg font-bold text-ink">Horários</h3>
-              </div>
-              <ul className="space-y-2 text-sm">
-                {businessHours.map((bh) => {
-                  const isToday = bh.weekday === todayKey;
-                  return (
-                    <li
-                      key={bh.weekday}
-                      className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 ${
-                        isToday ? 'bg-canvas' : ''
-                      }`}
-                    >
-                      <span
-                        className={`font-medium ${
-                          bh.is_open ? 'text-ink' : 'text-ink-soft'
-                        } ${isToday ? 'font-bold' : ''}`}
-                      >
-                        {WEEKDAY_LABELS[bh.weekday]}
-                        {isToday && (
-                          <span
-                            className="ml-2 inline-block h-1.5 w-1.5 rounded-full align-middle"
-                            style={{ background: primary }}
-                          />
-                        )}
-                      </span>
-                      {bh.is_open ? (
-                        <span className="font-semibold tabular-nums text-ink">
-                          {bh.start_time.slice(0, 5)} · {bh.end_time.slice(0, 5)}
-                        </span>
-                      ) : (
-                        <span className="text-ink-soft">Fechado</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+        <section className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+          <div className="relative overflow-hidden rounded-[2.6rem] bg-ink px-6 py-16 text-canvas sm:px-12 sm:py-20">
+            <div className="dotted-bg-dark pointer-events-none absolute inset-0 opacity-60" />
+            <div
+              className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-30 blur-3xl"
+              style={{ background: accent }}
+            />
 
-          {/* Localização */}
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2">
-              <div
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
-                style={{ background: rgba(primary, 0.12), color: primary }}
-              >
-                <MapPin size={16} />
-              </div>
-              <h3 className="font-display text-lg font-bold text-ink">Onde estamos</h3>
-            </div>
-            {establishment.address ? (
-              <>
-                <p className="text-sm leading-relaxed text-ink-soft">
-                  {establishment.address}
-                </p>
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(establishment.address)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline"
-                >
-                  Abrir no mapa <ArrowUpRight size={13} />
-                </a>
-              </>
-            ) : (
-              <p className="text-sm text-ink-soft">Endereço sob consulta.</p>
-            )}
-
-            {establishment.phone && (
-              <p className="mt-5 inline-flex items-center gap-2 text-sm text-ink-soft">
-                <Phone size={13} /> {establishment.phone}
+            <div className="relative z-10 mx-auto max-w-3xl text-center">
+              <Quote size={28} className="mx-auto mb-4 text-canvas/60" />
+              <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-tight md:text-6xl">
+                Sua proxima visita
+                <br />
+                comeca aqui.
+              </h2>
+              <p className="mx-auto mt-5 max-w-xl text-base text-canvas/80 md:text-lg">
+                Agendamento em segundos, confirmacao automatica e um portfolio com cara de marca premium.
               </p>
-            )}
-          </div>
 
-          {/* Social + CTA */}
-          <div>
-            <div className="mb-5 inline-flex items-center gap-2">
-              <div
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
-                style={{ background: rgba(primary, 0.12), color: primary }}
-              >
-                <MessageCircle size={16} />
-              </div>
-              <h3 className="font-display text-lg font-bold text-ink">Fale com a gente</h3>
-            </div>
-            <p className="text-sm text-ink-soft">
-              Acompanhe novidades, cenas do estúdio e promoções nos nossos canais.
-            </p>
-            <div className="mt-5">
-              <SocialLinks establishment={establishment} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA FINAL ──────────────────────────────────────────────────── */}
-      <section className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-ink px-6 py-16 text-canvas sm:px-12 sm:py-20">
-          <div className="dotted-bg-dark pointer-events-none absolute inset-0 opacity-60" />
-          <div
-            className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full opacity-30 blur-3xl"
-            style={{ background: accent }}
-          />
-          <div className="relative z-10 mx-auto max-w-3xl text-center">
-            <Quote size={28} className="mx-auto mb-4 text-canvas/60" />
-            <h2 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-canvas md:text-6xl">
-              Sua próxima visita
-              <br />
-              começa <span className="underline-brush">aqui</span>.
-            </h2>
-            <p className="mx-auto mt-5 max-w-xl text-base text-canvas/80 md:text-lg">
-              Agendamento em segundos, confirmação automática e um histórico da sua jornada
-              com a {establishment.name}.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={() => navigate(`/${slug}/agendar`)}
-                className="group inline-flex items-center gap-2 rounded-full bg-canvas px-8 py-4 text-sm font-bold uppercase tracking-wide text-ink transition-all hover:gap-3"
-              >
-                <Calendar size={16} /> Agendar agora
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-              </button>
-              {plans.length > 0 && (
-                <Link
-                  to={`/${slug}/planos`}
-                  className="inline-flex items-center gap-2 rounded-full border border-canvas/30 px-8 py-4 text-sm font-bold uppercase tracking-wide text-canvas transition-colors hover:border-canvas hover:bg-white/10"
+              <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => navigate(`/${slug}/agendar`)}
+                  className="group inline-flex items-center gap-2 rounded-full bg-canvas px-8 py-4 text-sm font-bold uppercase tracking-wide text-ink transition-all hover:gap-3"
                 >
-                  <Star size={15} /> Ver planos
-                </Link>
-              )}
+                  <Calendar size={16} />
+                  Agendar agora
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                </button>
+
+                {plans.length > 0 ? (
+                  <Link
+                    to={`/${slug}/planos`}
+                    className="inline-flex items-center gap-2 rounded-full border border-canvas/30 px-8 py-4 text-sm font-bold uppercase tracking-wide text-canvas transition-colors hover:border-canvas hover:bg-white/10"
+                  >
+                    <Star size={15} />
+                    Ver planos
+                  </Link>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      {/* ── FOOTER ─────────────────────────────────────────────────────── */}
       <footer className="mx-auto mt-20 max-w-6xl px-4 pb-16 sm:px-6">
         <div className="flex flex-col items-center justify-between gap-6 border-t border-ink-line pt-10 sm:flex-row">
           <div className="flex items-center gap-3">
@@ -928,10 +1164,11 @@ export default function EstablishmentPage() {
               className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full text-xs font-bold text-white"
               style={{ background: brandGradient }}
             >
-              {establishment.logo_url
-                ? <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
-                : <span>{(establishment.name || 'E').charAt(0)}</span>
-              }
+              {establishment.logo_url ? (
+                <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span>{(establishment.name || 'E').charAt(0)}</span>
+              )}
             </div>
             <div>
               <p className="font-display text-base font-bold text-ink">{establishment.name}</p>
@@ -953,8 +1190,7 @@ export default function EstablishmentPage() {
         </div>
       </footer>
 
-      {/* ── LIGHTBOX ───────────────────────────────────────────────────── */}
-      {lightboxImg && (
+      {lightboxImg ? (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/95 p-4 backdrop-blur-md"
           onClick={() => setLightboxImg(null)}
@@ -963,38 +1199,39 @@ export default function EstablishmentPage() {
             src={lightboxImg}
             alt=""
             className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           />
           <button
             className="absolute right-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white hover:text-ink"
             onClick={() => setLightboxImg(null)}
             aria-label="Fechar"
           >
-            ✕
+            ×
           </button>
         </div>
-      )}
+      ) : null}
 
-      {/* ── MODAL: Confirmar assinatura ────────────────────────────────── */}
       <Modal isOpen={!!confirmPlan} onClose={() => setConfirmPlan(null)} title="Assinar plano">
-        <p className="text-ink-soft mb-2">
-          Você está assinando o plano <strong className="text-ink">{confirmPlan?.name}</strong> de{' '}
+        <p className="mb-2 text-ink-soft">
+          Voce esta assinando o plano <strong className="text-ink">{confirmPlan?.name}</strong> de{' '}
           <strong className="text-ink">{establishment?.name}</strong>.
         </p>
-        <p className="text-ink-soft mb-6">
+        <p className="mb-6 text-ink-soft">
           Valor:{' '}
           <strong className="text-ink">
             {fmt(confirmPlan?.price || 0)} / {INTERVAL_LABEL[confirmPlan?.billing_interval]}
           </strong>
         </p>
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setConfirmPlan(null)}>Cancelar</Button>
+          <Button variant="ghost" onClick={() => setConfirmPlan(null)}>
+            Cancelar
+          </Button>
           <Button loading={subscribing} onClick={handleSubscribe} icon={Star}>
             Confirmar assinatura
           </Button>
         </div>
         <p className="mt-4 text-xs text-ink-soft">
-          Se o checkout não abrir, complete CPF, telefone e endereço no seu perfil.
+          Se o checkout nao abrir, complete CPF, telefone e endereco no seu perfil.
         </p>
       </Modal>
     </div>
