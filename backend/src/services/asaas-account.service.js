@@ -66,7 +66,11 @@ class AsaasAccountService {
     }
 
     if (!establishment.asaas_account_id) {
-      return { configured: false };
+      return {
+        configured: false,
+        integration_ready: asaasService.diagnostics.enabled,
+        environment: asaasService.diagnostics.environment,
+      };
     }
 
     let current = establishment;
@@ -195,6 +199,8 @@ class AsaasAccountService {
   _serializeSubaccount(establishment) {
     return {
       configured: Boolean(establishment.asaas_account_id),
+      integration_ready: asaasService.diagnostics.enabled,
+      environment: asaasService.diagnostics.environment,
       account_id: establishment.asaas_account_id,
       wallet_id: establishment.asaas_wallet_id,
       email: establishment.asaas_account_email,

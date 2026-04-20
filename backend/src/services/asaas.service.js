@@ -5,6 +5,14 @@ class AsaasService {
     return Boolean(env.asaas.apiKey);
   }
 
+  get diagnostics() {
+    return {
+      enabled: this.enabled,
+      environment: env.asaas.environment,
+      baseUrl: this.baseUrl,
+    };
+  }
+
   get baseUrl() {
     return env.asaas.environment === 'production'
       ? 'https://api.asaas.com/v3'
@@ -13,8 +21,8 @@ class AsaasService {
 
   ensureConfigured() {
     if (!this.enabled) {
-      const err = new Error('Integracao com Asaas nao configurada.');
-      err.statusCode = 500;
+      const err = new Error('Integracao com Asaas indisponivel. Configure ASAAS_API_KEY no backend.');
+      err.statusCode = 503;
       throw err;
     }
   }
@@ -23,16 +31,24 @@ class AsaasService {
     this.ensureConfigured();
     const token = options.apiKey || env.asaas.apiKey;
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: options.method || 'GET',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        access_token: token,
-        ...(options.headers || {}),
-      },
-      body: options.body ? JSON.stringify(options.body) : undefined,
-    });
+    let response;
+    try {
+      response = await fetch(`${this.baseUrl}${path}`, {
+        method: options.method || 'GET',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          access_token: token,
+          ...(options.headers || {}),
+        },
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
+    } catch (cause) {
+      const err = new Error('Nao foi possivel conectar ao Asaas.');
+      err.statusCode = 502;
+      err.cause = cause;
+      throw err;
+    }
 
     const payload = await response.json().catch(() => ({}));
 
@@ -66,6 +82,10 @@ class AsaasService {
       method: 'GET',
       apiKey,
     });
+  }
+
+  async getRootAccountStatus() {
+    return this.getMyAccountStatus(env.asaas.apiKey);
   }
 
   async getMyAccountDocuments(apiKey) {

@@ -1,23 +1,35 @@
 /**
- * Mapeia erros de API para mensagens amigáveis em português.
+ * Mapeia erros de API para mensagens amigaveis em portugues.
  * Uso: toast.error(getErrorMessage(err))
  */
 
 const BACKEND_MESSAGES = {
-  'Credenciais inválidas.':                                        'Email ou senha incorretos.',
-  'Email já está em uso.':                                         'Este email já está cadastrado.',
-  'Conta desativada. Entre em contato com o suporte.':             'Sua conta está desativada. Entre em contato com o suporte.',
+  'Credenciais inválidas.': 'Email ou senha incorretos.',
+  'Credenciais invalidas.': 'Email ou senha incorretos.',
+  'Email já está em uso.': 'Este email já está cadastrado.',
+  'Email ja esta em uso.': 'Este email já está cadastrado.',
+  'Conta desativada. Entre em contato com o suporte.': 'Sua conta está desativada. Entre em contato com o suporte.',
   'Esta conta de administrador não pertence a este estabelecimento.': 'Acesso não autorizado para este estabelecimento.',
-  'Usuário não encontrado.':                                       'Usuário não encontrado.',
-  'Senha atual incorreta.':                                        'Senha atual incorreta.',
-  'Slug já está em uso.':                                          'Este endereço já está em uso.',
-  'Estabelecimento não encontrado.':                               'Estabelecimento não encontrado.',
-  'Profissional não encontrado.':                                  'Profissional não encontrado.',
-  'Serviço não encontrado.':                                       'Serviço não encontrado.',
-  'Horário não disponível.':                                       'Este horário não está mais disponível. Escolha outro.',
-  'Assinatura não encontrada.':                                    'Assinatura não encontrada.',
-  'Você já possui uma assinatura ativa.':                          'Você já tem um plano ativo.',
-  'Voce ja possui uma assinatura ativa para este estabelecimento.': 'Voce ja tem um plano ativo neste estabelecimento.',
+  'Esta conta de administrador nao pertence a este estabelecimento.': 'Acesso não autorizado para este estabelecimento.',
+  'Usuário não encontrado.': 'Usuário não encontrado.',
+  'Usuario nao encontrado.': 'Usuário não encontrado.',
+  'Senha atual incorreta.': 'Senha atual incorreta.',
+  'Slug já está em uso.': 'Este endereço já está em uso.',
+  'Slug ja esta em uso.': 'Este endereço já está em uso.',
+  'Estabelecimento não encontrado.': 'Estabelecimento não encontrado.',
+  'Estabelecimento nao encontrado.': 'Estabelecimento não encontrado.',
+  'Profissional não encontrado.': 'Profissional não encontrado.',
+  'Profissional nao encontrado.': 'Profissional não encontrado.',
+  'Serviço não encontrado.': 'Serviço não encontrado.',
+  'Servico nao encontrado.': 'Serviço não encontrado.',
+  'Horário não disponível.': 'Este horário não está mais disponível. Escolha outro.',
+  'Horario nao disponivel.': 'Este horário não está mais disponível. Escolha outro.',
+  'Assinatura não encontrada.': 'Assinatura não encontrada.',
+  'Assinatura nao encontrada.': 'Assinatura não encontrada.',
+  'Você já possui uma assinatura ativa.': 'Você já tem um plano ativo.',
+  'Voce ja possui uma assinatura ativa.': 'Você já tem um plano ativo.',
+  'Voce ja possui uma assinatura ativa para este estabelecimento.': 'Você já tem um plano ativo neste estabelecimento.',
+  'Integracao com Asaas indisponivel. Configure ASAAS_API_KEY no backend.': 'Integração Asaas indisponível no backend. Configure a chave ASAAS_API_KEY antes de criar a subconta.',
 };
 
 const STATUS_MESSAGES = {
@@ -34,7 +46,6 @@ const STATUS_MESSAGES = {
 };
 
 export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novamente.') {
-  // Sem resposta do servidor (rede, CORS, timeout)
   if (!err.response) {
     if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
       return 'A requisição demorou demais. Verifique sua conexão.';
@@ -48,15 +59,16 @@ export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novament
     return backendMessage;
   }
 
-  // Tenta mapear mensagem exata do backend
   if (backendMessage && BACKEND_MESSAGES[backendMessage]) {
     return BACKEND_MESSAGES[backendMessage];
   }
 
-  // Tenta mapear pelo status HTTP
+  if (backendMessage) {
+    return backendMessage;
+  }
+
   const statusMessage = STATUS_MESSAGES[err.response?.status];
   if (statusMessage) return statusMessage;
 
-  // Retorna mensagem do backend se existir (pode ser útil), senão o fallback
-  return backendMessage || fallback;
+  return fallback;
 }

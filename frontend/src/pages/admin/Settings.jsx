@@ -161,7 +161,9 @@ export default function AdminSettings() {
         const palette = await extractPaletteFromImageSource(previewUrl);
         setDetectedPalette(palette.swatches || []);
         setBranding((prev) => ({ ...prev, primary_color: palette.primary, accent_color: palette.accent }));
-      } catch {}
+      } catch (paletteError) {
+        void paletteError;
+      }
       toast.success('Logo atualizada!');
     } catch (err) { toast.error(getErrorMessage(err)); }
     finally { URL.revokeObjectURL(previewUrl); setUploadingLogo(false); }
@@ -514,9 +516,15 @@ export default function AdminSettings() {
             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
               asaas.configured
                 ? 'bg-green-50 text-green-700'
+                : asaas.integration_ready === false
+                  ? 'bg-amber-50 text-amber-700'
                 : 'bg-gray-100 text-gray-500'
             }`}>
-              {asaas.configured ? 'Conectado' : 'Nao configurado'}
+              {asaas.configured
+                ? 'Conectado'
+                : asaas.integration_ready === false
+                  ? 'Backend nao configurado'
+                  : 'Nao configurado'}
             </span>
           )}
         </div>
@@ -607,6 +615,17 @@ export default function AdminSettings() {
           </div>
         ) : (
           <div className="p-6">
+            {asaas?.integration_ready === false && (
+              <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-medium text-amber-900">
+                  A integracao raiz do Asaas nao esta configurada neste backend.
+                </p>
+                <p className="mt-1 text-xs text-amber-700">
+                  Configure a variavel `ASAAS_API_KEY` no servidor antes de tentar criar a subconta.
+                </p>
+              </div>
+            )}
+
             <p className="text-sm text-gray-500 mb-4">
               Configure uma subconta Asaas para aceitar pagamentos recorrentes diretamente pelos seus planos.
             </p>
