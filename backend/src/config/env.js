@@ -39,18 +39,6 @@ module.exports = {
       .filter(Boolean),
   },
 
-  asaas: {
-    apiKey: process.env.ASAAS_API_KEY || '',
-    environment: process.env.ASAAS_ENVIRONMENT || 'sandbox',
-    webhookToken: process.env.ASAAS_WEBHOOK_TOKEN || '',
-    checkout: {
-      successUrl: process.env.ASAAS_CHECKOUT_SUCCESS_URL || '',
-      cancelUrl: process.env.ASAAS_CHECKOUT_CANCEL_URL || '',
-      expiredUrl: process.env.ASAAS_CHECKOUT_EXPIRED_URL || '',
-      minutesToExpire: Number(process.env.ASAAS_CHECKOUT_MINUTES_TO_EXPIRE || 30),
-    },
-  },
-
   email: {
     host: process.env.EMAIL_HOST || '',
     port: Number(process.env.EMAIL_PORT || 587),

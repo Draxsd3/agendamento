@@ -149,7 +149,7 @@ export default function CustomerProfile() {
       </FieldRow>
 
       <p className="text-xs text-gray-400">
-        CPF, telefone e endereco completo sao obrigatorios para assinar planos via Asaas.
+        CPF, telefone e endereço completo são obrigatórios para assinar planos.
       </p>
 
       <button
