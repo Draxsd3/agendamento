@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import appDashboard from "@/assets/mockup-dashboard.png";
+import appDashboard from "@/assets/app-dashboard.png";
 
 const bullets = [
   "Agenda, clientes e equipe num so lugar",
@@ -70,10 +70,18 @@ const Hero = () => {
           >
             <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent rounded-[2rem] blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
+              <div className="flex items-center gap-1.5 border-b border-border bg-background px-4 py-3">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                <span className="ml-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Painel real
+                </span>
+              </div>
               <img
                 src={appDashboard}
-                alt="StreetLabs Agendamento em acao"
-                className="w-full h-auto block"
+                alt="Dashboard real do StreetLabs com agenda, faturamento e atendimentos"
+                className="block h-auto w-full"
               />
             </div>
           </motion.div>

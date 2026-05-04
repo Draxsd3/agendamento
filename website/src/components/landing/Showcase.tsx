@@ -1,23 +1,26 @@
 import { motion } from "framer-motion";
-import appDashboard from "@/assets/mockup-dashboard.png";
-import appClient from "@/assets/mockup-client.png";
-import appSettings from "@/assets/mockup-settings.png";
+import appDashboard from "@/assets/app-dashboard.png";
+import appClient from "@/assets/app-client.png";
+import appSettings from "@/assets/app-settings.png";
 
 const shots = [
   {
     src: appDashboard,
     title: "Dashboard do dono",
     desc: "Faturamento, agenda e equipe em tempo real.",
+    position: "left top",
   },
   {
     src: appClient,
     title: "Página do cliente",
     desc: "Agendamento em 30 segundos, sem login.",
+    position: "left top",
   },
   {
     src: appSettings,
     title: "Configurações da equipe",
     desc: "Cada profissional com sua agenda e serviços.",
+    position: "left top",
   },
 ];
 
@@ -57,7 +60,8 @@ const Showcase = () => {
                 <img
                   src={s.src}
                   alt={s.title}
-                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  style={{ objectPosition: s.position }}
                 />
               </div>
               <div className="mt-5">

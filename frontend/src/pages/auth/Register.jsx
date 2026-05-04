@@ -56,15 +56,15 @@ export default function Register() {
       <nav className="relative z-20 px-3 md:px-6 pt-4 md:pt-6">
         <div className="max-w-6xl mx-auto rounded-full bg-canvas/80 backdrop-blur-xl border border-ink-line shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)]">
           <div className="flex items-center justify-between h-14 md:h-16 pl-5 pr-2 md:pl-7 md:pr-2.5">
-            <Link to="/" className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2.5">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="text-ink">
                 <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
                 <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
               </svg>
               <span className="font-display font-bold text-ink text-lg tracking-tight">StreetLabs</span>
-            </Link>
+            </a>
             <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
-              <Link to="/" className="text-sm text-ink/75 hover:text-ink transition-colors font-medium">Início</Link>
+              <a href="/" className="text-sm text-ink/75 hover:text-ink transition-colors font-medium">Início</a>
               <Link to="/login" className="text-sm text-ink/75 hover:text-ink transition-colors font-medium">Entrar</Link>
               <Link to="/recuperar-senha" className="text-sm text-ink/75 hover:text-ink transition-colors font-medium">Recuperar acesso</Link>
             </div>

@@ -48,13 +48,13 @@ export default function ResetPassword() {
 
         <header className="relative z-10 px-6 pt-8 lg:px-12">
           <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-ink-line bg-white/80 px-5 py-3 backdrop-blur-sm">
-            <Link to="/" className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2.5">
               <svg width="26" height="26" viewBox="0 0 28 28" fill="none" className="text-ink">
                 <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
                 <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
               </svg>
               <span className="font-display text-lg font-bold text-ink">StreetLabs</span>
-            </Link>
+            </a>
             <Link
               to="/login"
               className="text-sm font-medium text-ink-soft transition-colors hover:text-ink"
@@ -120,13 +120,13 @@ export default function ResetPassword() {
       {/* Navbar */}
       <header className="relative z-10 px-6 pt-8 lg:px-12">
         <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-ink-line bg-white/80 px-5 py-3 backdrop-blur-sm">
-          <Link to="/" className="flex items-center gap-2.5">
+          <a href="/" className="flex items-center gap-2.5">
             <svg width="26" height="26" viewBox="0 0 28 28" fill="none" className="text-ink">
               <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
               <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
             </svg>
             <span className="font-display text-lg font-bold text-ink">StreetLabs</span>
-          </Link>
+          </a>
           <Link
             to="/login"
             className="text-sm font-medium text-ink-soft transition-colors hover:text-ink"

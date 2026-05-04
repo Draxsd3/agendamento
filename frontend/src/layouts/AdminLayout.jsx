@@ -5,7 +5,7 @@ import CustomerBrandPanel from '@/components/branding/CustomerBrandPanel';
 import { establishmentsService } from '@/services/establishments.service';
 import { getBrandingTheme } from '@/utils/branding';
 import {
-  LayoutDashboard, Users, Scissors, CalendarCheck, Settings,
+  LayoutDashboard, Users, ClipboardList, CalendarCheck, Settings,
   Star, Building2, LogOut, Menu, ChevronRight, ChevronDown, DollarSign, PanelsTopLeft,
 } from 'lucide-react';
 
@@ -193,7 +193,7 @@ export default function AdminLayout() {
     { to: base, label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: `${base}/agendamentos`, label: 'Agendamentos', icon: CalendarCheck },
     { to: `${base}/profissionais`, label: 'Profissionais', icon: Users },
-    { to: `${base}/servicos`, label: 'Serviços', icon: Scissors },
+    { to: `${base}/servicos`, label: 'Serviços', icon: ClipboardList },
     { to: `${base}/clientes`, label: 'Clientes', icon: Users },
     { to: `${base}/clube`, label: 'Clube Assinante', icon: Star },
     { to: `${base}/filiais`, label: 'Filiais', icon: Building2 },

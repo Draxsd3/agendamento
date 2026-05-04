@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import appClient from "@/assets/mockup-client.png";
-import appSettings from "@/assets/mockup-settings.png";
+import appClient from "@/assets/app-client.png";
+import appSettings from "@/assets/app-settings.png";
 
 const FeatureSections = () => {
   return (
@@ -43,7 +43,14 @@ const FeatureSections = () => {
           <div className="relative">
             <div className="absolute -inset-6 bg-gradient-to-tr from-primary/20 to-transparent rounded-[2rem] blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
-              <img src={appClient} alt="Visao do cliente agendando" className="w-full h-auto block" />
+              <div className="border-b border-border bg-background px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Area do cliente real
+              </div>
+              <img
+                src={appClient}
+                alt="Area real do cliente no StreetLabs com proximo agendamento e plano"
+                className="block aspect-[16/10] w-full object-cover object-left-top"
+              />
             </div>
           </div>
         </motion.div>
@@ -60,7 +67,14 @@ const FeatureSections = () => {
           <div className="relative lg:order-1 order-2">
             <div className="absolute -inset-6 bg-gradient-to-bl from-primary/20 to-transparent rounded-[2rem] blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
-              <img src={appSettings} alt="Configuracoes da equipe" className="w-full h-auto block" />
+              <div className="border-b border-border bg-background px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Personalizacao real
+              </div>
+              <img
+                src={appSettings}
+                alt="Tela real de configuracoes e preview do cliente no StreetLabs"
+                className="block aspect-[16/10] w-full object-cover object-left-top"
+              />
             </div>
           </div>
           <div className="lg:order-2 order-1">
