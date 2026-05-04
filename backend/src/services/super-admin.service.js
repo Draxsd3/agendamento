@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const usersRepo = require('../repositories/users.repository');
 const establishmentsRepo = require('../repositories/establishments.repository');
 const establishmentsService = require('./establishments.service');
-const asaasAccountService = require('./asaas-account.service');
 const supabase = require('../config/supabase');
 
 const SALT_ROUNDS = 12;
@@ -179,18 +178,6 @@ class SuperAdminService {
     return establishmentsRepo.update(id, { status });
   }
 
-  async createAsaasSubaccount(establishmentId, payload) {
-    return asaasAccountService.createSubaccount(establishmentId, payload);
-  }
-
-  async getAsaasSubaccount(establishmentId, options) {
-    return asaasAccountService.getSubaccount(establishmentId, options);
-  }
-
-  async syncAsaasSubaccount(establishmentId) {
-    const updated = await asaasAccountService.syncSubaccount(establishmentId);
-    return asaasAccountService.getSubaccount(updated.id);
-  }
 }
 
 module.exports = new SuperAdminService();

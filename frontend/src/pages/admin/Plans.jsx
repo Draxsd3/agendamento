@@ -10,11 +10,6 @@ import { servicesService } from '@/services/services.service';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
 
-const BILLING_TYPE_OPTIONS = [
-  { value: 'manual',  label: 'Manual', desc: 'Voce confirma o pagamento manualmente' },
-  { value: 'asaas',   label: 'Asaas', desc: 'Cliente paga via checkout recorrente Asaas' },
-];
-
 const PAYMENT_STATUS_LABEL = {
   awaiting_confirmation: 'Aguardando confirmacao',
   checkout_created: 'Checkout gerado',
@@ -148,15 +143,6 @@ export default function AdminPlans() {
   const handleAdminCancel = async (subId) => {
     try { await plansService.cancelSubscription(subId); toast.success('Assinatura cancelada.'); load(); }
     catch (err) { toast.error(getErrorMessage(err)); }
-  };
-
-  const handleGenerateCheckout = async (subId) => {
-    try {
-      const result = await plansService.generateCheckout(subId);
-      if (result.checkout?.url) window.open(result.checkout.url, '_blank');
-      toast.success('Checkout gerado!');
-      load();
-    } catch (err) { toast.error(getErrorMessage(err)); }
   };
 
   if (loading) return <LoadingSpinner />;
@@ -338,76 +324,55 @@ export default function AdminPlans() {
               <div className="w-32 text-right">Acoes</div>
             </div>
             <div className="divide-y divide-gray-50">
-              {subscribers.map((sub) => {
-                const billingType = sub.plans?.billing_type || 'manual';
-                return (
-                  <div key={sub.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors">
-                    <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-sm"
-                      style={{ backgroundColor: accent }}>
-                      {initials(sub.customers?.users?.name || '?')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{sub.customers?.users?.name || '—'}</p>
-                      <p className="text-xs text-gray-400 truncate">{sub.customers?.users?.email || ''}</p>
-                    </div>
-                    <div className="w-32 hidden lg:block">
-                      <span className="text-sm text-gray-700 font-medium">{sub.plans?.name || '—'}</span>
-                      <p className="text-xs text-gray-400">{billingType === 'asaas' ? 'Asaas' : 'Manual'}</p>
-                    </div>
-                    <div className="w-20 hidden lg:flex justify-center">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        sub.status === 'active' ? 'bg-green-50 text-green-700' :
-                        sub.status === 'cancelled' ? 'bg-red-50 text-red-600' :
-                        'bg-amber-50 text-amber-600'
-                      }`}>
-                        {sub.status === 'active' ? 'Ativo' : sub.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
-                      </span>
-                    </div>
-                    <div className="w-36 hidden lg:block text-xs text-gray-500">
-                      {PAYMENT_STATUS_LABEL[sub.payment_status] || sub.payment_status || '—'}
-                    </div>
-                    <div className="w-28 hidden lg:block text-right text-xs text-gray-400">
-                      {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString('pt-BR') : '—'}
-                    </div>
-                    <div className="w-32 hidden lg:flex justify-end gap-1.5">
-                      {sub.status === 'pending' && billingType === 'manual' && (
-                        <button
-                          onClick={() => handleActivate(sub.id)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 font-medium transition-colors"
-                        >
-                          Ativar
-                        </button>
-                      )}
-                      {sub.status === 'pending' && billingType === 'asaas' && sub.checkout_url && (
-                        <a
-                          href={sub.checkout_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors"
-                        >
-                          Ver checkout
-                        </a>
-                      )}
-                      {sub.status === 'pending' && billingType === 'asaas' && !sub.checkout_url && (
-                        <button
-                          onClick={() => handleGenerateCheckout(sub.id)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium transition-colors"
-                        >
-                          Gerar checkout
-                        </button>
-                      )}
-                      {sub.status === 'active' && (
-                        <button
-                          onClick={() => handleAdminCancel(sub.id)}
-                          className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-medium transition-colors"
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                    </div>
+              {subscribers.map((sub) => (
+                <div key={sub.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50/60 transition-colors">
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-sm"
+                    style={{ backgroundColor: accent }}>
+                    {initials(sub.customers?.users?.name || '?')}
                   </div>
-                );
-              })}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{sub.customers?.users?.name || '—'}</p>
+                    <p className="text-xs text-gray-400 truncate">{sub.customers?.users?.email || ''}</p>
+                  </div>
+                  <div className="w-32 hidden lg:block">
+                    <span className="text-sm text-gray-700 font-medium">{sub.plans?.name || '—'}</span>
+                    <p className="text-xs text-gray-400">Manual</p>
+                  </div>
+                  <div className="w-20 hidden lg:flex justify-center">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                      sub.status === 'active' ? 'bg-green-50 text-green-700' :
+                      sub.status === 'cancelled' ? 'bg-red-50 text-red-600' :
+                      'bg-amber-50 text-amber-600'
+                    }`}>
+                      {sub.status === 'active' ? 'Ativo' : sub.status === 'cancelled' ? 'Cancelado' : 'Pendente'}
+                    </span>
+                  </div>
+                  <div className="w-36 hidden lg:block text-xs text-gray-500">
+                    {PAYMENT_STATUS_LABEL[sub.payment_status] || sub.payment_status || '—'}
+                  </div>
+                  <div className="w-28 hidden lg:block text-right text-xs text-gray-400">
+                    {sub.expires_at ? new Date(sub.expires_at).toLocaleDateString('pt-BR') : '—'}
+                  </div>
+                  <div className="w-32 hidden lg:flex justify-end gap-1.5">
+                    {sub.status === 'pending' && (
+                      <button
+                        onClick={() => handleActivate(sub.id)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 font-medium transition-colors"
+                      >
+                        Ativar
+                      </button>
+                    )}
+                    {sub.status === 'active' && (
+                      <button
+                        onClick={() => handleAdminCancel(sub.id)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 font-medium transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )
@@ -436,28 +401,6 @@ export default function AdminPlans() {
             <textarea value={form.benefits} onChange={handleChange('benefits')} rows={3}
               placeholder="Prioridade no agendamento&#10;Acesso a horários exclusivos" className="w-full input-base resize-none" />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cobrança do plano</label>
-            <div className="grid grid-cols-2 gap-2">
-              {BILLING_TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, billing_type: opt.value }))}
-                  className={`text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
-                    form.billing_type === opt.value
-                      ? 'border-current bg-gray-900 text-white'
-                      : 'border-gray-200 text-gray-700 hover:border-gray-400'
-                  }`}
-                  style={form.billing_type === opt.value ? { backgroundColor: primary, borderColor: primary } : {}}
-                >
-                  <p className="font-medium">{opt.label}</p>
-                  <p className={`text-xs mt-0.5 ${form.billing_type === opt.value ? 'text-white/70' : 'text-gray-400'}`}>{opt.desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input type="checkbox" checked={form.is_active} onChange={handleChange('is_active')} className="rounded border-gray-300" />
             Plano ativo (visível para clientes)

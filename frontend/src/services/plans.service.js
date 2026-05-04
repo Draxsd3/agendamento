@@ -36,11 +36,6 @@ export const plansService = {
     return res.data;
   },
 
-  generateCheckout: async (id) => {
-    const res = await api.post(`/subscriptions/admin/${id}/checkout`);
-    return res.data;
-  },
-
   getPlanServices: async (planId) => {
     const res = await api.get(`/plans/${planId}/services`);
     return res.data;

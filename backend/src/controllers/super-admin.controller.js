@@ -91,34 +91,6 @@ class SuperAdminController {
     }
   }
 
-  async createAsaasSubaccount(req, res, next) {
-    try {
-      const result = await superAdminService.createAsaasSubaccount(req.params.id, req.body);
-      res.status(201).json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  async getAsaasSubaccount(req, res, next) {
-    try {
-      const result = await superAdminService.getAsaasSubaccount(req.params.id, {
-        sync: req.query.sync === 'true',
-      });
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  async syncAsaasSubaccount(req, res, next) {
-    try {
-      const result = await superAdminService.syncAsaasSubaccount(req.params.id);
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
-  }
 }
 
 module.exports = new SuperAdminController();

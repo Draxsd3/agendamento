@@ -29,8 +29,6 @@ const BACKEND_MESSAGES = {
   'Você já possui uma assinatura ativa.': 'Você já tem um plano ativo.',
   'Voce ja possui uma assinatura ativa.': 'Você já tem um plano ativo.',
   'Voce ja possui uma assinatura ativa para este estabelecimento.': 'Você já tem um plano ativo neste estabelecimento.',
-  'Integracao com Asaas indisponivel. Configure ASAAS_API_KEY no backend.': 'Integração Asaas indisponível no backend. Configure a chave ASAAS_API_KEY antes de criar a subconta.',
-  'Este email ja esta em uso no Asaas.': 'Este email já está em uso no Asaas. Use outro email para criar a subconta.',
 };
 
 const STATUS_MESSAGES = {
@@ -58,10 +56,6 @@ export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novament
 
   if (backendMessage?.startsWith('Complete seu perfil antes de assinar:')) {
     return backendMessage;
-  }
-
-  if (/^o email .+ ja esta em uso\.?$/i.test(backendMessage || '') || /^o email .+ já está em uso\.?$/i.test(backendMessage || '')) {
-    return 'Este email já está em uso no Asaas. Use outro email para criar a subconta.';
   }
 
   if (backendMessage && BACKEND_MESSAGES[backendMessage]) {
