@@ -5,10 +5,13 @@ const nodemailer = require('nodemailer');
 const env = require('../config/env');
 const usersRepo = require('../repositories/users.repository');
 const customersRepo = require('../repositories/customers.repository');
+const establishmentsService = require('./establishments.service');
 const supabase = require('../config/supabase');
 
 const SALT_ROUNDS = 12;
 const RESET_TOKEN_EXPIRES_MS = 60 * 60 * 1000; // 1 hora
+const CUSTOMER_ACCOUNT_TYPE = 'customer';
+const OWNER_ACCOUNT_TYPE = 'establishment_admin';
 
 function createMailTransport() {
   return nodemailer.createTransport({
@@ -38,8 +41,108 @@ const sanitizeUser = (user) => {
   return safe;
 };
 
+const normalizeText = (value) => String(value || '').trim();
+
+const slugify = (value) => {
+  const slug = normalizeText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+    .slice(0, 80)
+    .replace(/-+$/g, '');
+
+  return slug || 'estabelecimento';
+};
+
+const httpError = (statusCode, message) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
+const isSlugConflict = (err) => {
+  return err.statusCode === 409 && /slug|identificador|reservado/i.test(err.message || '');
+};
+
+const toCandidateSlug = (baseSlug, attempt) => {
+  const suffix = attempt === 0 ? '' : '-' + (attempt + 1);
+  const trimmedBase = baseSlug.slice(0, 100 - suffix.length).replace(/-+$/g, '') || 'estabelecimento';
+  return trimmedBase + suffix;
+};
+
+const createEstablishmentWithAvailableSlug = async ({ name, phone }) => {
+  const baseSlug = slugify(name);
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      return await establishmentsService.create({
+        name,
+        slug: toCandidateSlug(baseSlug, attempt),
+        phone: phone || null,
+      });
+    } catch (err) {
+      if (isSlugConflict(err)) continue;
+      throw err;
+    }
+  }
+
+  const fallbackSuffix = '-' + Date.now().toString(36);
+  const fallbackSlug = (baseSlug.slice(0, 100 - fallbackSuffix.length).replace(/-+$/g, '') || 'estabelecimento')
+    + fallbackSuffix;
+
+  return establishmentsService.create({
+    name,
+    slug: fallbackSlug,
+    phone: phone || null,
+  });
+};
+
+const cleanupOwnerRegistration = async ({ user, establishment }) => {
+  const deletions = [];
+
+  if (user?.id) {
+    deletions.push(supabase.from('users').delete().eq('id', user.id));
+  }
+  if (establishment?.id) {
+    deletions.push(supabase.from('establishments').delete().eq('id', establishment.id));
+  }
+
+  const results = await Promise.allSettled(deletions);
+  results.forEach((result) => {
+    if (result.status === 'rejected') {
+      console.error('[auth] Falha ao desfazer cadastro de dono:', result.reason);
+      return;
+    }
+    if (result.value?.error) {
+      console.error('[auth] Falha ao desfazer cadastro de dono:', result.value.error);
+    }
+  });
+};
+
+const linkAdminToEstablishment = async (userId, establishmentId) => {
+  const { error } = await supabase
+    .from('establishment_admins')
+    .insert({ user_id: userId, establishment_id: establishmentId });
+
+  if (error) throw error;
+};
+
 class AuthService {
-  async register({ name, email, password, phone }) {
+  async register(payload) {
+    const accountType = normalizeText(payload.accountType);
+    const slug = normalizeText(payload.slug);
+
+    if (slug || accountType === CUSTOMER_ACCOUNT_TYPE) {
+      return this.registerCustomer({ ...payload, slug });
+    }
+
+    return this.registerOwner(payload);
+  }
+
+  async registerCustomer({ name, email, password, phone, slug }) {
     const existing = await usersRepo.findByEmail(email);
     if (existing) {
       const err = new Error('Email ja esta em uso.');
@@ -47,11 +150,60 @@ class AuthService {
       throw err;
     }
 
+    if (slug) {
+      await establishmentsService.getBySlug(slug);
+    }
+
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await usersRepo.create({ name, email, password_hash, role: 'customer' });
     const customer = await customersRepo.create({ user_id: user.id, phone: phone || null });
     const token = signToken(user, {});
     return { user: sanitizeUser(user), customer, token };
+  }
+
+  async registerOwner({ name, businessName, email, password, phone }) {
+    const ownerName = normalizeText(name);
+    const establishmentName = normalizeText(businessName) || ownerName;
+
+    if (!establishmentName) {
+      throw httpError(422, 'Nome do estabelecimento e obrigatorio.');
+    }
+
+    const existing = await usersRepo.findByEmail(email);
+    if (existing) {
+      const err = new Error('Email ja esta em uso.');
+      err.statusCode = 409;
+      throw err;
+    }
+
+    let establishment;
+    let user;
+
+    try {
+      establishment = await createEstablishmentWithAvailableSlug({
+        name: establishmentName,
+        phone,
+      });
+
+      const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+      user = await usersRepo.create({
+        name: ownerName || establishmentName,
+        email,
+        password_hash,
+        role: OWNER_ACCOUNT_TYPE,
+      });
+
+      await linkAdminToEstablishment(user.id, establishment.id);
+    } catch (err) {
+      await cleanupOwnerRegistration({ user, establishment });
+      if (err.code === '23505') {
+        throw httpError(409, 'Email ou estabelecimento ja esta em uso.');
+      }
+      throw err;
+    }
+
+    const token = signToken(user, establishment);
+    return { user: sanitizeUser(user), establishment, token };
   }
 
   async login({ email, password, slug }) {
@@ -76,6 +228,7 @@ class AuthService {
     }
 
     let establishment = {};
+    const normalizedSlug = normalizeText(slug);
 
     if (user.role === 'establishment_admin') {
       const { data } = await supabase
@@ -92,11 +245,26 @@ class AuthService {
         };
       }
 
-      if (slug && establishment.slug !== slug) {
+      if (!establishment.slug) {
+        const err = new Error('Administrador sem estabelecimento vinculado.');
+        err.statusCode = 403;
+        throw err;
+      }
+
+      if (normalizedSlug && establishment.slug !== normalizedSlug) {
         const err = new Error('Esta conta de administrador nao pertence a este estabelecimento.');
         err.statusCode = 403;
         throw err;
       }
+    }
+
+    if (user.role === 'customer') {
+      if (!normalizedSlug) {
+        const err = new Error('Este acesso e exclusivo para donos de estabelecimento. Entre pela pagina do estabelecimento.');
+        err.statusCode = 403;
+        throw err;
+      }
+      await establishmentsService.getBySlug(normalizedSlug);
     }
 
     const token = signToken(user, establishment);

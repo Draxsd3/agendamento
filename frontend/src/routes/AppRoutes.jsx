@@ -136,7 +136,9 @@ function RootRedirect() {
   if (loading) return <LoadingSpinner fullScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'super_admin') return <Navigate to="/super-admin" replace />;
-  if (user.role === 'establishment_admin') return <Navigate to={`/${user.establishmentSlug}/admin`} replace />;
+  if (user.role === 'establishment_admin') {
+    return <Navigate to={user.establishmentSlug ? `/${user.establishmentSlug}/admin` : '/login'} replace />;
+  }
 
   const activeSlug = localStorage.getItem('activeEstablishmentSlug');
   return <Navigate to={activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'} replace />;

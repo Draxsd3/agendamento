@@ -33,7 +33,9 @@ export default function Login() {
     const from = location.state?.from;
     const activeSlug = localStorage.getItem('activeEstablishmentSlug');
     if (from && loggedUser.role === 'customer') return from;
-    if (loggedUser.role === 'establishment_admin') return `/${loggedUser.establishmentSlug}/admin`;
+    if (loggedUser.role === 'establishment_admin') {
+      return loggedUser.establishmentSlug ? `/${loggedUser.establishmentSlug}/admin` : '/admin';
+    }
     if (activeSlug) return `/${activeSlug}/cliente`;
     return '/minha-conta';
   };

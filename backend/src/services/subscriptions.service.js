@@ -227,7 +227,9 @@ class SubscriptionsService {
       const asaasContext = await this._resolveAsaasContext(establishmentId, sub.customer_id);
       try {
         await asaasService.cancelSubscription(sub.provider_subscription_id, asaasContext.apiKey);
-      } catch {}
+      } catch (err) {
+        console.warn('[subscriptions] Falha ao cancelar assinatura no Asaas:', err.message || err);
+      }
     }
 
     return subscriptionsRepo.update(subscriptionId, {

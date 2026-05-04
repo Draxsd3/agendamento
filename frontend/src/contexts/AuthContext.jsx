@@ -59,11 +59,17 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (data) => {
-    const { user: userData, token: newToken } = await authService.register(data);
+    const { user: userData, token: newToken, establishment } = await authService.register(data);
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    setUser(userData);
-    return userData;
+    const payload = decodeToken(newToken);
+    const enriched = {
+      ...userData,
+      establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
+      establishmentId:   payload.establishmentId   || establishment?.id   || null,
+    };
+    setUser(enriched);
+    return enriched;
   };
 
   const logout = () => {

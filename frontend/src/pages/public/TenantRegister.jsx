@@ -23,7 +23,11 @@ export default function TenantRegister() {
 
   const onSubmit = async (data) => {
     try {
-      await registerUser(data);
+      await registerUser({
+        ...data,
+        accountType: 'customer',
+        slug,
+      });
       toast.success('Conta criada com sucesso!');
       navigate(location.state?.from || `/${slug}/cliente`, { replace: true });
     } catch (err) {

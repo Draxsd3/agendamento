@@ -19,7 +19,9 @@ export default function TenantLogin() {
   const getRedirect = (loggedUser) => {
     const from = location.state?.from;
     if (from && loggedUser.role === 'customer') return from;
-    if (loggedUser.role === 'establishment_admin') return `/${loggedUser.establishmentSlug}/admin`;
+    if (loggedUser.role === 'establishment_admin') {
+      return loggedUser.establishmentSlug ? `/${loggedUser.establishmentSlug}/admin` : '/login';
+    }
     return `/${slug}/cliente`;
   };
 

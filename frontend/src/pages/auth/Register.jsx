@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -17,7 +17,6 @@ const BENEFITS = [
 export default function Register() {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -30,11 +29,12 @@ export default function Register() {
 
   const onSubmit = async (data) => {
     try {
-      await registerUser(data);
+      const createdUser = await registerUser({
+        ...data,
+        accountType: 'establishment_admin',
+      });
       toast.success('Conta criada com sucesso!');
-      const activeSlug = localStorage.getItem('activeEstablishmentSlug');
-      const from = location.state?.from;
-      navigate(from || (activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'), { replace: true });
+      navigate(createdUser.establishmentSlug ? `/${createdUser.establishmentSlug}/admin` : '/admin', { replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err));
     }
@@ -132,7 +132,7 @@ export default function Register() {
               <div className="rounded-3xl border border-ink-line bg-white p-8 sm:p-10 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.15)]">
                 <p className="text-xs uppercase tracking-[0.2em] text-ink-soft font-semibold mb-3">Novo por aqui</p>
                 <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink tracking-tight mb-2">
-                  Criar seu acesso.
+                  Criar acesso do dono.
                 </h2>
                 <p className="text-sm text-ink-soft mb-8">
                   Sem burocracia. Sem treinamento. Em 30 segundos você está dentro.
@@ -141,7 +141,21 @@ export default function Register() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                   <div>
                     <label className="block text-xs uppercase tracking-wider font-semibold text-ink-soft mb-2">
-                      Nome completo
+                      Nome do estabelecimento
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Studio Central"
+                      autoComplete="organization"
+                      className={fieldCls(errors.businessName)}
+                      {...register('businessName', { required: 'Nome do estabelecimento é obrigatório.' })}
+                    />
+                    {errors.businessName && <p className="text-xs text-red-500 mt-1.5">{errors.businessName.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider font-semibold text-ink-soft mb-2">
+                      Seu nome
                     </label>
                     <input
                       type="text"

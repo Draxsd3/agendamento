@@ -10,6 +10,9 @@ router.post(
   '/register',
   [
     body('name').trim().notEmpty().withMessage('Nome e obrigatorio.'),
+    body('businessName').optional({ checkFalsy: true }).trim().isLength({ min: 2 }).withMessage('Nome do estabelecimento invalido.'),
+    body('accountType').optional({ checkFalsy: true }).isIn(['customer', 'establishment_admin']).withMessage('Tipo de conta invalido.'),
+    body('slug').optional({ checkFalsy: true }).trim().matches(/^[a-z0-9]+(-[a-z0-9]+)*$/).withMessage('Slug invalido.'),
     body('email').isEmail().normalizeEmail().withMessage('Email invalido.'),
     body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres.'),
   ],
@@ -22,6 +25,7 @@ router.post(
   [
     body('email').isEmail().normalizeEmail().withMessage('Email invalido.'),
     body('password').notEmpty().withMessage('Senha e obrigatoria.'),
+    body('slug').optional({ checkFalsy: true }).trim().matches(/^[a-z0-9]+(-[a-z0-9]+)*$/).withMessage('Slug invalido.'),
   ],
   validate,
   authController.login
