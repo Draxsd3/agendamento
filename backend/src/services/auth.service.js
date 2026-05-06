@@ -135,6 +135,10 @@ class AuthService {
     const accountType = normalizeText(payload.accountType);
     const slug = normalizeText(payload.slug);
 
+    if (accountType === OWNER_ACCOUNT_TYPE) {
+      return this.registerOwner(payload);
+    }
+
     if (slug || accountType === CUSTOMER_ACCOUNT_TYPE) {
       return this.registerCustomer({ ...payload, slug });
     }
@@ -231,12 +235,14 @@ class AuthService {
     const normalizedSlug = normalizeText(slug);
 
     if (user.role === 'establishment_admin') {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('establishment_admins')
         .select('establishment_id, establishments(id, slug)')
         .eq('user_id', user.id)
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      if (error) throw error;
 
       if (data && data.establishments) {
         establishment = {
@@ -256,6 +262,8 @@ class AuthService {
         err.statusCode = 403;
         throw err;
       }
+
+      await establishmentsService.getBySlug(establishment.slug);
     }
 
     if (user.role === 'customer') {

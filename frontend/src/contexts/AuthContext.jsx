@@ -1,16 +1,25 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { authService } from '@/services/auth.service';
 
-// Decode JWT payload without external lib
+// Decode JWT payload without external lib.
 const decodeToken = (token) => {
   try {
-    return JSON.parse(atob(token.split('.')[1]));
+    const payload = token?.split('.')[1];
+    if (!payload) return {};
+
+    const base64 = payload
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(payload.length + ((4 - (payload.length % 4)) % 4), '=');
+
+    return JSON.parse(atob(base64));
   } catch {
     return {};
   }
 };
 
 const AuthContext = createContext(null);
+const ACTIVE_ESTABLISHMENT_SLUG_KEY = 'activeEstablishmentSlug';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -26,13 +35,18 @@ export function AuthProvider({ children }) {
     try {
       const userData = await authService.me();
       const payload = decodeToken(storedToken);
-      setUser({
+      const enriched = {
         ...userData,
         establishmentSlug: payload.establishmentSlug || null,
         establishmentId:   payload.establishmentId   || null,
-      });
+      };
+      if (enriched.role !== 'customer') {
+        localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
+      }
+      setUser(enriched);
     } catch {
       localStorage.removeItem('token');
+      localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
       setToken(null);
       setUser(null);
     } finally {
@@ -52,8 +66,13 @@ export function AuthProvider({ children }) {
     const enriched = {
       ...userData,
       establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
-      establishmentId:   payload.establishmentId   || null,
+      establishmentId:   payload.establishmentId   || establishment?.id || null,
     };
+    if (enriched.role === 'customer' && credentials.slug) {
+      localStorage.setItem(ACTIVE_ESTABLISHMENT_SLUG_KEY, credentials.slug);
+    } else if (enriched.role !== 'customer') {
+      localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
+    }
     setUser(enriched);
     return enriched;
   };
@@ -68,12 +87,18 @@ export function AuthProvider({ children }) {
       establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
       establishmentId:   payload.establishmentId   || establishment?.id   || null,
     };
+    if (enriched.role === 'customer' && data.slug) {
+      localStorage.setItem(ACTIVE_ESTABLISHMENT_SLUG_KEY, data.slug);
+    } else if (enriched.role !== 'customer') {
+      localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
+    }
     setUser(enriched);
     return enriched;
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
     setToken(null);
     setUser(null);
   };
