@@ -47,6 +47,9 @@ import TenantPlans from '@/pages/public/TenantPlans';
 
 import NotFound from '@/pages/NotFound';
 
+const ACTIVE_ESTABLISHMENT_SLUG_KEY = 'activeEstablishmentSlug';
+const CUSTOMER_TENANT_REDIRECT_TIMEOUT_MS = 10000;
+
 function AdminRedirect() {
   const { user, isAuthenticated, loading } = useAuth();
 
@@ -99,34 +102,66 @@ function LegacyAdminRedirect() {
 }
 
 function CustomerTenantRedirect() {
-  const { user } = useAuth();
-  const [targetSlug, setTargetSlug] = useState(() => localStorage.getItem('activeEstablishmentSlug'));
+  const { user, logout } = useAuth();
+  const [targetSlug, setTargetSlug] = useState(() => localStorage.getItem(ACTIVE_ESTABLISHMENT_SLUG_KEY));
   const [loading, setLoading] = useState(!targetSlug);
+  const [unresolved, setUnresolved] = useState(false);
 
   useEffect(() => {
-    if (targetSlug || user?.role !== 'customer') {
+    if (targetSlug) {
       setLoading(false);
       return;
     }
 
+    if (user?.role !== 'customer') {
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    setLoading(true);
+    setUnresolved(false);
+
+    const resolveWithoutTenant = () => {
+      if (!active) return;
+      localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
+      logout();
+      setUnresolved(true);
+      setLoading(false);
+    };
+
+    const timeout = window.setTimeout(resolveWithoutTenant, CUSTOMER_TENANT_REDIRECT_TIMEOUT_MS);
+
     const load = async () => {
       try {
         const establishments = await customersService.getMyEstablishments();
+        if (!active) return;
         const firstSlug = establishments?.[0]?.slug || null;
         if (firstSlug) {
-          localStorage.setItem('activeEstablishmentSlug', firstSlug);
+          localStorage.setItem(ACTIVE_ESTABLISHMENT_SLUG_KEY, firstSlug);
           setTargetSlug(firstSlug);
+          setLoading(false);
+          return;
         }
+        resolveWithoutTenant();
+      } catch {
+        resolveWithoutTenant();
       } finally {
-        setLoading(false);
+        window.clearTimeout(timeout);
       }
     };
 
     load();
-  }, [targetSlug, user]);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+    };
+  }, [targetSlug, user, logout]);
 
   if (loading) return <LoadingSpinner fullScreen />;
   if (targetSlug) return <Navigate to={`/${targetSlug}/cliente`} replace />;
+  if (unresolved) return <Navigate to="/login" replace />;
   return <Navigate to="/login" replace />;
 }
 
@@ -140,7 +175,7 @@ function RootRedirect() {
     return <Navigate to={user.establishmentSlug ? `/${user.establishmentSlug}/admin` : '/login'} replace />;
   }
 
-  const activeSlug = localStorage.getItem('activeEstablishmentSlug');
+  const activeSlug = localStorage.getItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
   return <Navigate to={activeSlug ? `/${activeSlug}/cliente` : '/minha-conta'} replace />;
 }
 

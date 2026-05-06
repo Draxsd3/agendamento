@@ -20,11 +20,25 @@ const decodeToken = (token) => {
 
 const AuthContext = createContext(null);
 const ACTIVE_ESTABLISHMENT_SLUG_KEY = 'activeEstablishmentSlug';
+const OWNER_ACCOUNT_TYPE = 'establishment_admin';
+
+const createApiError = (message, status = 500) => {
+  const error = new Error(message);
+  error.response = { status, data: { error: message } };
+  return error;
+};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+
+  const clearSession = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
+    setToken(null);
+    setUser(null);
+  }, []);
 
   const loadUser = useCallback(async () => {
     const storedToken = localStorage.getItem('token');
@@ -45,14 +59,11 @@ export function AuthProvider({ children }) {
       }
       setUser(enriched);
     } catch {
-      localStorage.removeItem('token');
-      localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
-      setToken(null);
-      setUser(null);
+      clearSession();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearSession]);
 
   useEffect(() => {
     loadUser();
@@ -79,14 +90,21 @@ export function AuthProvider({ children }) {
 
   const register = async (data) => {
     const { user: userData, token: newToken, establishment } = await authService.register(data);
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
     const payload = decodeToken(newToken);
     const enriched = {
       ...userData,
       establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
       establishmentId:   payload.establishmentId   || establishment?.id   || null,
     };
+
+    const expectsOwnerAccount = data.accountType === OWNER_ACCOUNT_TYPE;
+    if (expectsOwnerAccount && (enriched.role !== OWNER_ACCOUNT_TYPE || !enriched.establishmentSlug)) {
+      clearSession();
+      throw createApiError('Nao foi possivel ativar o painel do dono. Tente novamente em instantes.');
+    }
+
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
     if (enriched.role === 'customer' && data.slug) {
       localStorage.setItem(ACTIVE_ESTABLISHMENT_SLUG_KEY, data.slug);
     } else if (enriched.role !== 'customer') {
@@ -96,12 +114,7 @@ export function AuthProvider({ children }) {
     return enriched;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem(ACTIVE_ESTABLISHMENT_SLUG_KEY);
-    setToken(null);
-    setUser(null);
-  };
+  const logout = clearSession;
 
   const isAuthenticated = !!user;
   const isSuperAdmin = user?.role === 'super_admin';
