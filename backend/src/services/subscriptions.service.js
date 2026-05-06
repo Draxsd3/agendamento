@@ -44,7 +44,14 @@ class SubscriptionsService {
       customer.id,
       plan.establishment_id
     );
-    if (pending) return { subscription: pending };
+    if (pending) {
+      try {
+        await customersRepo.linkToEstablishment(customer.id, plan.establishment_id, 'subscription');
+      } catch (err) {
+        console.error('[subscriptions] Falha ao vincular cliente ao estabelecimento:', err);
+      }
+      return { subscription: pending };
+    }
 
     const subscription = await subscriptionsRepo.create({
       customer_id: customer.id,
@@ -56,6 +63,12 @@ class SubscriptionsService {
       payment_status: 'awaiting_confirmation',
       metadata: {},
     });
+
+    try {
+      await customersRepo.linkToEstablishment(customer.id, plan.establishment_id, 'subscription');
+    } catch (err) {
+      console.error('[subscriptions] Falha ao vincular cliente ao estabelecimento:', err);
+    }
 
     return { subscription };
   }

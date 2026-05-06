@@ -154,13 +154,20 @@ class AuthService {
       throw err;
     }
 
-    if (slug) {
-      await establishmentsService.getBySlug(slug);
-    }
+    const establishment = slug ? await establishmentsService.getBySlug(slug) : null;
 
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await usersRepo.create({ name, email, password_hash, role: 'customer' });
     const customer = await customersRepo.create({ user_id: user.id, phone: phone || null });
+
+    if (establishment?.id) {
+      try {
+        await customersRepo.linkToEstablishment(customer.id, establishment.id, 'self_signup');
+      } catch (err) {
+        console.error('[auth] Falha ao vincular cliente ao estabelecimento:', err);
+      }
+    }
+
     const token = signToken(user, {});
     return { user: sanitizeUser(user), customer, token };
   }

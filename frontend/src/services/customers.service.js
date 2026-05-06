@@ -16,4 +16,19 @@ export const customersService = {
     const res = await api.get('/customers/my-establishments');
     return res.data;
   },
+
+  getByEstablishment: async (establishmentId, params = {}) => {
+    const res = await api.get(`/customers/establishment/${establishmentId}`, { params });
+    return res.data;
+  },
+
+  createForEstablishment: async (establishmentId, data) => {
+    const res = await api.post(`/customers/establishment/${establishmentId}`, data);
+    return res.data;
+  },
+
+  getEstablishmentCustomerDetail: async (establishmentId, customerId) => {
+    const res = await api.get(`/customers/establishment/${establishmentId}/${customerId}`);
+    return res.data;
+  },
 };

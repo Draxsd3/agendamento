@@ -83,7 +83,7 @@ class AppointmentsService {
       basePrice: service.price,
     });
 
-    return appointmentsRepo.create({
+    const appointment = await appointmentsRepo.create({
       establishment_id: establishmentId,
       customer_id: customer.id,
       professional_id: professionalId,
@@ -94,6 +94,14 @@ class AppointmentsService {
       status: 'pending',
       total_price: totalPrice,
     });
+
+    try {
+      await customersRepo.linkToEstablishment(customer.id, establishmentId, 'appointment');
+    } catch (err) {
+      console.error('[appointments] Falha ao vincular cliente ao estabelecimento:', err);
+    }
+
+    return appointment;
   }
 
   async cancel(appointmentId, userId, role) {
