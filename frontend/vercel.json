@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://agendamento-cvye.onrender.com/api/v1/:path*"
+    },
     { "source": "/", "destination": "/site/index.html" },
     { "source": "/site", "destination": "/site/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
