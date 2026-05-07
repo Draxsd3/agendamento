@@ -28,6 +28,12 @@ const createApiError = (message, status = 500) => {
   return error;
 };
 
+const sanitizeRegistrationData = (data) => {
+  const payload = { ...data };
+  delete payload.confirmPassword;
+  return payload;
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('token'));
@@ -89,15 +95,17 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (data) => {
-    const { user: userData, token: newToken, establishment } = await authService.register(data);
-    const payload = decodeToken(newToken);
+    const expectsOwnerAccount = data.accountType === OWNER_ACCOUNT_TYPE;
+    const registrationPayload = sanitizeRegistrationData(data);
+    const registerRequest = expectsOwnerAccount ? authService.registerOwner : authService.register;
+    const { user: userData, token: newToken, establishment } = await registerRequest(registrationPayload);
+    const tokenPayload = decodeToken(newToken);
     const enriched = {
       ...userData,
-      establishmentSlug: payload.establishmentSlug || establishment?.slug || null,
-      establishmentId:   payload.establishmentId   || establishment?.id   || null,
+      establishmentSlug: tokenPayload.establishmentSlug || establishment?.slug || null,
+      establishmentId:   tokenPayload.establishmentId   || establishment?.id   || null,
     };
 
-    const expectsOwnerAccount = data.accountType === OWNER_ACCOUNT_TYPE;
     if (expectsOwnerAccount && (enriched.role !== OWNER_ACCOUNT_TYPE || !enriched.establishmentSlug)) {
       clearSession();
       throw createApiError('Nao foi possivel ativar o painel do dono. Tente novamente em instantes.');

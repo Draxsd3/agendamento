@@ -8,6 +8,7 @@ const BACKEND_MESSAGES = {
   'Credenciais invalidas.': 'Email ou senha incorretos.',
   'Email já está em uso.': 'Este email já está cadastrado.',
   'Email ja esta em uso.': 'Este email já está cadastrado.',
+  'Email ou estabelecimento ja esta em uso.': 'Este email ou estabelecimento já está cadastrado.',
   'Conta desativada. Entre em contato com o suporte.': 'Sua conta está desativada. Entre em contato com o suporte.',
   'Esta conta de administrador não pertence a este estabelecimento.': 'Acesso não autorizado para este estabelecimento.',
   'Esta conta de administrador nao pertence a este estabelecimento.': 'Acesso não autorizado para este estabelecimento.',
@@ -53,6 +54,10 @@ export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novament
   }
 
   const backendMessage = err.response?.data?.error;
+
+  if (backendMessage?.includes('register-owner')) {
+    return 'Cadastro de dono temporariamente indisponível. Tente novamente em instantes.';
+  }
 
   if (backendMessage?.startsWith('Complete seu perfil antes de assinar:')) {
     return backendMessage;

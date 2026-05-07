@@ -6,6 +6,11 @@ export const authService = {
     return res.data;
   },
 
+  registerOwner: async (data) => {
+    const res = await api.post('/auth/register-owner', data);
+    return res.data;
+  },
+
   login: async (credentials) => {
     const res = await api.post('/auth/login', credentials);
     return res.data;

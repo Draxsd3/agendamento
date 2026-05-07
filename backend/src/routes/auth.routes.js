@@ -7,6 +7,18 @@ const validate = require('../middlewares/validate.middleware');
 const router = Router();
 
 router.post(
+  '/register-owner',
+  [
+    body('name').trim().notEmpty().withMessage('Nome e obrigatorio.'),
+    body('businessName').trim().isLength({ min: 2 }).withMessage('Nome do estabelecimento invalido.'),
+    body('email').isEmail().normalizeEmail().withMessage('Email invalido.'),
+    body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres.'),
+  ],
+  validate,
+  authController.registerOwner
+);
+
+router.post(
   '/register',
   [
     body('name').trim().notEmpty().withMessage('Nome e obrigatorio.'),
