@@ -9,6 +9,8 @@ const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
 
+const normalizeOrigin = (value) => String(value || '').trim().replace(/\/+$/, '');
+
 // Security headers
 app.use(helmet());
 
@@ -18,11 +20,13 @@ app.use(
     origin(origin, callback) {
       if (!origin) return callback(null, true);
 
-      if (env.cors.origins.includes(origin)) {
+      if (env.cors.origins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
 
-      return callback(new Error(`Origem nao permitida pelo CORS: ${origin}`));
+      const error = new Error(`Origem nao permitida pelo CORS: ${origin}`);
+      error.statusCode = 403;
+      return callback(error);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

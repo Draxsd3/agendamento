@@ -6,6 +6,22 @@ const required = (key) => {
   return value;
 };
 
+const normalizeOrigin = (value) => String(value || '').trim().replace(/\/+$/, '');
+
+const parseCorsOrigins = () => {
+  const defaults = [
+    'http://localhost:5173',
+    'https://agendamento-one-black.vercel.app',
+  ];
+
+  const configured = (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map(normalizeOrigin)
+    .filter(Boolean);
+
+  return [...new Set([...defaults, ...configured].map(normalizeOrigin))];
+};
+
 const jwtSecret = required('JWT_SECRET');
 
 // Bloquear segredos fracos em producao
@@ -33,10 +49,7 @@ module.exports = {
   },
 
   cors: {
-    origins: (process.env.CORS_ORIGIN || 'http://localhost:5173')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean),
+    origins: parseCorsOrigins(),
   },
 
   email: {
