@@ -109,27 +109,35 @@ function Logo({ establishment, theme, size = 'md' }) {
 
 function HeroCover({ establishment, theme }) {
   if (!establishment.cover_url) {
-    return <div className="h-full w-full" style={{ background: theme.primary }} />;
+    return (
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(128deg, ${hexToRgba(theme.accent, 0.98)} 0%, #050505 46%, ${hexToRgba(theme.primary, 0.42)} 100%)`,
+        }}
+      />
+    );
   }
 
   return (
     <>
-      <img
-        src={establishment.cover_url}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl"
-      />
       <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(135deg, ${hexToRgba(theme.accent, 0.42)} 0%, ${hexToRgba(theme.primary, 0.34)} 100%)`,
+          background: `linear-gradient(128deg, ${hexToRgba(theme.accent, 0.98)} 0%, #050505 46%, ${hexToRgba(theme.primary, 0.42)} 100%)`,
         }}
       />
       <img
         src={establishment.cover_url}
         alt=""
-        className="absolute inset-0 h-full w-full object-contain object-top p-0 sm:p-4 md:object-center md:p-8"
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-55 blur-[2px] saturate-125"
+      />
+      <img
+        src={establishment.cover_url}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-luminosity"
       />
     </>
   );
@@ -319,6 +327,10 @@ export default function EstablishmentPage() {
     finalCta: establishment.final_cta_heading || COPY.finalCtaHeading,
     finalCtaBody: establishment.final_cta_body || COPY.finalCtaBody,
   };
+  const heroSummary =
+    heading.hero.trim().length > 12
+      ? heading.hero.trim()
+      : establishment.booking_subheading?.trim() || establishment.about?.trim() || heading.hero.trim();
 
   return (
     <div className="min-h-screen bg-white text-black">
@@ -390,14 +402,37 @@ export default function EstablishmentPage() {
       </header>
 
       {/* ══════════════════════ HERO ══════════════════════ */}
-      <section id="inicio" className="relative h-[88vh] min-h-[560px] w-full overflow-hidden">
-        <div className="absolute inset-0 bg-black">
+      <section id="inicio" className="relative min-h-screen w-full overflow-hidden bg-black">
+        <div className="absolute inset-0">
           <HeroCover establishment={establishment} theme={theme} />
-          {/* Overlay simples */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
         </div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.62) 42%, rgba(0,0,0,0.22) 100%), linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.04) 40%, rgba(0,0,0,0.88) 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `linear-gradient(115deg, transparent 0%, transparent 42%, ${hexToRgba(theme.primary, 0.22)} 42%, transparent 72%)`,
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white to-transparent" />
 
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-14 sm:px-6 md:pb-20">
+        <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-end px-4 pb-16 pt-28 sm:px-6 md:justify-center md:pb-24">
+          <div className="max-w-3xl">
+            <div className="mb-6 flex items-center gap-4">
+              <Logo establishment={establishment} theme={theme} size="lg" />
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
+                  /{establishment.slug}
+                </p>
+                <p className="mt-1 text-sm font-medium text-white/80">Agendamento online</p>
+              </div>
+            </div>
+
           {isOpenToday !== undefined && (
             <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white backdrop-blur-md">
               <span
@@ -410,20 +445,37 @@ export default function EstablishmentPage() {
             </div>
           )}
 
-          <h1 className="max-w-3xl font-display text-5xl font-bold leading-[0.95] tracking-[-0.02em] text-white md:text-7xl">
+          <h1
+            className="max-w-4xl break-words font-display text-5xl font-bold leading-[0.94] text-white sm:text-6xl md:text-7xl lg:text-8xl"
+            style={{ letterSpacing: 0, overflowWrap: 'anywhere' }}
+          >
             {establishment.name}
           </h1>
 
-          {heading.hero && (
-            <p className="mt-5 max-w-xl text-base font-light leading-relaxed text-white/80 md:text-lg">
-              {heading.hero}
+          {heroSummary && (
+            <p className="mt-6 line-clamp-3 max-w-2xl text-base font-light leading-relaxed text-white/80 md:text-xl">
+              {heroSummary}
             </p>
           )}
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          {highlights.length > 0 && (
+            <div className="mt-6 flex max-w-2xl flex-wrap gap-2">
+              {highlights.slice(0, 3).map((h, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3.5 py-2 text-xs font-medium text-white/85 backdrop-blur-md"
+                >
+                  <Check size={13} style={{ color: theme.primary }} />
+                  {h}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <button
               onClick={() => navigate(`/${slug}/agendar`)}
-              className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_42px_-22px_rgba(255,255,255,0.55)]"
               style={{ background: theme.primary, color: theme.primaryText }}
             >
               <Calendar size={15} />
@@ -438,6 +490,37 @@ export default function EstablishmentPage() {
                 {COPY.ctaSeeServices}
               </a>
             )}
+          </div>
+
+          {(establishment.address || establishment.phone || (todayHours && isOpenToday)) && (
+            <div className="mt-10 grid max-w-3xl gap-3 text-sm text-white/75 sm:grid-cols-2 lg:grid-cols-3">
+              {establishment.address && (
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(establishment.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex min-h-12 items-center gap-3 border-t border-white/15 pt-3 transition-colors hover:text-white"
+                >
+                  <MapPin size={15} className="shrink-0" style={{ color: theme.primary }} />
+                  <span className="line-clamp-2">{establishment.address}</span>
+                </a>
+              )}
+              {establishment.phone && (
+                <div className="flex min-h-12 items-center gap-3 border-t border-white/15 pt-3">
+                  <Phone size={15} className="shrink-0" style={{ color: theme.primary }} />
+                  <span>{establishment.phone}</span>
+                </div>
+              )}
+              {todayHours && isOpenToday && (
+                <div className="flex min-h-12 items-center gap-3 border-t border-white/15 pt-3">
+                  <Clock size={15} className="shrink-0" style={{ color: theme.primary }} />
+                  <span>
+                    Hoje: {todayHours.start_time.slice(0, 5)} - {todayHours.end_time.slice(0, 5)}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
           </div>
         </div>
       </section>
