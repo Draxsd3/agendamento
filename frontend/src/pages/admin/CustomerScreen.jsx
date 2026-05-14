@@ -197,11 +197,25 @@ export default function AdminCustomerScreen() {
               <div className="p-6">
                 <div className="rounded-xl border border-gray-200 overflow-hidden">
                   <div className="relative h-36 bg-gray-100 group">
-                    {branding.cover_url
-                      ? <img src={branding.cover_url} alt="Capa" className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center">
-                          <Building2 size={32} className="text-gray-300" />
-                        </div>}
+                    {branding.cover_url ? (
+                      <>
+                        <img
+                          src={branding.cover_url}
+                          alt=""
+                          aria-hidden="true"
+                          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl"
+                        />
+                        <img
+                          src={branding.cover_url}
+                          alt="Capa"
+                          className="absolute inset-0 h-full w-full object-contain p-2"
+                        />
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Building2 size={32} className="text-gray-300" />
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => coverInputRef.current?.click()}
@@ -222,10 +236,10 @@ export default function AdminCustomerScreen() {
                     <div className="relative -mt-10 w-20 h-20 inline-block">
                       <div
                         className="w-20 h-20 rounded-xl border-2 border-white overflow-hidden shadow-md flex items-center justify-center"
-                        style={{ backgroundColor: accent }}
+                        style={branding.logo_url ? { backgroundColor: '#fff' } : { backgroundColor: accent }}
                       >
                         {branding.logo_url
-                          ? <img src={branding.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                          ? <img src={branding.logo_url} alt="Logo" className="w-full h-full object-contain p-2" />
                           : <span className="text-2xl font-bold text-white">{(branding.name || 'E').charAt(0)}</span>}
                       </div>
                       <button

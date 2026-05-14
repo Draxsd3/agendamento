@@ -47,10 +47,9 @@ export default function TenantLayout() {
               <img
                 src={establishment.logo_url}
                 alt={`Logo de ${establishment?.name}`}
-                className="h-10 w-10 rounded-2xl object-cover border"
+                className="h-10 w-10 rounded-2xl object-contain border bg-white p-1 shadow-sm"
                 style={{
                   borderColor: branding.subtleBorder,
-                  backgroundColor: branding.softPrimary,
                 }}
               />
             ) : (

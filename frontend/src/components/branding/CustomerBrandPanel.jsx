@@ -14,11 +14,19 @@ export default function CustomerBrandPanel({
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {establishment?.cover_url ? (
-        <img
-          src={establishment.cover_url}
-          alt={`Capa de ${name}`}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        <>
+          <img
+            src={establishment.cover_url}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-65 blur-xl"
+          />
+          <img
+            src={establishment.cover_url}
+            alt={`Capa de ${name}`}
+            className="absolute inset-0 h-full w-full object-contain p-2"
+          />
+        </>
       ) : (
         <div
           className="absolute inset-0"
@@ -43,7 +51,7 @@ export default function CustomerBrandPanel({
             <img
               src={establishment.logo_url}
               alt={`Logo de ${name}`}
-              className={`${logoClassName} object-cover border border-white/20 bg-white/10`}
+              className={`${logoClassName} object-contain border border-black/10 bg-white p-2 shadow-sm`}
             />
           ) : (
             <div

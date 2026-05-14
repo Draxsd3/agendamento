@@ -21,11 +21,19 @@ export default function BookingShowcaseCard({
     >
       <div className={`relative ${preview ? 'h-36' : 'h-48'}`}>
         {hasCover ? (
-          <img
-            src={establishment.cover_url}
-            alt={`Capa de ${name}`}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <>
+            <img
+              src={establishment.cover_url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl"
+            />
+            <img
+              src={establishment.cover_url}
+              alt={`Capa de ${name}`}
+              className={`absolute inset-0 h-full w-full object-contain ${preview ? 'p-2' : 'p-3'}`}
+            />
+          </>
         ) : (
           <div
             className="absolute inset-0"
@@ -50,9 +58,9 @@ export default function BookingShowcaseCard({
               <img
                 src={establishment.logo_url}
                 alt={`Logo de ${name}`}
-                className={`object-cover border border-white/20 bg-white/10 ${
+                className={`object-contain border border-black/10 bg-white shadow-sm ${
                   preview ? 'h-12 w-12 rounded-lg' : 'h-20 w-20 rounded-3xl'
-                }`}
+                } ${preview ? 'p-1' : 'p-2'}`}
               />
             ) : (
               <div

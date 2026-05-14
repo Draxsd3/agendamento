@@ -90,17 +90,48 @@ function buildTheme(establishment) {
    ──────────────────────────────────────────────────────────── */
 function Logo({ establishment, theme, size = 'md' }) {
   const s = size === 'sm' ? 'h-8 w-8 text-xs' : size === 'lg' ? 'h-12 w-12 text-base' : 'h-10 w-10 text-sm';
+  const hasLogo = Boolean(establishment.logo_url);
   return (
     <div
-      className={`flex ${s} items-center justify-center overflow-hidden rounded-full font-bold`}
-      style={{ background: theme.primary, color: theme.primaryText }}
+      className={`flex ${s} items-center justify-center overflow-hidden rounded-full border font-bold shadow-sm`}
+      style={hasLogo
+        ? { background: '#fff', borderColor: 'rgba(0,0,0,0.08)', color: theme.primary }
+        : { background: theme.primary, borderColor: 'rgba(255,255,255,0.24)', color: theme.primaryText }}
     >
-      {establishment.logo_url ? (
-        <img src={establishment.logo_url} alt="" className="h-full w-full object-cover" />
+      {hasLogo ? (
+        <img src={establishment.logo_url} alt="" className="h-full w-full object-contain p-1" />
       ) : (
         <span>{(establishment.name || 'E').charAt(0)}</span>
       )}
     </div>
+  );
+}
+
+function HeroCover({ establishment, theme }) {
+  if (!establishment.cover_url) {
+    return <div className="h-full w-full" style={{ background: theme.primary }} />;
+  }
+
+  return (
+    <>
+      <img
+        src={establishment.cover_url}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl"
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, ${hexToRgba(theme.accent, 0.42)} 0%, ${hexToRgba(theme.primary, 0.34)} 100%)`,
+        }}
+      />
+      <img
+        src={establishment.cover_url}
+        alt=""
+        className="absolute inset-0 h-full w-full object-contain object-top p-0 sm:p-4 md:object-center md:p-8"
+      />
+    </>
   );
 }
 
@@ -360,12 +391,8 @@ export default function EstablishmentPage() {
 
       {/* ══════════════════════ HERO ══════════════════════ */}
       <section id="inicio" className="relative h-[88vh] min-h-[560px] w-full overflow-hidden">
-        <div className="absolute inset-0">
-          {establishment.cover_url ? (
-            <img src={establishment.cover_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="h-full w-full" style={{ background: theme.primary }} />
-          )}
+        <div className="absolute inset-0 bg-black">
+          <HeroCover establishment={establishment} theme={theme} />
           {/* Overlay simples */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
         </div>

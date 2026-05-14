@@ -142,7 +142,7 @@ export default function BookingFlow() {
               <img
                 src={establishment.logo_url}
                 alt={establishment.name}
-                className="h-14 w-14 rounded-lg border object-cover"
+                className="h-14 w-14 rounded-lg border bg-white object-contain p-1.5 shadow-sm"
                 style={{ borderColor: branding.subtleBorder }}
               />
             ) : (
@@ -199,7 +199,7 @@ export default function BookingFlow() {
           <img
             src={establishment.logo_url}
             alt={establishment.name}
-            className="h-12 w-12 shrink-0 rounded-lg border object-cover"
+            className="h-12 w-12 shrink-0 rounded-lg border bg-white object-contain p-1.5 shadow-sm"
             style={{ borderColor: branding.subtleBorder }}
           />
         ) : (

@@ -56,15 +56,14 @@ export default function TenantLogin() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           {establishment?.logo_url ? (
-            <img
-              src={establishment.logo_url}
-              alt={`Logo de ${establishment?.name}`}
-              className="h-16 w-16 rounded-2xl object-cover mx-auto mb-4 border"
-              style={{
-                borderColor: branding.subtleBorder,
-                backgroundColor: branding.softPrimary,
-              }}
-            />
+              <img
+                src={establishment.logo_url}
+                alt={`Logo de ${establishment?.name}`}
+                className="h-16 w-16 rounded-2xl object-contain mx-auto mb-4 border bg-white p-2 shadow-sm"
+                style={{
+                  borderColor: branding.subtleBorder,
+                }}
+              />
           ) : (
             <div
               className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-4 border"

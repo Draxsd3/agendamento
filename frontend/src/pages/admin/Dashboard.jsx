@@ -281,7 +281,7 @@ export default function AdminDashboard() {
           </h1>
         </div>
         {establishment?.logo_url && (
-          <img src={establishment.logo_url} alt="" className="h-10 w-10 rounded-lg object-cover border border-gray-200" />
+          <img src={establishment.logo_url} alt="" className="h-10 w-10 rounded-lg object-contain border border-gray-200 bg-white p-1 shadow-sm" />
         )}
       </div>
 
