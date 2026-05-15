@@ -10,9 +10,31 @@ class EstablishmentsRepository extends BaseRepository {
       .from('establishments')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
+    return data;
+  }
+
+  async findSummaryBySlug(slug) {
+    const { data, error } = await this.db
+      .from('establishments')
+      .select('id, name, slug, status')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async existsBySlug(slug) {
+    const { data, error } = await this.db
+      .from('establishments')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) throw error;
     return data;
   }
 

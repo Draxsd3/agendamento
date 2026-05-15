@@ -1,10 +1,8 @@
-const bcrypt = require('bcryptjs');
 const usersRepo = require('../repositories/users.repository');
 const establishmentsRepo = require('../repositories/establishments.repository');
 const establishmentsService = require('./establishments.service');
 const supabase = require('../config/supabase');
-
-const SALT_ROUNDS = 12;
+const { hashPassword } = require('../utils/password');
 
 class SuperAdminService {
   async getDashboardStats() {
@@ -53,13 +51,7 @@ class SuperAdminService {
   }
 
   async createEstablishment(payload) {
-    const existing = await establishmentsRepo.findBySlug(payload.slug);
-    if (existing) {
-      const err = new Error('Slug j\u00e1 est\u00e1 em uso.');
-      err.statusCode = 409;
-      throw err;
-    }
-    return establishmentsRepo.create(payload);
+    return establishmentsService.create(payload);
   }
 
   async updateEstablishment(id, payload) {
@@ -67,7 +59,8 @@ class SuperAdminService {
   }
 
   async createAdminUser({ name, email, password, establishmentId }) {
-    const existing = await usersRepo.findByEmail(email);
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const existing = await usersRepo.findExistingByEmail(normalizedEmail);
     if (existing) {
       const err = new Error('Email j\u00e1 est\u00e1 em uso.');
       err.statusCode = 409;
@@ -81,8 +74,13 @@ class SuperAdminService {
       throw err;
     }
 
-    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await usersRepo.create({ name, email, password_hash, role: 'establishment_admin' });
+    const password_hash = await hashPassword(password);
+    const user = await usersRepo.create({
+      name,
+      email: normalizedEmail,
+      password_hash,
+      role: 'establishment_admin',
+    });
 
     await supabase
       .from('establishment_admins')

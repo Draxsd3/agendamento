@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { LogIn, Mail, Lock } from 'lucide-react';
@@ -16,14 +16,14 @@ export default function TenantLogin() {
   const location = useLocation();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
-  const getRedirect = (loggedUser) => {
+  const getRedirect = useCallback((loggedUser) => {
     const from = location.state?.from;
     if (from && loggedUser.role === 'customer') return from;
     if (loggedUser.role === 'establishment_admin') {
       return loggedUser.establishmentSlug ? `/${loggedUser.establishmentSlug}/admin` : '/login';
     }
     return `/${slug}/cliente`;
-  };
+  }, [location.state, slug]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -34,7 +34,7 @@ export default function TenantLogin() {
     }
 
     navigate(getRedirect(user), { replace: true });
-  }, [isAuthenticated, user, navigate]);
+  }, [getRedirect, isAuthenticated, navigate, user]);
 
   const onSubmit = async (data) => {
     try {

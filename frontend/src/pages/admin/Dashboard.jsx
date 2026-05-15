@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { appointmentsService } from '@/services/appointments.service';
 import { financialService } from '@/services/financial.service';
 import {
-  CalendarCheck, Clock, CheckCircle2, XCircle,
-  User, Scissors, ChevronRight, TrendingUp,
+  CalendarCheck, Clock, CheckCircle2,
+  User, Scissors, TrendingUp,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
         setSummary(fin);
       })
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user?.establishmentId, todayStr]);
 
   // ── bar chart: last 7 days ─────────────────────────────────────────────────
   const chartData = (() => {

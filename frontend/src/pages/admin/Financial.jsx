@@ -244,7 +244,7 @@ export default function AdminFinancial() {
       setByBranch(b);
       setByProfessional(p);
       setByService(sv);
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Erro ao carregar dados financeiros.'));
     } finally {
       setLoadingMain(false);
@@ -260,7 +260,7 @@ export default function AdminFinancial() {
     try {
       const res = await financialService.getTransactions(params);
       setTransactions(res);
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Erro ao carregar transações.'));
     } finally {
       setLoadingTx(false);

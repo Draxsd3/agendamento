@@ -15,9 +15,9 @@ class BaseRepository {
       .from(this.table)
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
     return data;
   }
 

@@ -1,4 +1,8 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const required = (key) => {
   const value = process.env[key];
@@ -20,6 +24,18 @@ const parseCorsOrigins = () => {
     .filter(Boolean);
 
   return [...new Set([...defaults, ...configured].map(normalizeOrigin))];
+};
+
+const intFromEnv = (key, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) => {
+  const raw = process.env[key];
+  if (raw === undefined || raw === '') return fallback;
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
+    throw new Error(`Invalid env var ${key}. Expected integer between ${min} and ${max}.`);
+  }
+
+  return parsed;
 };
 
 const jwtSecret = required('JWT_SECRET');
@@ -46,6 +62,28 @@ module.exports = {
   supabase: {
     url: required('SUPABASE_URL'),
     serviceRoleKey: required('SUPABASE_SERVICE_ROLE_KEY'),
+    requestTimeoutMs: intFromEnv('SUPABASE_REQUEST_TIMEOUT_MS', 12000, {
+      min: 3000,
+      max: 60000,
+    }),
+  },
+
+  http: {
+    requestTimeoutMs: intFromEnv('HTTP_REQUEST_TIMEOUT_MS', 65000, {
+      min: 5000,
+      max: 120000,
+    }),
+    slowRequestMs: intFromEnv('SLOW_REQUEST_MS', 2500, {
+      min: 250,
+      max: 60000,
+    }),
+  },
+
+  auth: {
+    passwordSaltRounds: intFromEnv('BCRYPT_SALT_ROUNDS', 12, {
+      min: 10,
+      max: 14,
+    }),
   },
 
   cors: {

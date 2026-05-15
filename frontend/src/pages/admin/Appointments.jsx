@@ -38,7 +38,7 @@ function initials(name = '') {
 }
 
 // ─── Quick presence buttons + dropdown for others ────────────────────────────
-function ActionCell({ appt, onUpdate, primary }) {
+function ActionCell({ appt, onUpdate }) {
   const [open,   setOpen]   = useState(false);
   const [saving, setSaving] = useState(null); // which action is saving
 
@@ -172,7 +172,7 @@ function ApptRow({ appt, onUpdate, primary, accent }) {
 
       {/* actions */}
       <div className="shrink-0">
-        <ActionCell appt={appt} onUpdate={onUpdate} primary={primary} />
+        <ActionCell appt={appt} onUpdate={onUpdate} />
       </div>
     </div>
   );
@@ -212,7 +212,7 @@ export default function AdminAppointments() {
       const label = STATUS_CONFIG[status]?.label || status;
       toast.success(`Marcado como: ${label}`);
       load();
-    } catch {
+    } catch (err) {
       toast.error(getErrorMessage(err, 'Erro ao atualizar status.'));
     }
   };

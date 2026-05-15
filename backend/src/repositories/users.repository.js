@@ -10,9 +10,42 @@ class UsersRepository extends BaseRepository {
       .from('users')
       .select('*')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
+    return data;
+  }
+
+  async findAuthByEmail(email) {
+    const { data, error } = await this.db
+      .from('users')
+      .select('id, name, email, password_hash, role, is_active')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findExistingByEmail(email) {
+    const { data, error } = await this.db
+      .from('users')
+      .select('id, role')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findSafeById(id) {
+    const { data, error } = await this.db
+      .from('users')
+      .select('id, name, email, role, is_active, created_at, updated_at')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
     return data;
   }
 
@@ -22,9 +55,9 @@ class UsersRepository extends BaseRepository {
       .select('*')
       .eq('password_reset_token', token)
       .gt('password_reset_expires_at', new Date().toISOString())
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') throw error;
+    if (error) throw error;
     return data;
   }
 

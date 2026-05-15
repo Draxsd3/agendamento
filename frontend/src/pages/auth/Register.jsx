@@ -19,6 +19,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const {
     register,
@@ -28,6 +29,7 @@ export default function Register() {
   } = useForm();
 
   const onSubmit = async (data) => {
+    setSubmitError('');
     try {
       const createdUser = await registerUser({
         ...data,
@@ -36,7 +38,9 @@ export default function Register() {
       toast.success('Conta criada com sucesso!');
       navigate(createdUser.establishmentSlug ? `/${createdUser.establishmentSlug}/admin` : '/admin', { replace: true });
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setSubmitError(message);
+      toast.error(message);
     }
   };
 
@@ -259,6 +263,16 @@ export default function Register() {
                     <a href="#" className="underline hover:text-ink">Termos de uso</a> e a{' '}
                     <a href="#" className="underline hover:text-ink">Política de privacidade</a>.
                   </p>
+
+                  {submitError && (
+                    <div
+                      role="alert"
+                      aria-live="polite"
+                      className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                    >
+                      {submitError}
+                    </div>
+                  )}
 
                   <button
                     type="submit"

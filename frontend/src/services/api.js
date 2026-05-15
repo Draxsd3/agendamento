@@ -5,11 +5,26 @@ const normalizeBaseUrl = (value) => {
   return value.endsWith('/api/v1') ? value : `${value.replace(/\/$/, '')}/api/v1`;
 };
 
+const parseTimeout = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 5000 ? parsed : fallback;
+};
+
+const REQUEST_TIMEOUT_MS = parseTimeout(import.meta.env.VITE_API_TIMEOUT_MS, 45000);
+
 const api = axios.create({
   baseURL: normalizeBaseUrl(import.meta.env.VITE_API_URL),
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: REQUEST_TIMEOUT_MS,
 });
+
+const AUTH_PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/register-owner',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
 
 // Attach JWT token to every request
 api.interceptors.request.use((config) => {
@@ -24,7 +39,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || '';
+    const isPublicAuthRequest = AUTH_PUBLIC_PATHS.some((path) => requestUrl.includes(path));
+
+    if (error.response?.status === 401 && !isPublicAuthRequest) {
       localStorage.removeItem('token');
       if (error.config?.url?.includes('/auth/me')) {
         return Promise.reject(error);

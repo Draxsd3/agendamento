@@ -56,7 +56,7 @@ function AppointmentEdit({ appt, branding, onBack, onSaved }) {
 
         setPlanServices(activeSubscription?.plans?.plan_services || []);
         setPlanDiscountPercent(Number(activeSubscription?.plans?.discount_percent || 0));
-      } catch {
+      } catch (err) {
         toast.error(getErrorMessage(err, 'Erro ao carregar dados do estabelecimento.'));
       } finally {
         setLoadingData(false);
@@ -244,7 +244,9 @@ function AppointmentDetail({ appt, branding, onBack, onEdit, onCancel }) {
   try {
     const parsed = JSON.parse(branchAddress);
     branchAddress = [parsed.street, parsed.number, parsed.complement, parsed.cep].filter(Boolean).join(', ');
-  } catch {}
+  } catch {
+    // Branch address may already be plain text.
+  }
 
   return (
     <div className="space-y-3">

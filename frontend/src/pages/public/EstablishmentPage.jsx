@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   MapPin, Phone, Clock, Check, Percent, Crown,
   Instagram, Globe, MessageCircle, AlignLeft,
-  Calendar, ArrowRight, ArrowUpRight, Scissors, Star,
+  Calendar, ArrowRight, ArrowUpRight, Star,
 } from 'lucide-react';
 import { publicEstablishmentsService } from '@/services/establishments.service';
 import { plansService, subscriptionsService } from '@/services/plans.service';
@@ -243,7 +243,7 @@ export default function EstablishmentPage() {
       }
     };
     load();
-  }, [slug, isAuthenticated]);
+  }, [isAuthenticated, slug, user?.role]);
 
   const handleSubscribe = async () => {
     if (!confirmPlan) return;

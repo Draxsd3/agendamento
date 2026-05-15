@@ -3,11 +3,18 @@ const { body } = require('express-validator');
 const authController = require('../controllers/auth.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validate.middleware');
+const {
+  loginAccountLimiter,
+  loginIpLimiter,
+  passwordResetLimiter,
+  registerLimiter,
+} = require('../middlewares/rate-limit.middleware');
 
 const router = Router();
 
 router.post(
   '/register-owner',
+  registerLimiter,
   [
     body('name').trim().notEmpty().withMessage('Nome e obrigatorio.'),
     body('businessName').trim().isLength({ min: 2 }).withMessage('Nome do estabelecimento invalido.'),
@@ -20,6 +27,7 @@ router.post(
 
 router.post(
   '/register',
+  registerLimiter,
   [
     body('name').trim().notEmpty().withMessage('Nome e obrigatorio.'),
     body('businessName').optional({ checkFalsy: true }).trim().isLength({ min: 2 }).withMessage('Nome do estabelecimento invalido.'),
@@ -34,6 +42,8 @@ router.post(
 
 router.post(
   '/login',
+  loginIpLimiter,
+  loginAccountLimiter,
   [
     body('email').isEmail().normalizeEmail().withMessage('Email invalido.'),
     body('password').notEmpty().withMessage('Senha e obrigatoria.'),
@@ -58,6 +68,7 @@ router.patch(
 
 router.post(
   '/forgot-password',
+  passwordResetLimiter,
   [
     body('email').isEmail().normalizeEmail().withMessage('Email invalido.'),
   ],
@@ -67,6 +78,7 @@ router.post(
 
 router.post(
   '/reset-password',
+  passwordResetLimiter,
   [
     body('token').notEmpty().withMessage('Token e obrigatorio.'),
     body('newPassword').isLength({ min: 6 }).withMessage('Nova senha deve ter pelo menos 6 caracteres.'),

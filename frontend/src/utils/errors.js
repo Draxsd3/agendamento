@@ -30,6 +30,7 @@ const BACKEND_MESSAGES = {
   'Você já possui uma assinatura ativa.': 'Você já tem um plano ativo.',
   'Voce ja possui uma assinatura ativa.': 'Você já tem um plano ativo.',
   'Voce ja possui uma assinatura ativa para este estabelecimento.': 'Você já tem um plano ativo neste estabelecimento.',
+  'Tempo limite ao acessar o banco de dados.': 'O servidor demorou para acessar os dados. Tente novamente em instantes.',
 };
 
 const STATUS_MESSAGES = {
@@ -43,12 +44,14 @@ const STATUS_MESSAGES = {
   500: 'Erro interno. Tente novamente em instantes.',
   502: 'Servidor indisponível. Tente novamente em instantes.',
   503: 'Serviço temporariamente indisponível. Tente novamente em instantes.',
+  504: 'O servidor demorou para responder. Tente novamente em instantes.',
 };
 
 export function getErrorMessage(err, fallback = 'Ocorreu um erro. Tente novamente.') {
   if (!err.response) {
-    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-      return 'A requisição demorou demais. Verifique sua conexão.';
+    const message = String(err.message || '').toLowerCase();
+    if (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT' || message.includes('timeout')) {
+      return 'O servidor demorou para responder. Tente novamente em instantes.';
     }
     return 'Sem conexão com o servidor. Verifique sua internet.';
   }

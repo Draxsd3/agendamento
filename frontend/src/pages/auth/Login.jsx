@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const {
     register,
@@ -29,7 +30,7 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm();
 
-  const getRedirect = (loggedUser) => {
+  const getRedirect = useCallback((loggedUser) => {
     const from = location.state?.from;
     const activeSlug = localStorage.getItem('activeEstablishmentSlug');
     if (from && loggedUser.role === 'customer') return from;
@@ -38,7 +39,7 @@ export default function Login() {
     }
     if (activeSlug) return `/${activeSlug}/cliente`;
     return '/minha-conta';
-  };
+  }, [location.state]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -47,9 +48,10 @@ export default function Login() {
       return;
     }
     navigate(getRedirect(user), { replace: true });
-  }, [isAuthenticated, user, navigate, location.state]);
+  }, [getRedirect, isAuthenticated, navigate, user]);
 
   const onSubmit = async (data) => {
+    setSubmitError('');
     try {
       const loggedUser = await login(data);
       if (loggedUser.role === 'super_admin') {
@@ -60,7 +62,9 @@ export default function Login() {
       }
       navigate(getRedirect(loggedUser), { replace: true });
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setSubmitError(message);
+      toast.error(message);
     }
   };
 
@@ -257,6 +261,16 @@ export default function Login() {
                     />
                     Manter conectado neste dispositivo
                   </label>
+
+                  {submitError && (
+                    <div
+                      role="alert"
+                      aria-live="polite"
+                      className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                    >
+                      {submitError}
+                    </div>
+                  )}
 
                   {/* CTA */}
                   <button

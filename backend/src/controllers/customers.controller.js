@@ -1,10 +1,9 @@
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const customersRepo = require('../repositories/customers.repository');
 const usersRepo = require('../repositories/users.repository');
 const supabase = require('../config/supabase');
+const { hashPassword } = require('../utils/password');
 
-const SALT_ROUNDS = 12;
 const CUSTOMER_FIELDS = [
   'phone',
   'date_of_birth',
@@ -123,7 +122,7 @@ class CustomersController {
         });
       }
 
-      const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+      const password_hash = await hashPassword(password);
       createdUser = await usersRepo.create({
         name,
         email,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -78,7 +78,7 @@ export default function EstablishmentDetail() {
 
   const origin = window.location.origin;
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [estab, adminsData] = await Promise.all([
@@ -94,11 +94,11 @@ export default function EstablishmentDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
   const handleToggleStatus = async () => {
     const next = establishment.status === 'active' ? 'inactive' : 'active';

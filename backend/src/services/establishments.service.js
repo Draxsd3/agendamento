@@ -23,6 +23,14 @@ const PRIVATE_FIELDS = [
   'asaas_billing_mode', 'asaas_billing_updated_at',
 ];
 
+const isUniqueViolation = (err) => err?.code === '23505';
+
+const slugConflictError = (message = 'Slug ja esta em uso. Escolha outro identificador.') => {
+  const err = new Error(message);
+  err.statusCode = 409;
+  return err;
+};
+
 class EstablishmentsService {
   sanitizePublic(establishment) {
     if (!establishment) return establishment;
@@ -62,6 +70,21 @@ class EstablishmentsService {
     return this.sanitizePublic(establishment);
   }
 
+  async getActiveSummaryBySlug(slug) {
+    const establishment = await establishmentsRepo.findSummaryBySlug(slug);
+    if (!establishment) {
+      const err = new Error('Estabelecimento nao encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+    if (establishment.status !== 'active') {
+      const err = new Error('Estabelecimento nao esta ativo.');
+      err.statusCode = 403;
+      throw err;
+    }
+    return establishment;
+  }
+
   async getAdminEstablishment(id) {
     if (!id) {
       const err = new Error('Administrador sem estabelecimento vinculado.');
@@ -81,13 +104,14 @@ class EstablishmentsService {
 
   async create(payload) {
     this._validateSlug(payload.slug);
-    const existing = await establishmentsRepo.findBySlug(payload.slug);
-    if (existing) {
-      const err = new Error('Slug ja esta em uso. Escolha outro identificador.');
-      err.statusCode = 409;
+    try {
+      return await establishmentsRepo.create(payload);
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        throw slugConflictError();
+      }
       throw err;
     }
-    return establishmentsRepo.create(payload);
   }
 
   async update(id, payload) {

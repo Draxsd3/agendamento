@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const env = require('../config/env');
@@ -7,8 +6,8 @@ const usersRepo = require('../repositories/users.repository');
 const customersRepo = require('../repositories/customers.repository');
 const establishmentsService = require('./establishments.service');
 const supabase = require('../config/supabase');
+const { comparePassword, hashPassword } = require('../utils/password');
 
-const SALT_ROUNDS = 12;
 const RESET_TOKEN_EXPIRES_MS = 60 * 60 * 1000; // 1 hora
 const CUSTOMER_ACCOUNT_TYPE = 'customer';
 const OWNER_ACCOUNT_TYPE = 'establishment_admin';
@@ -43,6 +42,8 @@ const sanitizeUser = (user) => {
 
 const normalizeText = (value) => String(value || '').trim();
 
+const normalizeEmail = (value) => normalizeText(value).toLowerCase();
+
 const slugify = (value) => {
   const slug = normalizeText(value)
     .normalize('NFD')
@@ -66,6 +67,8 @@ const httpError = (statusCode, message) => {
 const isSlugConflict = (err) => {
   return err.statusCode === 409 && /slug|identificador|reservado/i.test(err.message || '');
 };
+
+const isUniqueViolation = (err) => err?.code === '23505';
 
 const toCandidateSlug = (baseSlug, attempt) => {
   const suffix = attempt === 0 ? '' : '-' + (attempt + 1);
@@ -98,6 +101,15 @@ const createEstablishmentWithAvailableSlug = async ({ name, phone }) => {
     slug: fallbackSlug,
     phone: phone || null,
   });
+};
+
+const cleanupCreatedUser = async (user, context = 'cadastro') => {
+  if (!user?.id) return;
+
+  const { error } = await supabase.from('users').delete().eq('id', user.id);
+  if (error) {
+    console.error(`[auth] Falha ao desfazer ${context}:`, error);
+  }
 };
 
 const cleanupOwnerRegistration = async ({ user, establishment }) => {
@@ -133,7 +145,7 @@ const linkAdminToEstablishment = async (userId, establishmentId) => {
 class AuthService {
   async register(payload) {
     const accountType = normalizeText(payload.accountType);
-    const slug = normalizeText(payload.slug);
+    const slug = normalizeText(payload.slug).toLowerCase();
 
     if (accountType === OWNER_ACCOUNT_TYPE) {
       return this.registerOwner(payload);
@@ -147,18 +159,35 @@ class AuthService {
   }
 
   async registerCustomer({ name, email, password, phone, slug }) {
-    const existing = await usersRepo.findByEmail(email);
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedSlug = normalizeText(slug).toLowerCase();
+    const [existing, establishment] = await Promise.all([
+      usersRepo.findExistingByEmail(normalizedEmail),
+      normalizedSlug ? establishmentsService.getActiveSummaryBySlug(normalizedSlug) : Promise.resolve(null),
+    ]);
+
     if (existing) {
       const err = new Error('Email ja esta em uso.');
       err.statusCode = 409;
       throw err;
     }
 
-    const establishment = slug ? await establishmentsService.getBySlug(slug) : null;
+    const password_hash = await hashPassword(password);
+    let user;
+    let customer;
 
-    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await usersRepo.create({ name, email, password_hash, role: 'customer' });
-    const customer = await customersRepo.create({ user_id: user.id, phone: phone || null });
+    try {
+      user = await usersRepo.create({ name, email: normalizedEmail, password_hash, role: 'customer' });
+      customer = await customersRepo.create({ user_id: user.id, phone: phone || null });
+    } catch (err) {
+      if (user?.id) {
+        await cleanupCreatedUser(user, 'cadastro de cliente');
+      }
+      if (isUniqueViolation(err)) {
+        throw httpError(409, 'Email ja esta em uso.');
+      }
+      throw err;
+    }
 
     if (establishment?.id) {
       try {
@@ -175,12 +204,13 @@ class AuthService {
   async registerOwner({ name, businessName, email, password, phone }) {
     const ownerName = normalizeText(name);
     const establishmentName = normalizeText(businessName) || ownerName;
+    const normalizedEmail = normalizeEmail(email);
 
     if (!establishmentName) {
       throw httpError(422, 'Nome do estabelecimento e obrigatorio.');
     }
 
-    const existing = await usersRepo.findByEmail(email);
+    const existing = await usersRepo.findExistingByEmail(normalizedEmail);
     if (existing) {
       const err = new Error('Email ja esta em uso.');
       err.statusCode = 409;
@@ -189,6 +219,7 @@ class AuthService {
 
     let establishment;
     let user;
+    const passwordHashPromise = hashPassword(password);
 
     try {
       establishment = await createEstablishmentWithAvailableSlug({
@@ -196,10 +227,10 @@ class AuthService {
         phone,
       });
 
-      const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+      const password_hash = await passwordHashPromise;
       user = await usersRepo.create({
         name: ownerName || establishmentName,
-        email,
+        email: normalizedEmail,
         password_hash,
         role: OWNER_ACCOUNT_TYPE,
       });
@@ -207,7 +238,7 @@ class AuthService {
       await linkAdminToEstablishment(user.id, establishment.id);
     } catch (err) {
       await cleanupOwnerRegistration({ user, establishment });
-      if (err.code === '23505') {
+      if (isUniqueViolation(err)) {
         throw httpError(409, 'Email ou estabelecimento ja esta em uso.');
       }
       throw err;
@@ -218,7 +249,8 @@ class AuthService {
   }
 
   async login({ email, password, slug }) {
-    const user = await usersRepo.findByEmail(email);
+    const normalizedEmail = normalizeEmail(email);
+    const user = await usersRepo.findAuthByEmail(normalizedEmail);
     if (!user) {
       const err = new Error('Credenciais invalidas.');
       err.statusCode = 401;
@@ -231,7 +263,7 @@ class AuthService {
       throw err;
     }
 
-    const valid = await bcrypt.compare(password, user.password_hash);
+    const valid = await comparePassword(password, user.password_hash);
     if (!valid) {
       const err = new Error('Credenciais invalidas.');
       err.statusCode = 401;
@@ -239,12 +271,12 @@ class AuthService {
     }
 
     let establishment = {};
-    const normalizedSlug = normalizeText(slug);
+    const normalizedSlug = normalizeText(slug).toLowerCase();
 
     if (user.role === 'establishment_admin') {
       const { data, error } = await supabase
         .from('establishment_admins')
-        .select('establishment_id, establishments(id, slug)')
+        .select('establishment_id, establishments(id, slug, status)')
         .eq('user_id', user.id)
         .limit(1)
         .maybeSingle();
@@ -255,6 +287,7 @@ class AuthService {
         establishment = {
           id:   data.establishments.id,
           slug: data.establishments.slug,
+          status: data.establishments.status,
         };
       }
 
@@ -270,7 +303,11 @@ class AuthService {
         throw err;
       }
 
-      await establishmentsService.getBySlug(establishment.slug);
+      if (establishment.status !== 'active') {
+        const err = new Error('Estabelecimento nao esta ativo.');
+        err.statusCode = 403;
+        throw err;
+      }
     }
 
     if (user.role === 'customer') {
@@ -279,32 +316,37 @@ class AuthService {
         err.statusCode = 403;
         throw err;
       }
-      await establishmentsService.getBySlug(normalizedSlug);
+      establishment = await establishmentsService.getActiveSummaryBySlug(normalizedSlug);
     }
 
-    const token = signToken(user, establishment);
+    const token = signToken(user, user.role === 'establishment_admin' ? establishment : {});
     return { user: sanitizeUser(user), token, establishment };
   }
 
   async me(userId) {
+    const user = await usersRepo.findSafeById(userId);
+    if (!user) {
+      const err = new Error('Usuario nao encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+    return user;
+  }
+
+  async changePassword(userId, { currentPassword, newPassword }) {
     const user = await usersRepo.findById(userId);
     if (!user) {
       const err = new Error('Usuario nao encontrado.');
       err.statusCode = 404;
       throw err;
     }
-    return sanitizeUser(user);
-  }
-
-  async changePassword(userId, { currentPassword, newPassword }) {
-    const user = await usersRepo.findById(userId);
-    const valid = await bcrypt.compare(currentPassword, user.password_hash);
+    const valid = await comparePassword(currentPassword, user.password_hash);
     if (!valid) {
       const err = new Error('Senha atual incorreta.');
       err.statusCode = 400;
       throw err;
     }
-    const password_hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const password_hash = await hashPassword(newPassword);
     await usersRepo.update(userId, { password_hash });
     return { message: 'Senha atualizada com sucesso.' };
   }
@@ -314,7 +356,7 @@ class AuthService {
   async forgotPassword({ email }) {
     const GENERIC = { message: 'Se o e-mail existir, voce recebera as instrucoes em breve.' };
 
-    const user = await usersRepo.findByEmail(email);
+    const user = await usersRepo.findByEmail(normalizeEmail(email));
     if (!user) return GENERIC;
 
     if (!env.email.host) {
@@ -358,7 +400,7 @@ class AuthService {
       throw err;
     }
 
-    const password_hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const password_hash = await hashPassword(newPassword);
     await usersRepo.update(user.id, { password_hash });
     await usersRepo.clearResetToken(user.id);
 
