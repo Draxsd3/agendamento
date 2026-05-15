@@ -104,6 +104,109 @@ class AppointmentsService {
     return appointment;
   }
 
+  async bookManual({
+    establishmentId,
+    customerId,
+    professionalId,
+    serviceId,
+    startTime,
+    branchId,
+    status,
+    notes,
+    totalPrice,
+    skipBusinessHoursCheck,
+  }) {
+    if (!customerId) {
+      const err = new Error('Cliente é obrigatório.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const { data: customerRow, error: customerError } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('id', customerId)
+      .maybeSingle();
+    if (customerError) throw customerError;
+    if (!customerRow) {
+      const err = new Error('Cliente não encontrado.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const service = await servicesRepo.findByIdAndEstablishment(serviceId, establishmentId);
+    if (!service || !service.is_active) {
+      const err = new Error('Serviço não encontrado ou inativo.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const start = new Date(startTime);
+    if (Number.isNaN(start.getTime())) {
+      const err = new Error('Data ou horário inválido.');
+      err.statusCode = 400;
+      throw err;
+    }
+    const end = new Date(start.getTime() + service.duration_minutes * 60 * 1000);
+
+    if (!skipBusinessHoursCheck) {
+      await this._validateBusinessHours(establishmentId, start, end);
+    }
+
+    const hasConflict = await appointmentsRepo.checkConflict(
+      professionalId,
+      start.toISOString(),
+      end.toISOString()
+    );
+    if (hasConflict) {
+      const err = new Error('Horário indisponível. O profissional já possui um agendamento nesse período.');
+      err.statusCode = 409;
+      throw err;
+    }
+
+    let priceToPersist;
+    if (totalPrice !== undefined && totalPrice !== null && totalPrice !== '') {
+      const parsed = Number(totalPrice);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        const err = new Error('Valor total inválido.');
+        err.statusCode = 400;
+        throw err;
+      }
+      priceToPersist = parsed;
+    } else {
+      priceToPersist = await this._resolvePlanAdjustedPrice({
+        customerId,
+        establishmentId,
+        serviceId,
+        basePrice: service.price,
+      });
+    }
+
+    const validStatuses = ['pending', 'confirmed', 'completed', 'no_show', 'cancelled'];
+    const finalStatus = validStatuses.includes(status) ? status : 'confirmed';
+
+    const appointment = await appointmentsRepo.create({
+      establishment_id: establishmentId,
+      customer_id: customerId,
+      professional_id: professionalId,
+      service_id: serviceId,
+      branch_id: branchId || null,
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      status: finalStatus,
+      total_price: priceToPersist,
+      notes: notes ? String(notes).trim() || null : null,
+    });
+
+    try {
+      await customersRepo.linkToEstablishment(customerId, establishmentId, 'manual');
+    } catch (err) {
+      console.error('[appointments] Falha ao vincular cliente ao estabelecimento:', err);
+    }
+
+    return appointment;
+  }
+
   async cancel(appointmentId, userId, role) {
     const appointment = await appointmentsRepo.findById(appointmentId);
     if (!appointment) {

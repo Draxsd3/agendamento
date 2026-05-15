@@ -31,6 +31,26 @@ class AppointmentsController {
     }
   }
 
+  async bookManual(req, res, next) {
+    try {
+      const result = await appointmentsService.bookManual({
+        establishmentId: req.establishmentId,
+        customerId: req.body.customerId,
+        professionalId: req.body.professionalId,
+        serviceId: req.body.serviceId,
+        startTime: req.body.startTime,
+        branchId: req.body.branchId,
+        status: req.body.status,
+        notes: req.body.notes,
+        totalPrice: req.body.totalPrice,
+        skipBusinessHoursCheck: req.body.skipBusinessHoursCheck === true,
+      });
+      res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async reschedule(req, res, next) {
     try {
       const result = await appointmentsService.reschedule(

@@ -35,6 +35,27 @@ router.post(
   appointmentsController.book
 );
 
+// Admin: create appointment manually
+router.post(
+  '/establishment/:establishmentId/manual',
+  authMiddleware,
+  roleMiddleware('super_admin', 'establishment_admin'),
+  tenantMiddleware,
+  [
+    body('customerId').isUUID().withMessage('customerId inválido.'),
+    body('professionalId').isUUID().withMessage('professionalId inválido.'),
+    body('serviceId').isUUID().withMessage('serviceId inválido.'),
+    body('startTime').isISO8601().withMessage('startTime deve ser uma data ISO válida.'),
+    body('branchId').optional({ checkFalsy: true }).isUUID().withMessage('branchId inválido.'),
+    body('status').optional({ checkFalsy: true }).isIn(['pending', 'confirmed', 'completed']).withMessage('Status inválido.'),
+    body('totalPrice').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('Valor total inválido.'),
+    body('notes').optional({ checkFalsy: true }).isString(),
+    body('skipBusinessHoursCheck').optional().isBoolean(),
+  ],
+  validate,
+  appointmentsController.bookManual
+);
+
 // Reschedule (customer only)
 router.patch(
   '/:id/reschedule',

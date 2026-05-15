@@ -4,12 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { appointmentsService } from '@/services/appointments.service';
 import {
   CalendarCheck, User, Scissors, Clock,
-  CheckCircle2, XCircle, ChevronDown,
+  CheckCircle2, XCircle, ChevronDown, Plus,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
+import Button from '@/components/common/Button';
+import ManualAppointmentModal from '@/components/appointments/ManualAppointmentModal';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -190,6 +192,7 @@ export default function AdminAppointments() {
   const [loading,      setLoading]      = useState(true);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate,   setFilterDate]   = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const load = useCallback(() => {
     if (!user?.establishmentId) return;
@@ -226,11 +229,20 @@ export default function AdminAppointments() {
   return (
     <div className="space-y-5">
       {/* header */}
-      <div>
-        <h1 className="page-title">Agendamentos</h1>
-        <p className="text-sm text-gray-400 mt-0.5 capitalize">
-          {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="page-title">Agendamentos</h1>
+          <p className="text-sm text-gray-400 mt-0.5 capitalize">
+            {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+          </p>
+        </div>
+        <Button
+          icon={Plus}
+          onClick={() => setShowCreateModal(true)}
+          style={{ backgroundColor: primary }}
+        >
+          Novo agendamento
+        </Button>
       </div>
 
       {/* filters */}
@@ -346,6 +358,13 @@ export default function AdminAppointments() {
           {appointments.length} registro{appointments.length !== 1 ? 's' : ''}
         </p>
       )}
+
+      <ManualAppointmentModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        establishmentId={user?.establishmentId}
+        onCreated={load}
+      />
     </div>
   );
 }
