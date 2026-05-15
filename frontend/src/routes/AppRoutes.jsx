@@ -95,6 +95,12 @@ function LegacyTenantRedirect() {
   return <Navigate to={`/${slug}${suffix}`} replace />;
 }
 
+function ShortBookingRedirect() {
+  const { slug, '*': rest } = useParams();
+  const suffix = rest ? `/${rest}` : '/agendar';
+  return <Navigate to={`/${slug}${suffix}`} replace />;
+}
+
 function LegacyAdminRedirect() {
   const { slug, '*': rest } = useParams();
   const suffix = rest ? `/${rest}` : '';
@@ -183,8 +189,16 @@ export default function AppRoutes() {
   return (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+        <Route path="/cadastro" element={<Register />} />
+        <Route path="/recuperar-senha" element={<ForgotPassword />} />
+        <Route path="/redefinir-senha" element={<ResetPassword />} />
+
         <Route path="/agendamento/:slug/*" element={<LegacyTenantRedirect />} />
         <Route path="/admin/:slug/*" element={<LegacyAdminRedirect />} />
+        <Route path="/b/:slug" element={<ShortBookingRedirect />} />
+        <Route path="/b/:slug/*" element={<ShortBookingRedirect />} />
 
         <Route path="/:slug" element={<TenantLayout />}>
           <Route index element={<EstablishmentPage />} />
@@ -193,12 +207,6 @@ export default function AppRoutes() {
           <Route path="login" element={<TenantLogin />} />
           <Route path="cadastro" element={<TenantRegister />} />
         </Route>
-
-        <Route path="/login" element={<Login />} />
-        <Route path="/super-admin/login" element={<SuperAdminLogin />} />
-        <Route path="/cadastro" element={<Register />} />
-        <Route path="/recuperar-senha" element={<ForgotPassword />} />
-        <Route path="/redefinir-senha" element={<ResetPassword />} />
 
         <Route
           path="/super-admin"

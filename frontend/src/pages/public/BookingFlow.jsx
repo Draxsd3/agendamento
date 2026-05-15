@@ -38,14 +38,28 @@ export default function BookingFlow() {
 
   useEffect(() => {
     const load = async () => {
+      let foundEstablishment;
       try {
-        const foundEstablishment = await publicEstablishmentsService.getBySlug(slug);
-        setEstablishment(foundEstablishment);
+        foundEstablishment = await publicEstablishmentsService.getBySlug(slug);
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 404 || status === 403) {
+          toast.error('Estabelecimento nao encontrado.');
+          navigate(`/${slug}`);
+        } else {
+          toast.error(getErrorMessage(err, 'Nao foi possivel carregar este estabelecimento. Tente novamente.'));
+        }
+        setLoading(false);
+        return;
+      }
 
+      setEstablishment(foundEstablishment);
+
+      try {
         const [serviceData, professionalData, branchData, subscriptions] = await Promise.all([
-          publicEstablishmentsService.getServices(foundEstablishment.id),
-          publicEstablishmentsService.getProfessionals(foundEstablishment.id),
-          publicEstablishmentsService.getBranches(foundEstablishment.id),
+          publicEstablishmentsService.getServices(foundEstablishment.id).catch(() => []),
+          publicEstablishmentsService.getProfessionals(foundEstablishment.id).catch(() => []),
+          publicEstablishmentsService.getBranches(foundEstablishment.id).catch(() => []),
           isAuthenticated && user?.role === 'customer'
             ? subscriptionsService.getMine().catch(() => [])
             : Promise.resolve([]),
@@ -70,9 +84,6 @@ export default function BookingFlow() {
 
         setPlanServices(activeSubscription?.plans?.plan_services || []);
         setPlanDiscountPercent(Number(activeSubscription?.plans?.discount_percent || 0));
-      } catch {
-        toast.error('Estabelecimento nao encontrado.');
-        navigate(`/${slug}`);
       } finally {
         setLoading(false);
       }

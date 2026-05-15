@@ -219,13 +219,26 @@ export default function EstablishmentPage() {
 
   useEffect(() => {
     const load = async () => {
+      let estab;
       try {
-        const estab = await publicEstablishmentsService.getBySlug(slug);
-        setEstablishment(estab);
+        estab = await publicEstablishmentsService.getBySlug(slug);
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status === 404 || status === 403) {
+          setError('Estabelecimento não encontrado.');
+        } else {
+          setError(err?.response?.data?.error || 'Não foi possível carregar este estabelecimento. Tente novamente em instantes.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      setEstablishment(estab);
+      try {
         const [svcData, profData, hoursData, plansData] = await Promise.all([
-          publicEstablishmentsService.getServices(estab.id),
-          publicEstablishmentsService.getProfessionals(estab.id),
-          publicEstablishmentsService.getBusinessHours(estab.id),
+          publicEstablishmentsService.getServices(estab.id).catch(() => []),
+          publicEstablishmentsService.getProfessionals(estab.id).catch(() => []),
+          publicEstablishmentsService.getBusinessHours(estab.id).catch(() => []),
           plansService.getPublicPlans(slug).catch(() => []),
         ]);
         setServices(svcData);
@@ -236,8 +249,6 @@ export default function EstablishmentPage() {
           const subs = await subscriptionsService.getMine().catch(() => []);
           setMySubscriptions(subs);
         }
-      } catch (err) {
-        setError(err.response?.data?.error || 'Estabelecimento não encontrado.');
       } finally {
         setLoading(false);
       }

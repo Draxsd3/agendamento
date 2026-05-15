@@ -4,7 +4,14 @@ import { CalendarCheck, CreditCard, LogIn, UserCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { publicEstablishmentsService } from '@/services/establishments.service';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import NotFound from '@/pages/NotFound';
 import { getBrandingTheme } from '@/utils/branding';
+
+const RESERVED_SLUGS = new Set([
+  'login', 'cadastro', 'recuperar-senha', 'redefinir-senha',
+  'admin', 'super-admin', 'minha-conta',
+  'agendamento', 'api', 'assets', 'static', 'site', 'b',
+]);
 
 export default function TenantLayout() {
   const { slug } = useParams();
@@ -12,26 +19,56 @@ export default function TenantLayout() {
   const { isAuthenticated, user } = useAuth();
   const [establishment, setEstablishment] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  const isReservedSlug = slug ? RESERVED_SLUGS.has(slug.toLowerCase()) : false;
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const result = await publicEstablishmentsService.getBySlug(slug);
+    if (!slug || isReservedSlug) {
+      setLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+    setLoading(true);
+    setLoadError(false);
+    setEstablishment(null);
+
+    publicEstablishmentsService.getBySlug(slug)
+      .then((result) => {
+        if (!active) return;
         setEstablishment(result);
         localStorage.setItem('activeEstablishmentSlug', slug);
-      } finally {
-        setLoading(false);
-      }
-    };
+      })
+      .catch(() => {
+        if (!active) return;
+        if (localStorage.getItem('activeEstablishmentSlug') === slug) {
+          localStorage.removeItem('activeEstablishmentSlug');
+        }
+        setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    load();
-  }, [slug]);
+    return () => {
+      active = false;
+    };
+  }, [slug, isReservedSlug]);
 
   const branding = useMemo(() => getBrandingTheme(establishment), [establishment]);
   const isPortfolioPage = location.pathname === `/${slug}`;
 
+  if (isReservedSlug) {
+    return <NotFound />;
+  }
+
   if (loading) {
     return <LoadingSpinner fullScreen />;
+  }
+
+  if (loadError || !establishment) {
+    return <NotFound />;
   }
 
   if (isPortfolioPage) {
