@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # pre-deploy-check.sh — Verificações mínimas antes de fazer deploy
-# Uso: bash pre-deploy-check.sh
+# Uso (a partir da raiz do repositório): bash scripts/pre-deploy-check.sh
 # =============================================================================
 set -e
 

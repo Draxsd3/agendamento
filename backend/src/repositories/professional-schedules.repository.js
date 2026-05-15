@@ -61,7 +61,7 @@ class ProfessionalSchedulesRepository extends BaseRepository {
 
     if (error) {
       if (isMissingTable(error)) {
-        const err = new Error('Execute database/professional_schedules.sql no Supabase antes de configurar horarios por profissional.');
+        const err = new Error('Execute database/migrations/professional_schedules.sql no Supabase antes de configurar horarios por profissional.');
         err.statusCode = 500;
         throw err;
       }

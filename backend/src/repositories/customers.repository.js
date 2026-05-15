@@ -100,7 +100,7 @@ class CustomersRepository extends BaseRepository {
     if (!error) return true;
 
     if (isMissingCustomerEstablishmentsTable(error)) {
-      const err = new Error('Execute database/customer_establishments.sql no Supabase antes de cadastrar clientes manualmente.');
+      const err = new Error('Execute database/migrations/customer_establishments.sql no Supabase antes de cadastrar clientes manualmente.');
       err.statusCode = 500;
       throw err;
     }
