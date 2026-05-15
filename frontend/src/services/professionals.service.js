@@ -33,4 +33,14 @@ export const professionalsService = {
     const res = await api.post(`/professionals/${id}/avatar`, { fileName, contentType, base64 });
     return res.data;
   },
+
+  getSchedule: async (id) => {
+    const res = await api.get(`/professionals/${id}/schedule`);
+    return res.data;
+  },
+
+  replaceSchedule: async (id, entries) => {
+    const res = await api.put(`/professionals/${id}/schedule`, { entries });
+    return res.data;
+  },
 };

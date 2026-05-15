@@ -179,7 +179,14 @@ export default function CustomerDashboard() {
       </section>
 
       <button
-        onClick={() => navigate(slug ? `/${slug}/agendar` : '/')}
+        onClick={() => {
+          const target = slug || localStorage.getItem('activeEstablishmentSlug');
+          if (target) {
+            navigate(`/${target}/agendar`);
+          } else {
+            navigate('/minha-conta');
+          }
+        }}
         className="w-full font-semibold rounded-lg py-4 flex items-center justify-center gap-2 transition-colors mt-2"
         style={{
           backgroundColor: branding?.primaryColor || '#111827',

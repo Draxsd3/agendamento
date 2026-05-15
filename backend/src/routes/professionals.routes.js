@@ -33,4 +33,8 @@ router.post(
 router.delete('/:id/services/:serviceId', professionalsController.removeService);
 router.post('/:id/avatar', professionalsController.uploadAvatar);
 
+// Per-professional working hours
+router.get('/:id/schedule', professionalsController.getSchedule);
+router.put('/:id/schedule', professionalsController.replaceSchedule);
+
 module.exports = router;

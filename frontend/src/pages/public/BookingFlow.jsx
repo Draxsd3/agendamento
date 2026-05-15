@@ -133,8 +133,8 @@ export default function BookingFlow() {
         startTime: selectedDateTime.slot.start,
         branchId: selectedBranch?.id || null,
       });
-      toast.success('Agendamento realizado!');
-      navigate(`/${slug}/cliente`);
+      toast.success('Agendamento confirmado! Voce pode acompanhar pelo painel.');
+      navigate(`/${slug}/cliente/agendamentos`);
     } catch (error) {
       toast.error(getErrorMessage(error, 'Erro ao agendar. Tente outro horário.'));
     } finally {

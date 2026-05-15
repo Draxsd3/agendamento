@@ -4,6 +4,7 @@ const servicesService = require('../services/services.service');
 const businessHoursService = require('../services/business-hours.service');
 const appointmentsService = require('../services/appointments.service');
 const branchesRepo = require('../repositories/branches.repository');
+const professionalSchedulesRepo = require('../repositories/professional-schedules.repository');
 
 class PublicController {
   async getEstablishmentBySlug(req, res, next) {
@@ -30,7 +31,30 @@ class PublicController {
         req.params.establishmentId,
         true
       );
-      res.json(professionals);
+
+      const ids = (professionals || []).map((p) => p.id);
+      const schedules = ids.length > 0
+        ? await professionalSchedulesRepo.findByProfessionals(ids)
+        : [];
+
+      const schedulesByProfessional = new Map();
+      for (const entry of schedules) {
+        const list = schedulesByProfessional.get(entry.professional_id) || [];
+        list.push({
+          weekday: entry.weekday,
+          start_time: entry.start_time,
+          end_time: entry.end_time,
+          is_working: entry.is_working,
+        });
+        schedulesByProfessional.set(entry.professional_id, list);
+      }
+
+      const enriched = (professionals || []).map((prof) => ({
+        ...prof,
+        schedule: schedulesByProfessional.get(prof.id) || [],
+      }));
+
+      res.json(enriched);
     } catch (err) {
       next(err);
     }

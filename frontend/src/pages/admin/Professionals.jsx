@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Plus, Camera, User, Pencil, Power, Trash2 } from 'lucide-react';
+import { Plus, Camera, User, Pencil, Power, Trash2, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/common/Button';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import { professionalsService } from '@/services/professionals.service';
 import { servicesService } from '@/services/services.service';
+import { publicEstablishmentsService } from '@/services/establishments.service';
+import ProfessionalScheduleModal from '@/components/professionals/ProfessionalScheduleModal';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/utils/errors';
@@ -24,11 +26,13 @@ export default function AdminProfessionals() {
 
   const [professionals, setProfessionals] = useState([]);
   const [services,      setServices]      = useState([]);
+  const [establishmentHours, setEstablishmentHours] = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [showModal,     setShowModal]     = useState(false);
   const [editTarget,    setEditTarget]    = useState(null);
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [savingServices, setSavingServices] = useState(false);
+  const [scheduleTarget, setScheduleTarget] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
   const fileInputRef   = useRef(null);
@@ -38,8 +42,18 @@ export default function AdminProfessionals() {
 
   const load = () => {
     setLoading(true);
-    Promise.all([professionalsService.getAll(user?.establishmentId), servicesService.getAll()])
-      .then(([profs, svcs]) => { setProfessionals(profs); setServices(svcs); })
+    Promise.all([
+      professionalsService.getAll(user?.establishmentId),
+      servicesService.getAll(),
+      user?.establishmentId
+        ? publicEstablishmentsService.getBusinessHours(user.establishmentId).catch(() => [])
+        : Promise.resolve([]),
+    ])
+      .then(([profs, svcs, hours]) => {
+        setProfessionals(profs);
+        setServices(svcs);
+        setEstablishmentHours(hours);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(load, [user]);
@@ -205,6 +219,13 @@ export default function AdminProfessionals() {
                     <Pencil size={12} /> Editar
                   </button>
                   <button
+                    onClick={() => setScheduleTarget(prof)}
+                    title="Horários do profissional"
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    <Clock size={12} /> Horários
+                  </button>
+                  <button
                     onClick={() => handleToggle(prof)}
                     title={prof.is_active ? 'Inativar' : 'Ativar'}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -296,6 +317,13 @@ export default function AdminProfessionals() {
           </div>
         </form>
       </Modal>
+
+      <ProfessionalScheduleModal
+        isOpen={!!scheduleTarget}
+        onClose={() => setScheduleTarget(null)}
+        professional={scheduleTarget}
+        establishmentHours={establishmentHours}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const appointmentsRepo = require('../repositories/appointments.repository');
 const servicesRepo = require('../repositories/services.repository');
 const businessHoursRepo = require('../repositories/business-hours.repository');
+const professionalSchedulesRepo = require('../repositories/professional-schedules.repository');
 const customersRepo = require('../repositories/customers.repository');
 const supabase = require('../config/supabase');
 
@@ -65,8 +66,8 @@ class AppointmentsService {
     const start = new Date(startTime);
     const end = new Date(start.getTime() + service.duration_minutes * 60 * 1000);
 
-    // Validate business hours
-    await this._validateBusinessHours(establishmentId, start, end);
+    // Validate business hours (respects per-professional schedule when set)
+    await this._validateBusinessHours(establishmentId, start, end, professionalId);
 
     // Check conflicts
     const hasConflict = await appointmentsRepo.checkConflict(professionalId, start.toISOString(), end.toISOString());
@@ -150,7 +151,7 @@ class AppointmentsService {
     const end = new Date(start.getTime() + service.duration_minutes * 60 * 1000);
 
     if (!skipBusinessHoursCheck) {
-      await this._validateBusinessHours(establishmentId, start, end);
+      await this._validateBusinessHours(establishmentId, start, end, professionalId);
     }
 
     const hasConflict = await appointmentsRepo.checkConflict(
@@ -264,7 +265,7 @@ class AppointmentsService {
     const start = new Date(startTime);
     const end = new Date(start.getTime() + service.duration_minutes * 60 * 1000);
 
-    await this._validateBusinessHours(appointment.establishment_id, start, end);
+    await this._validateBusinessHours(appointment.establishment_id, start, end, professionalId);
 
     const hasConflict = await appointmentsRepo.checkConflict(
       professionalId,
@@ -305,6 +306,34 @@ class AppointmentsService {
     return appointmentsRepo.update(appointmentId, { status });
   }
 
+  async _resolveDayHours(establishmentId, professionalId, weekday) {
+    let professionalSchedule = null;
+    if (professionalId) {
+      const schedules = await professionalSchedulesRepo.findByProfessional(professionalId);
+      professionalSchedule = schedules.find((s) => s.weekday === weekday) || null;
+    }
+
+    if (professionalSchedule) {
+      return {
+        source: 'professional',
+        is_open: professionalSchedule.is_working,
+        start_time: professionalSchedule.start_time,
+        end_time: professionalSchedule.end_time,
+      };
+    }
+
+    const businessHours = await businessHoursRepo.findByEstablishment(establishmentId);
+    const dayHours = businessHours.find((bh) => bh.weekday === weekday);
+    if (!dayHours) return null;
+
+    return {
+      source: 'establishment',
+      is_open: dayHours.is_open,
+      start_time: dayHours.start_time,
+      end_time: dayHours.end_time,
+    };
+  }
+
   async getAvailableSlots(establishmentId, professionalId, serviceId, date) {
     const service = await servicesRepo.findByIdAndEstablishment(serviceId, establishmentId);
     if (!service) {
@@ -318,9 +347,7 @@ class AppointmentsService {
     const targetDate = new Date(yr, mo - 1, dy);
     const weekday = WEEKDAYS[targetDate.getDay()];
 
-    const businessHours = await businessHoursRepo.findByEstablishment(establishmentId);
-    const dayHours = businessHours.find((bh) => bh.weekday === weekday);
-
+    const dayHours = await this._resolveDayHours(establishmentId, professionalId, weekday);
     if (!dayHours || !dayHours.is_open) {
       return [];
     }
@@ -367,14 +394,16 @@ class AppointmentsService {
     return slots;
   }
 
-  async _validateBusinessHours(establishmentId, start, end) {
-    // Use local date parts to determine weekday and compare times correctly
+  async _validateBusinessHours(establishmentId, start, end, professionalId = null) {
     const weekday = WEEKDAYS[start.getDay()];
-    const businessHours = await businessHoursRepo.findByEstablishment(establishmentId);
-    const dayHours = businessHours.find((bh) => bh.weekday === weekday);
+    const dayHours = await this._resolveDayHours(establishmentId, professionalId, weekday);
 
     if (!dayHours || !dayHours.is_open) {
-      const err = new Error('O estabelecimento não funciona neste dia.');
+      const err = new Error(
+        dayHours?.source === 'professional'
+          ? 'O profissional nao atende neste dia.'
+          : 'O estabelecimento nao funciona neste dia.'
+      );
       err.statusCode = 400;
       throw err;
     }
@@ -386,7 +415,11 @@ class AppointmentsService {
     const closeTime = new Date(start.getFullYear(), start.getMonth(), start.getDate(), endH, endM, 0, 0);
 
     if (start < openTime || end > closeTime) {
-      const err = new Error('O horário escolhido está fora do horário de funcionamento.');
+      const err = new Error(
+        dayHours.source === 'professional'
+          ? 'O horario escolhido esta fora do expediente deste profissional.'
+          : 'O horario escolhido esta fora do horario de funcionamento.'
+      );
       err.statusCode = 400;
       throw err;
     }

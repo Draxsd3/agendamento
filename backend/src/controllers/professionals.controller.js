@@ -1,4 +1,5 @@
 const professionalsService = require('../services/professionals.service');
+const professionalSchedulesService = require('../services/professional-schedules.service');
 
 class ProfessionalsController {
   async getAll(req, res, next) {
@@ -75,6 +76,31 @@ class ProfessionalsController {
     try {
       await professionalsService.removeService(req.params.id, req.params.serviceId, req.establishmentId);
       res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getSchedule(req, res, next) {
+    try {
+      const result = await professionalSchedulesService.getByProfessional(
+        req.params.id,
+        req.establishmentId
+      );
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async replaceSchedule(req, res, next) {
+    try {
+      const result = await professionalSchedulesService.replaceAll(
+        req.params.id,
+        req.establishmentId,
+        req.body.entries
+      );
+      res.json(result);
     } catch (err) {
       next(err);
     }

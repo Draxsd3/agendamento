@@ -415,7 +415,14 @@ export default function CustomerAppointments() {
       </div>
 
       <button
-        onClick={() => navigate(slug ? `/${slug}/agendar` : '/')}
+        onClick={() => {
+          const target = slug || localStorage.getItem('activeEstablishmentSlug');
+          if (target) {
+            navigate(`/${target}/agendar`);
+          } else {
+            navigate('/minha-conta');
+          }
+        }}
         className="flex w-full items-center justify-center gap-2 rounded-lg py-3.5 font-semibold transition-colors"
         style={{
           backgroundColor: branding?.primaryColor || '#111827',
