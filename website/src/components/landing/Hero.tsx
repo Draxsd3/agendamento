@@ -38,7 +38,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-md leading-relaxed mb-10">
-              Menos faltas, mais controle e sua agenda
+              Menos faltas, mais controle e sua agenda{" "}
               <br className="hidden sm:block" />
               sempre organizada.
             </p>

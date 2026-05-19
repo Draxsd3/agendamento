@@ -61,7 +61,7 @@ const Showcase = () => {
                   src={s.src}
                   alt={s.title}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  style={{ objectPosition: s.position }}
+                  style={{ objectPosition: s.position, filter: "hue-rotate(97deg) saturate(1.05)" }}
                 />
               </div>
               <div className="mt-5">

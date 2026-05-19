@@ -50,6 +50,7 @@ const FeatureSections = () => {
                 src={appClient}
                 alt="Area real do cliente no AgenClick com proximo agendamento e plano"
                 className="block aspect-[16/10] w-full object-cover object-left-top"
+                style={{ filter: "hue-rotate(97deg) saturate(1.05)" }}
               />
             </div>
           </div>
@@ -74,6 +75,7 @@ const FeatureSections = () => {
                 src={appSettings}
                 alt="Tela real de configuracoes e preview do cliente no AgenClick"
                 className="block aspect-[16/10] w-full object-cover object-left-top"
+                style={{ filter: "hue-rotate(97deg) saturate(1.05)" }}
               />
             </div>
           </div>
