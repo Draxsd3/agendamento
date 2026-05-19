@@ -48,7 +48,7 @@ const FeatureSections = () => {
               </div>
               <img
                 src={appClient}
-                alt="Area real do cliente no StreetLabs com proximo agendamento e plano"
+                alt="Area real do cliente no AgenClick com proximo agendamento e plano"
                 className="block aspect-[16/10] w-full object-cover object-left-top"
               />
             </div>
@@ -72,7 +72,7 @@ const FeatureSections = () => {
               </div>
               <img
                 src={appSettings}
-                alt="Tela real de configuracoes e preview do cliente no StreetLabs"
+                alt="Tela real de configuracoes e preview do cliente no AgenClick"
                 className="block aspect-[16/10] w-full object-cover object-left-top"
               />
             </div>

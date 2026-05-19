@@ -5,12 +5,12 @@ import { Icon } from "@/components/Icon";
 
 const faqs = [
   {
-    q: "Como o StreetLabs me ajuda a organizar melhor?",
+    q: "Como o AgenClick me ajuda a organizar melhor?",
     a: "Centraliza agenda, clientes, equipe e relatórios em um só lugar. Você para de usar caderno + WhatsApp + planilha e ganha um sistema único, com lembretes automáticos e visão real do faturamento.",
   },
   {
     q: "Quanto tempo leva pra aprender a usar?",
-    a: "Em média 10 a 20 minutos pra colocar tudo no ar. A interface foi desenhada pra ser intuitiva — se você usa WhatsApp, usa StreetLabs.",
+    a: "Em média 10 a 20 minutos pra colocar tudo no ar. A interface foi desenhada pra ser intuitiva — se você usa WhatsApp, usa AgenClick.",
   },
   {
     q: "Como sei que funciona pro meu negócio?",
@@ -33,7 +33,7 @@ const faqs = [
     a: "Sim. Nos planos Pro e Enterprise você personaliza com logo, cores da sua marca e pode usar domínio próprio (ex: agenda.suabarbearia.com.br).",
   },
   {
-    q: "Quanto custa o StreetLabs?",
+    q: "Quanto custa o AgenClick?",
     a: "Os valores são apresentados na demonstração personalizada, ajustados ao tamanho do seu negócio e plano escolhido. Sem fidelidade.",
   },
   {

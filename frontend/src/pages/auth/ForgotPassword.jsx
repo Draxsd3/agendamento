@@ -35,7 +35,7 @@ export default function ForgotPassword() {
                 <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
                 <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
               </svg>
-              <span className="font-display font-bold text-ink text-lg tracking-tight">StreetLabs</span>
+              <span className="font-display font-bold text-ink text-lg tracking-tight">AgenClick</span>
             </a>
             <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
               <Link to="/login" className="text-sm text-ink/75 hover:text-ink transition-colors font-medium">Entrar</Link>

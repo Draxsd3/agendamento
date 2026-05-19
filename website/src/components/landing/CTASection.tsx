@@ -21,7 +21,7 @@ const CTASection = () => {
             <span className="text-gradient">perder horarios</span>?
           </h2>
           <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-xl mx-auto">
-            Crie sua conta, entre no sistema e veja o StreetLabs funcionando na rotina do seu negocio.
+            Crie sua conta, entre no sistema e veja o AgenClick funcionando na rotina do seu negocio.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a

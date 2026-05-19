@@ -1,52 +1,54 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { Icon } from "@/components/Icon";
-import appDashboard from "@/assets/app-dashboard.png";
-
-const bullets = [
-  "Agenda, clientes e equipe num so lugar",
-  "Lembretes automaticos de WhatsApp",
-  "Cliente agenda em 30 segundos, sem login",
-  "Relatorios de faturamento em tempo real",
-  "E muito mais...",
-];
+import { ClickCursor } from "@/components/Logo";
+import HeroIllustration from "./HeroIllustration";
 
 const Hero = () => {
   return (
-    <section className="pt-28 pb-16 md:pt-36 md:pb-24">
-      <div className="container">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+      <div className="absolute inset-0 bg-grid-soft opacity-40 pointer-events-none" />
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+
+      <div className="container relative">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold leading-[0.95] tracking-tight mb-8 text-foreground">
-              Menos planilhas,
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="inline-flex items-center gap-2.5 bg-background border border-border rounded-full pl-2 pr-5 py-2 mb-8 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)]"
+            >
+              <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <ClickCursor size={16} className="text-primary" />
+              </span>
+              <span className="text-sm font-medium text-foreground/80">
+                Agendamentos online para o seu negócio
+              </span>
+            </motion.div>
+
+            <h1 className="font-display text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5rem] font-extrabold leading-[0.95] tracking-tight mb-7 text-foreground">
+              Seu cliente agenda.
               <br />
-              mais <span className="underline-brush">faturamento</span>.
+              <span className="text-primary">Você só atende.</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed mb-8">
-              Chega de caderno, WhatsApp lotado e cadeira parada. Aqui sua agenda vira sistema:
-              mais controle, menos no-show e clientes que voltam.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-md leading-relaxed mb-10">
+              Menos faltas, mais controle e sua agenda
+              <br className="hidden sm:block" />
+              sempre organizada.
             </p>
-
-            <ul className="space-y-2.5 mb-10">
-              {bullets.map((bullet) => (
-                <li key={bullet} className="flex items-start gap-2.5 text-foreground/85">
-                  <Icon as={Check} size="md" className="text-foreground mt-0.5" />
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
 
             <div className="flex flex-wrap items-center gap-3">
               <a
-                href="/login"
-                className="group inline-flex items-center gap-2 bg-ink text-ink-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-ink/85 transition-colors uppercase tracking-wide"
+                href="/cadastro"
+                className="group inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-7 py-4 rounded-2xl text-base hover:bg-primary/90 transition-all shadow-red hover:-translate-y-0.5"
               >
-                Entrar na plataforma
+                Criar conta grátis
                 <Icon
                   as={ArrowRight}
                   size="md"
@@ -54,10 +56,13 @@ const Hero = () => {
                 />
               </a>
               <a
-                href="/cadastro"
-                className="inline-flex items-center gap-2 border border-border text-foreground font-bold px-7 py-4 rounded-full text-base hover:bg-secondary transition-colors uppercase tracking-wide"
+                href="#como-funciona"
+                className="group inline-flex items-center gap-2 bg-background border border-border text-foreground font-semibold px-6 py-4 rounded-2xl text-base hover:border-foreground/40 hover:bg-secondary transition-all"
               >
-                Criar conta
+                <span className="w-7 h-7 rounded-full border border-border flex items-center justify-center bg-secondary group-hover:bg-primary group-hover:border-primary transition-colors">
+                  <Icon as={Play} size="sm" className="text-foreground group-hover:text-primary-foreground ml-0.5 transition-colors" />
+                </span>
+                Ver como funciona
               </a>
             </div>
           </motion.div>
@@ -66,24 +71,9 @@ const Hero = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative"
+            className="relative w-full"
           >
-            <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent rounded-[2rem] blur-2xl" />
-            <div className="relative rounded-3xl overflow-hidden border border-border bg-card shadow-[0_20px_60px_-20px_rgba(0,0,0,0.25)]">
-              <div className="flex items-center gap-1.5 border-b border-border bg-background px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                <span className="ml-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  Painel real
-                </span>
-              </div>
-              <img
-                src={appDashboard}
-                alt="Dashboard real do StreetLabs com agenda, faturamento e atendimentos"
-                className="block h-auto w-full"
-              />
-            </div>
+            <HeroIllustration className="w-full h-auto max-w-[640px] mx-auto" />
           </motion.div>
         </div>
       </div>
