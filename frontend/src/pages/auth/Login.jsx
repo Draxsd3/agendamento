@@ -8,14 +8,14 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { getErrorMessage } from '@/utils/errors';
 
 /**
- * StreetLabs — Tela de login.
+ * AgenClick — Tela de login.
  * Mesma linguagem visual do website:
  *  - Canvas off-white (hsl 40 20% 97%)
  *  - Ink quase-preto para tipografia e CTA
  *  - Space Grotesk em títulos + Inter no corpo
  *  - Pincelada violeta (underline-brush)
  *  - Textura dotted-bg
- *  - Logo hexagonal StreetLabs
+ *  - Logo hexagonal AgenClick
  */
 export default function Login() {
   const { login, isAuthenticated, user } = useAuth();
@@ -87,7 +87,7 @@ export default function Login() {
                 <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
               </svg>
               <span className="font-display font-bold text-ink text-lg tracking-tight">
-                StreetLabs
+                AgenClick
               </span>
             </a>
 
@@ -123,7 +123,7 @@ export default function Login() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-brand opacity-60" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-brand" />
               </span>
-              Plataforma de agendamento · StreetLabs
+              Plataforma de agendamento · AgenClick
             </div>
 
             <h1 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold leading-[0.95] tracking-tight text-ink mb-6">
@@ -304,7 +304,7 @@ export default function Login() {
 
               {/* Microassinatura */}
               <p className="text-center text-[11px] text-ink-soft mt-6 uppercase tracking-[0.25em]">
-                © {new Date().getFullYear()} · StreetLabs · Feito para barbearias, estúdios & salões
+                © {new Date().getFullYear()} · AgenClick · Feito para barbearias, estúdios & salões
               </p>
             </div>
           </section>

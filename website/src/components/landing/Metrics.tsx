@@ -23,7 +23,7 @@ const Metrics = () => {
   const [active, setActive] = useState<number | null>(null);
 
   return (
-    <section className="py-16 md:py-24">
+    <section id="resultados" className="py-16 md:py-24">
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           {metrics.map((m, i) => (

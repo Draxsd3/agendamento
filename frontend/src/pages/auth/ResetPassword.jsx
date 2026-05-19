@@ -53,7 +53,7 @@ export default function ResetPassword() {
                 <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
                 <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
               </svg>
-              <span className="font-display text-lg font-bold text-ink">StreetLabs</span>
+              <span className="font-display text-lg font-bold text-ink">AgenClick</span>
             </a>
             <Link
               to="/login"
@@ -125,7 +125,7 @@ export default function ResetPassword() {
               <path d="M14 2L8 6V12L14 16L20 12V6L14 2Z" fill="currentColor" opacity="0.85" />
               <path d="M8 16V22L14 26L20 22V16L14 20L8 16Z" fill="currentColor" />
             </svg>
-            <span className="font-display text-lg font-bold text-ink">StreetLabs</span>
+            <span className="font-display text-lg font-bold text-ink">AgenClick</span>
           </a>
           <Link
             to="/login"

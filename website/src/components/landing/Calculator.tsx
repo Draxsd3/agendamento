@@ -54,7 +54,7 @@ const Calculator = () => {
             pode <span className="underline-brush">economizar</span>?
           </h2>
           <p className="text-muted-foreground text-lg">
-            Compare sua rotina atual com o que o StreetLabs faz por voce e descubra quanto tempo voce ganha de volta.
+            Compare sua rotina atual com o que o AgenClick faz por voce e descubra quanto tempo voce ganha de volta.
           </p>
         </motion.div>
 
@@ -118,7 +118,7 @@ const Calculator = () => {
             <p className="text-sm text-muted-foreground mb-6">
               Usando <span className="font-semibold text-foreground">{selected.length}</span>{" "}
               ferramenta{selected.length !== 1 ? "s" : ""} para gerenciar sua agenda, com o
-              StreetLabs voce economiza:
+              AgenClick voce economiza:
             </p>
 
             <div className="font-display text-6xl md:text-8xl font-bold text-foreground leading-none mb-2">

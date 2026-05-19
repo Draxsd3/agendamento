@@ -34,7 +34,7 @@ const Algorithm = () => {
           className="text-center mb-20 max-w-4xl mx-auto"
         >
           <div className="text-xs uppercase tracking-[0.3em] text-primary mb-6 font-semibold">
-            ✦ Sistema StreetLabs ✦
+            ✦ Sistema AgenClick ✦
           </div>
           <h2 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-8">
             Algoritmo

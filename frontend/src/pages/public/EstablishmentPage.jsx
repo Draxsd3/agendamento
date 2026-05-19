@@ -903,12 +903,12 @@ export default function EstablishmentPage() {
           <span>
             © {new Date().getFullYear()} {establishment.name}. {COPY.footerTagline} por{' '}
             <a
-              href="https://streetlabs.com.br"
+              href="/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-black/70 hover:text-black"
             >
-              StreetLabs
+              AgenClick
             </a>
           </span>
         </div>

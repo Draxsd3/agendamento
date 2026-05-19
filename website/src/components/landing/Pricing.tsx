@@ -58,7 +58,7 @@ const Pricing = () => {
             Escolha o plano <span className="underline-brush">ideal</span> pra voce
           </h2>
           <p className="text-muted-foreground text-lg">
-            Comece agora mesmo a organizar sua agenda com o StreetLabs
+            Comece agora mesmo a organizar sua agenda com o AgenClick
           </p>
         </motion.div>
 
